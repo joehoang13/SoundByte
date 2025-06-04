@@ -1,7 +1,7 @@
 # SoundByte
 
-**Short project description** 
 Online Musical Trivia
+
 ---
 
 ## Table of Contents
@@ -11,12 +11,6 @@ Online Musical Trivia
 - [Getting Started](#getting-started)
 - [Installation](#installation)
 - [Usage](#usage)
-- [API Endpoints](#api-endpoints)
-- [Environment Variables](#environment-variables)
-- [Folder Structure](#folder-structure)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
 
 ---
 
@@ -40,12 +34,20 @@ Online Musical Trivia
 
 ---
 
-## Installation/Running
+## Installation
 
 ### Backend
 
 ```bash
 cd backend
 npm install
+```
 
+## Usage
+
+### Backend
+
+```bash
+cd backend
 npm start
+```
