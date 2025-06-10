@@ -16,11 +16,9 @@ Online Musical Trivia
 
 ## Features
 
-
 ---
 
 ## Tech Stack
-
 
 ---
 
