@@ -1,4 +1,4 @@
-const User = require('../models/usersModel')
+const User = require('../models/usersModel');
 
 exports.getUserDummy = async (req, res) => {
   const user = {
@@ -6,24 +6,24 @@ exports.getUserDummy = async (req, res) => {
     email: 'dummyuser@example.com',
     authMethod: 'guest',
     scoreHistory: 1000000,
-  }
+  };
 
-  res.json(user)
-}
+  res.json(user);
+};
 
 exports.getUserByEmail = async (req, res) => {
-  const { email } = req.params
+  const { email } = req.params;
 
   try {
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' })
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json(user)
+    res.json(user);
   } catch (error) {
-    console.error('Error fetching user by email: ', error)
-    res.status(500).json({ message: 'Internal server error' })
+    console.error('Error fetching user by email: ', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
