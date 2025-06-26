@@ -1,4 +1,4 @@
-const User = require('../models/usersModel');
+const User = require('../models/Users');
 
 exports.getUserDummy = async (req, res) => {
   const user = {
