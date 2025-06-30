@@ -8,16 +8,16 @@ require('./models/Snippet');
 require('./models/GameSession');
 require('./models/PlayerStats');
 
-
-console.log("Loaded MONGODB_URI:", process.env.MONGODB_URI);
+console.log('Loaded MONGODB_URI:', process.env.MONGODB_URI);
 
 const app = express();
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
+mongoose
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Routes
 const userRoutes = require('./routes/users');
