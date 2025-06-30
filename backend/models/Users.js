@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema({
     instrumental: Number,
     lyrics: Number,
     sampleHunt: Number,
-    artistChallenge: Number
+    artistChallenge: Number,
   },
   totalGamesPlayed: { type: Number, default: 0 },
 });

@@ -1,14 +1,24 @@
 const User = require('../models/Users');
 
 exports.getUserDummy = async (req, res) => {
-  const user = {
-    _id: '60f7e3b5d6e2f1a5b2c8a9f0',
-    email: 'dummyuser@example.com',
-    authMethod: 'guest',
-    scoreHistory: 1000000,
+  const dummyUser = {
+    username: 'testuser123',
+    email: 'testuser@example.com',
+    passwordHash: '$2b$10$abcd1234fakehash5678efgh', // fake hashed password
+    authProvider: 'firebase',
+    profilePicture: 'https://example.com/avatar.png',
+    createdAt: new Date('2024-12-01T10:15:30Z'),
+    highScores: {
+      classic: 8500,
+      instrumental: 7200,
+      lyrics: 9100,
+      sampleHunt: 6800,
+      artistChallenge: 7500,
+    },
+    totalGamesPlayed: 42,
   };
 
-  res.json(user);
+  res.json(dummyUser);
 };
 
 exports.getUserByEmail = async (req, res) => {
