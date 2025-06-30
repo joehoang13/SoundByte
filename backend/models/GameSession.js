@@ -6,14 +6,16 @@ const GameSessionSchema = new mongoose.Schema({
   score: { type: Number, default: 0 },
   answerStreak: { type: Number, default: 0 },
   snippetSize: { type: Number, enum: [3, 5, 10] },
-  answers: [{
-    snippetId: { type: mongoose.Schema.Types.ObjectId, ref: 'Snippet' },
-    userAnswer: String,
-    correct: Boolean,
-    timeTaken: Number
-  }],
+  answers: [
+    {
+      snippetId: { type: mongoose.Schema.Types.ObjectId, ref: 'Snippet' },
+      userAnswer: String,
+      correct: Boolean,
+      timeTaken: Number,
+    },
+  ],
   startedAt: { type: Date, default: Date.now },
-  endedAt: { type: Date }
+  endedAt: { type: Date },
 });
 
 module.exports = mongoose.model('GameSession', GameSessionSchema);

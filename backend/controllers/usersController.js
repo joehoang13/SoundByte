@@ -2,21 +2,21 @@ const User = require('../models/Users');
 
 exports.getUserDummy = async (req, res) => {
   const dummyUser = {
-  username: "testuser123",
-  email: "testuser@example.com",
-  passwordHash: "$2b$10$abcd1234fakehash5678efgh", // fake hashed password
-  authProvider: "firebase",
-  profilePicture: "https://example.com/avatar.png",
-  createdAt: new Date("2024-12-01T10:15:30Z"),
-  highScores: {
-    classic: 8500,
-    instrumental: 7200,
-    lyrics: 9100,
-    sampleHunt: 6800,
-    artistChallenge: 7500,
-  },
-  totalGamesPlayed: 42,
-};
+    username: 'testuser123',
+    email: 'testuser@example.com',
+    passwordHash: '$2b$10$abcd1234fakehash5678efgh', // fake hashed password
+    authProvider: 'firebase',
+    profilePicture: 'https://example.com/avatar.png',
+    createdAt: new Date('2024-12-01T10:15:30Z'),
+    highScores: {
+      classic: 8500,
+      instrumental: 7200,
+      lyrics: 9100,
+      sampleHunt: 6800,
+      artistChallenge: 7500,
+    },
+    totalGamesPlayed: 42,
+  };
 
   res.json(dummyUser);
 };
