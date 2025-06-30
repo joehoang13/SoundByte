@@ -16,8 +16,8 @@ app.use(express.json());
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+  .then(() => console.log('Connection to MongoDB successful'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
 const userRoutes = require('./routes/users');
@@ -29,4 +29,4 @@ app.use('/api/gs', gsRoutes);
 app.use('/api/snip', snipRoutes);
 
 // Start server
-app.listen(3000, () => console.log('🚀 Server running on port 3000'));
+app.listen(3000, () => console.log('Server running on port 3000'));
