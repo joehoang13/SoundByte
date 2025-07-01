@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/snipController');
+const snipController = require('../controllers/snipController');
 
-router.get('/dummy', userController.getSnippetDummy);
+router.get('/dummy', snipController.getSnippetDummy);
+router.get('/difficulty', snipController.getRandomSnippetByDifficulty);
+router.get('/genre', snipController.getRandomSnippetByGenre);
 
 module.exports = router;
