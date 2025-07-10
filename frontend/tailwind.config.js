@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./src/**/*.{js,ts,jsx,tsx}",
-    "./index.html",
-  ],
+  content: ['./src/**/*.{js,ts,jsx,tsx}', './index.html'],
   theme: {
     extend: {
       colors: {
@@ -17,10 +14,9 @@ export default {
         montserrat: ['"Montserrat"', 'sans-serif'],
       },
       boxShadow: {
-        whiteGlow: "0 0 20px rgba(255, 255, 255, 0.5)",
+        whiteGlow: '0 0 20px rgba(255, 255, 255, 0.5)',
       },
     },
   },
   plugins: [],
-}
-
+};
