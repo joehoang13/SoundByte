@@ -15,7 +15,6 @@ const GameStepsModal: React.FC<GameStepsModalProps> = ({ onClose }) => {
   const handleSwitchToSignUp = () => setStep('signup');
   const handleSwitchToLogin = () => setStep('login');
 
-
   const handleLoginSuccess = () => {
     setStep('gamepref');
   };
@@ -35,8 +34,20 @@ const GameStepsModal: React.FC<GameStepsModalProps> = ({ onClose }) => {
 
   return (
     <>
-      {step === 'login' && <AuthStepLogin onLoginSuccess={handleLoginSuccess} onClose={handleClose} onSwitchToSignUp={handleSwitchToSignUp} />}
-      {step === 'signup' && <AuthStepSignUp onSignUpSuccess={handleSignUpSuccess} onClose={handleClose} onSwitchToLogin={handleSwitchToLogin} />}
+      {step === 'login' && (
+        <AuthStepLogin
+          onLoginSuccess={handleLoginSuccess}
+          onClose={handleClose}
+          onSwitchToSignUp={handleSwitchToSignUp}
+        />
+      )}
+      {step === 'signup' && (
+        <AuthStepSignUp
+          onSignUpSuccess={handleSignUpSuccess}
+          onClose={handleClose}
+          onSwitchToLogin={handleSwitchToLogin}
+        />
+      )}
       {step === 'gamepref' && <GamePrefStep onClose={handleClose} onStartGame={handleStartGame} />}
     </>
   );

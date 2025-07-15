@@ -15,7 +15,6 @@ const CLOUDINARY_URL =
   'https://res.cloudinary.com/dqyszqny2/video/upload/v1751056497/sample_end8r3.ogg';
 
 const GameScreen = () => {
-
   const [guessNum, setGuessNum] = useState(1);
   const [currentGuess, setCurrentGuess] = useState('');
   const [guessHistory, setGuessHistory] = useState<Guess[]>([]);
@@ -30,7 +29,7 @@ const GameScreen = () => {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
   const animationRef = useRef<number | null>(null);
-  
+
   useEffect(() => {
     const sound = new Howl({
       src: [CLOUDINARY_URL],
@@ -180,13 +179,18 @@ const GameScreen = () => {
               Snippet Length: {useGameStore.getState().snippetLength} seconds
             </p>
 
-            <canvas ref={canvasRef} width={600} height={150} className="border border-white rounded mb-6 block mx-auto" />
+            <canvas
+              ref={canvasRef}
+              width={600}
+              height={150}
+              className="border border-white rounded mb-6 block mx-auto"
+            />
 
             <input
               type="text"
               value={currentGuess}
-              onChange={(e) => setCurrentGuess(e.target.value)}
-              onKeyDown={(e) => {
+              onChange={e => setCurrentGuess(e.target.value)}
+              onKeyDown={e => {
                 if (e.key === 'Enter') {
                   handleGuess(currentGuess);
                 }
@@ -198,9 +202,11 @@ const GameScreen = () => {
             <div className="max-h-48 flex flex-col overflow-y-auto pr-2">
               <h2 className="text-xl font-semibold">Your Previous Guesses:</h2>
               <ul className="space-y-2 overflow-y-auto">
-                {guessHistory.map((guess) => (
+                {guessHistory.map(guess => (
                   <li key={guess.guessNum} className="flex justify-between">
-                    <span>Attempt {guess.guessNum}: {guess.userGuess}</span>
+                    <span>
+                      Attempt {guess.guessNum}: {guess.userGuess}
+                    </span>
                     <span className={guess.isCorrect ? 'text-green-400' : 'text-red-400'}>
                       {guess.isCorrect ? 'Correct' : `Incorrect (${guess.timeTaken} seconds)`}
                     </span>
