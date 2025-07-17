@@ -116,3 +116,29 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({ error: 'Server error while logging in.' });
   }
 };
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { username, newPassword } = req.body;
+
+    if (!username || !newPassword) {
+      return res.status(400).json({ error: 'Username and new password are required.' });
+    }
+
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = newHashedPassword;
+
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successful.' });
+  } catch (err) {
+    console.error('Error resetting password:', err);
+    res.status(500).json({ error: 'Server error while resetting password.' });
+  }
+};
