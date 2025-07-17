@@ -59,7 +59,7 @@ exports.registerUser = async (req, res) => {
       username,
       email,
       passwordHash,
-      authProvider: authProvider || 'firebase',
+      authProvider: 'firebase',
       profilePicture: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/2048px-Default_pfp.svg.png',
       highScores: {
         classic: 0,
@@ -88,14 +88,16 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ error: 'Username and password are required.' });
     }
 
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username: username });
+    console.log(username);
+    console.log(user);
     if (!user) {
-      return res.status(401).json({ error: 'Invalid Username or password' });
+      return res.status(401).json({ error: 'Invalid Username' });
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid Username or password' });
+      return res.status(401).json({ error: 'Invalid Password' });
     }
 
     res.status(200).json({
