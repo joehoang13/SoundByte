@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { registerUser } from '../../api/api';
 
 interface AuthStepSignUpProps {
   onClose: () => void;
@@ -33,6 +34,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
     }
 
     console.log('Signing up with:', { username, password });
+    registerUser()
     onSignUpSuccess();
 
     setUsername('');
