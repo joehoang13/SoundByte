@@ -1,6 +1,6 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+const express   = require('express');
+const mongoose  = require('mongoose');
+const cors      = require('cors');
 require('dotenv').config();
 
 // Load models
@@ -15,7 +15,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -24,12 +23,13 @@ mongoose
 
 // Routes
 const userRoutes = require('./routes/users');
-const gsRoutes = require('./routes/gs');
+const gsRoutes   = require('./routes/gs');
 const snipRoutes = require('./routes/snip');
 
-app.use('/api/users', userRoutes);
-app.use('/api/gs', gsRoutes);
-app.use('/api/snip', snipRoutes);
+app.use('/api/users',    userRoutes);
+app.use('/api/gs',       gsRoutes);
+app.use('/api/snippets', snipRoutes);
 
-// Start server
-app.listen(3000, () => console.log('Server running on port 3000'));
+// Start server on 3001 (so it won’t collide with a React app on 3000)
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
