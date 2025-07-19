@@ -1,6 +1,6 @@
-const express   = require('express');
-const mongoose  = require('mongoose');
-const cors      = require('cors');
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 require('dotenv').config();
 
 // Load models
@@ -23,11 +23,11 @@ mongoose
 
 // Routes
 const userRoutes = require('./routes/users');
-const gsRoutes   = require('./routes/gs');
+const gsRoutes = require('./routes/gs');
 const snipRoutes = require('./routes/snip');
 
-app.use('/api/users',    userRoutes);
-app.use('/api/gs',       gsRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/gs', gsRoutes);
 app.use('/api/snippets', snipRoutes);
 
 // Start server on 3001 (so it won’t collide with a React app on 3000)

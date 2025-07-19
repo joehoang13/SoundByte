@@ -39,28 +39,28 @@ exports.findSnippetByTitleAndArtist = async (req, res) => {
 exports.getRandomSnippetByDifficulty = async (req, res) => {
   try {
     const { difficulty } = req.query;
-    if (!difficulty) 
-      return res.status(400).json({ error: 'Difficulty is required.' });
+    if (!difficulty) return res.status(400).json({ error: 'Difficulty is required.' });
 
     const [result] = await Snippet.aggregate([
       { $unwind: '$snippets' },
       { $match: { 'snippets.difficulty': difficulty } },
       { $sample: { size: 1 } },
-      { $project: {
-          _id:          0,
-          title:        1,
-          artist:       1,
-          genre:        1,
-          type:         '$snippets.type',
-          snippetLength:'$snippets.snippetLength',
-          difficulty:   '$snippets.difficulty',
-          audioUrl:     '$snippets.audioUrl',
-          createdAt:    1
-      }}
+      {
+        $project: {
+          _id: 0,
+          title: 1,
+          artist: 1,
+          genre: 1,
+          type: '$snippets.type',
+          snippetLength: '$snippets.snippetLength',
+          difficulty: '$snippets.difficulty',
+          audioUrl: '$snippets.audioUrl',
+          createdAt: 1,
+        },
+      },
     ]);
 
-    if (!result) 
-      return res.status(404).json({ message: 'No snippet found.' });
+    if (!result) return res.status(404).json({ message: 'No snippet found.' });
 
     res.json(result);
   } catch (err) {
@@ -72,28 +72,28 @@ exports.getRandomSnippetByDifficulty = async (req, res) => {
 exports.getRandomSnippetByGenre = async (req, res) => {
   try {
     const { genre } = req.query;
-    if (!genre) 
-      return res.status(400).json({ error: 'Genre is required.' });
+    if (!genre) return res.status(400).json({ error: 'Genre is required.' });
 
     const [result] = await Snippet.aggregate([
       { $match: { genre } },
       { $unwind: '$snippets' },
       { $sample: { size: 1 } },
-      { $project: {
-          _id:          0,
-          title:        1,
-          artist:       1,
-          genre:        1,
-          type:         '$snippets.type',
-          snippetLength:'$snippets.snippetLength',
-          difficulty:   '$snippets.difficulty',
-          audioUrl:     '$snippets.audioUrl',
-          createdAt:    1
-      }}
+      {
+        $project: {
+          _id: 0,
+          title: 1,
+          artist: 1,
+          genre: 1,
+          type: '$snippets.type',
+          snippetLength: '$snippets.snippetLength',
+          difficulty: '$snippets.difficulty',
+          audioUrl: '$snippets.audioUrl',
+          createdAt: 1,
+        },
+      },
     ]);
 
-    if (!result) 
-      return res.status(404).json({ message: 'No snippet found.' });
+    if (!result) return res.status(404).json({ message: 'No snippet found.' });
 
     res.json(result);
   } catch (err) {
@@ -101,4 +101,3 @@ exports.getRandomSnippetByGenre = async (req, res) => {
     res.status(500).json({ error: 'Server error.' });
   }
 };
-

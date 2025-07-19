@@ -7,11 +7,11 @@ interface RegisterParams {
 }
 
 interface LoginParams {
-    username: string;
-    password: string;
+  username: string;
+  password: string;
 }
 
-export async function registerUser({ username, email, password } : RegisterParams) {
+export async function registerUser({ username, email, password }: RegisterParams) {
   const response = await fetch(`${API_BASE_URL}/api/users/register`, {
     method: 'POST',
     headers: {
@@ -27,7 +27,7 @@ export async function registerUser({ username, email, password } : RegisterParam
   return data;
 }
 
-export async function loginUser({ username, password } : LoginParams) {
+export async function loginUser({ username, password }: LoginParams) {
   const response = await fetch(`${API_BASE_URL}/api/users/login`, {
     method: 'POST',
     headers: {

@@ -42,7 +42,7 @@ exports.getUserByEmail = async (req, res) => {
 
 exports.registerUser = async (req, res) => {
   try {
-    const { username, email, password} = req.body;
+    const { username, email, password } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password are required.' });
@@ -60,7 +60,8 @@ exports.registerUser = async (req, res) => {
       email,
       passwordHash,
       authProvider: 'firebase',
-      profilePicture: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/2048px-Default_pfp.svg.png',
+      profilePicture:
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/2048px-Default_pfp.svg.png',
       highScores: {
         classic: 0,
         instrumental: 0,
@@ -109,7 +110,7 @@ exports.loginUser = async (req, res) => {
         profilePicture: user.profilePicture,
         highScores: user.highScores,
         totalGamesPlayed: user.totalGamesPlayed,
-      }
+      },
     });
   } catch (err) {
     console.error('Error logging in', err);
