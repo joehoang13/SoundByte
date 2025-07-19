@@ -37,7 +37,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
     registerUser({
       username: username,
       email: username,
-      password: password
+      password: password,
     });
     onSignUpSuccess();
 

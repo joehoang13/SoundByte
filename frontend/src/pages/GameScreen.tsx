@@ -26,7 +26,6 @@ const GameScreen = () => {
   const correctAnswer = currentSnippet.title;
   const audioUrl = currentSnippet.audioUrl;
 
-
   const soundRef = useRef<Howl | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -118,7 +117,7 @@ const GameScreen = () => {
       .replace(/[^a-zA-Z0-9\s']/g, '') // Remove special characters except apostrophes
       .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
       .trim(); // Trim leading and trailing spaces
-  }
+  };
 
   const handleGuess = (userGuess: string) => {
     const isCorrect = normalize(userGuess) === normalize(currentSnippet.title);
@@ -138,8 +137,8 @@ const GameScreen = () => {
     if (isCorrect) {
       useGameStore.getState().setScore(useGameStore.getState().score + 1);
       useGameStore.getState().setStreak(useGameStore.getState().streak + 1);
-      setCurrentQuestion(prev => prev + 1)
-      setStartTime(Date.now())
+      setCurrentQuestion(prev => prev + 1);
+      setStartTime(Date.now());
       setGuessHistory([]);
       if (currentQuestion + 1 >= questions.length) {
         setCurrentQuestion(0);
@@ -202,11 +201,17 @@ const GameScreen = () => {
         <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen">
           <div className="bg-darkblue rounded-xl p-10 w-full max-w-[900px] h-[600px] shadow-lg relative text-white">
             <div className="flex flex-row justify-between items-center">
-              <h1 className="text-xl text-gray-500 font-bold mb-3 text-center"> Score: {useGameStore.getState().score}</h1>
+              <h1 className="text-xl text-gray-500 font-bold mb-3 text-center">
+                {' '}
+                Score: {useGameStore.getState().score}
+              </h1>
               <h1 className="text-3xl font-bold mb-3 text-center">Game Screen</h1>
-              <h1 className="text-xl text-gray-500 font-bold mb-3 text-center"> Streak: {useGameStore.getState().streak}</h1>
+              <h1 className="text-xl text-gray-500 font-bold mb-3 text-center">
+                {' '}
+                Streak: {useGameStore.getState().streak}
+              </h1>
             </div>
-    
+
             <p className="text-center text-gray-500 mb-6">
               Snippet Length: {useGameStore.getState().snippetLength} seconds
             </p>
