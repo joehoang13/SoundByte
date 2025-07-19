@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { use } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useGameStore from '../stores/GameStore';
@@ -105,6 +105,7 @@ const EndScreen = () => {
                 onClick={() => {
                   useGameStore.getState().setScore(0);
                   useGameStore.getState().setStreak(0);
+                  useGameStore.getState().setCorrectAnswers(0);
                   navigate('/');
                 }}
               >

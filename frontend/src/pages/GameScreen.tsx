@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 import { Howl } from 'howler';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -17,7 +17,6 @@ const GameScreen = () => {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState(ClassicModeSnippet);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [guessNum, setGuessNum] = useState(1);
   const [currentGuess, setCurrentGuess] = useState('');
   const [guessHistory, setGuessHistory] = useState<Guess[]>([]);
   const [startTime, setStartTime] = useState<number>(Date.now());
@@ -123,6 +122,7 @@ const GameScreen = () => {
     const isCorrect = normalize(userGuess) === normalize(currentSnippet.title);
     const timeElapsed = (Date.now() - startTime) / 1000;
     const timeTaken = Math.round(timeElapsed * 100) / 100; // Round to 2 decimal places
+    const fastestTime = useGameStore.getState().fastestTime;
 
     const newGuess: Guess = {
       guessNum: guessHistory.length + 1,
@@ -131,12 +131,16 @@ const GameScreen = () => {
       timeTaken: timeTaken,
     };
     setGuessHistory(prev => [...prev, newGuess]);
-    setGuessNum(prev => prev + 1);
     setCurrentGuess('');
 
     if (isCorrect) {
       useGameStore.getState().setScore(useGameStore.getState().score + 1);
       useGameStore.getState().setStreak(useGameStore.getState().streak + 1);
+      useGameStore.getState().setCorrectAnswers(useGameStore.getState().correctAnswers + 1);
+      if (fastestTime === Infinity || timeTaken < fastestTime) {
+        useGameStore.getState().setFastestTime(timeTaken);
+      }
+      useGameStore.getState().setTimeBonus(useGameStore.getState().timeBonus + timeTaken);
       setCurrentQuestion(prev => prev + 1);
       setStartTime(Date.now());
       setGuessHistory([]);
