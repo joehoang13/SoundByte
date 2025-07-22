@@ -134,7 +134,7 @@ const GameScreen = () => {
     setGuessHistory(prev => [...prev, newGuess]);
     setCurrentGuess('');
 
-    if (updateGuessNum > 5 && !isCorrect) {
+    if (updateGuessNum > 4 && !isCorrect) {
       alert('You have reached the maximum number of guesses for this question.');
       setCurrentQuestion(prev => prev + 1);
       setGuessHistory([]);
