@@ -1,5 +1,7 @@
-
-export const timeBonusPtSystem: Record<string, Record<number, { time: number; points: number }[]>> = {
+export const timeBonusPtSystem: Record<
+  string,
+  Record<number, { time: number; points: number }[]>
+> = {
   classic: {
     3: [
       { time: 2, points: 900 },

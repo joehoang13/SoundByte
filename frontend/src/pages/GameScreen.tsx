@@ -167,17 +167,15 @@ const GameScreen = () => {
       if (fastestTime === Infinity || timeTaken < fastestTime) {
         useGameStore.getState().setFastestTime(timeTaken);
       }
-      useGameStore
-        .getState()
-        .setTimeBonus(useGameStore.getState().timeBonus + timeBonusPts);
+      useGameStore.getState().setTimeBonus(useGameStore.getState().timeBonus + timeBonusPts);
 
       useGameStore.getState().setScore(useGameStore.getState().score + 1000 + timeBonusPts);
-      
+
       console.log(
         `%c[RESULT] Q${currentQuestion + 1}: "${currentSnippet.title}" | Time: ${timeTaken}s | Bonus: ${timeBonusPts} pts`,
         'color: #4ade80; font-weight: bold;'
       );
-      
+
       console.log(
         `%c[SCORE] Base: 1000 pts + Bonus: ${timeBonusPts} pts → Total: ${useGameStore.getState().score} pts`,
         'color: #facc15; font-weight: bold;'
