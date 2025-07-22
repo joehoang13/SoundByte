@@ -25,9 +25,9 @@ const Landing = () => {
           zIndex: -1,
           backgroundColor: '#143D4D',
           backgroundImage: `
-                    radial-gradient(circle at 20% 30%, #0FC1E9 0%, transparent 40%),
-                    radial-gradient(circle at 80% 70%, #274D5B 0%, transparent 50%),
-                    radial-gradient(circle at 50% 50%, #90A4AB 0%, transparent 60%)
+                    radial-gradient(circle at 20% 30%, #0FC1E9 0%, transparent 50%),
+                    radial-gradient(circle at 80% 70%, #274D5B 0%, transparent 60%),
+                    radial-gradient(circle at 50% 50%, #90A4AB 0%, transparent 70%)
                     `,
           backgroundSize: '250% 250%',
         }}

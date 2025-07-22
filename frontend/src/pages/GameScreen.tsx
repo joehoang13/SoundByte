@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useGameStore from '../stores/GameStore';
 import { ClassicModeSnippet } from '../types/classicModeSnippets';
+import { timeBonusPtSystem } from '../utils/timeBonusPtSystem';
 import { audio, nav } from 'framer-motion/client';
 
 interface Guess {
@@ -118,10 +119,25 @@ const GameScreen = () => {
       .trim(); // Trim leading and trailing spaces
   };
 
+  const getTimeBonus = (timeTaken: number): number => {
+    const gameMode = useGameStore.getState().gameMode;
+    const snippetLength = useGameStore.getState().snippetLength;
+
+    const thresholds = timeBonusPtSystem[gameMode]?.[snippetLength];
+    if (!thresholds) return 0;
+
+    for (const { time, points } of thresholds) {
+      if (timeTaken < time) return points;
+    }
+
+    return 0;
+  };
+
   const handleGuess = (userGuess: string) => {
     const isCorrect = normalize(userGuess) === normalize(currentSnippet.title);
     const timeElapsed = (Date.now() - startTime) / 1000;
     const timeTaken = Math.round(timeElapsed * 100) / 100; // Round to 2 decimal places
+    const timeBonusPts = getTimeBonus(timeTaken);
     const fastestTime = useGameStore.getState().fastestTime;
     const updateGuessNum = guessHistory.length + 1;
 
@@ -146,7 +162,6 @@ const GameScreen = () => {
     }
 
     if (isCorrect) {
-      useGameStore.getState().setScore(useGameStore.getState().score + 1);
       useGameStore.getState().setStreak(useGameStore.getState().streak + 1);
       useGameStore.getState().setCorrectAnswers(useGameStore.getState().correctAnswers + 1);
       if (fastestTime === Infinity || timeTaken < fastestTime) {
@@ -154,7 +169,25 @@ const GameScreen = () => {
       }
       useGameStore
         .getState()
-        .setTimeBonus(parseFloat((useGameStore.getState().timeBonus + timeTaken).toFixed(2)));
+        .setTimeBonus(useGameStore.getState().timeBonus + timeBonusPts);
+
+      useGameStore.getState().setScore(useGameStore.getState().score + 1000 + timeBonusPts);
+      
+      console.log(
+        `%c[RESULT] Q${currentQuestion + 1}: "${currentSnippet.title}" | Time: ${timeTaken}s | Bonus: ${timeBonusPts} pts`,
+        'color: #4ade80; font-weight: bold;'
+      );
+      
+      console.log(
+        `%c[SCORE] Base: 1000 pts + Bonus: ${timeBonusPts} pts → Total: ${useGameStore.getState().score} pts`,
+        'color: #facc15; font-weight: bold;'
+      );
+
+      console.log(
+        `%c[TIME BONUS] +${timeBonusPts} pts → Accumulated Total: ${useGameStore.getState().timeBonus} pts`,
+        'color: #38bdf8; font-weight: bold;'
+      );
+
       setCurrentQuestion(prev => prev + 1);
       setStartTime(Date.now());
       setGuessHistory([]);
@@ -180,9 +213,9 @@ const GameScreen = () => {
           zIndex: -1,
           backgroundColor: '#143D4D',
           backgroundImage: `
-                    radial-gradient(circle at 20% 30%, #0FC1E9 0%, transparent 40%),
-                    radial-gradient(circle at 80% 70%, #274D5B 0%, transparent 50%),
-                    radial-gradient(circle at 50% 50%, #90A4AB 0%, transparent 60%)
+                    radial-gradient(circle at 20% 30%, #0FC1E9 0%, transparent 50%),
+                    radial-gradient(circle at 80% 70%, #274D5B 0%, transparent 60%),
+                    radial-gradient(circle at 50% 50%, #90A4AB 0%, transparent 70%)
                     `,
           backgroundSize: '250% 250%',
         }}

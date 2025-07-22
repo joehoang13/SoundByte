@@ -18,9 +18,9 @@ const EndScreen = () => {
           zIndex: -1,
           backgroundColor: '#143D4D',
           backgroundImage: `
-                            radial-gradient(circle at 20% 30%, #0FC1E9 0%, transparent 40%),
-                            radial-gradient(circle at 80% 70%, #274D5B 0%, transparent 50%),
-                            radial-gradient(circle at 50% 50%, #90A4AB 0%, transparent 60%)
+                            radial-gradient(circle at 20% 30%, #0FC1E9 0%, transparent 50%),
+                            radial-gradient(circle at 80% 70%, #274D5B 0%, transparent 60%),
+                            radial-gradient(circle at 50% 50%, #90A4AB 0%, transparent 70%)
                             `,
           backgroundSize: '250% 250%',
         }}
@@ -106,6 +106,7 @@ const EndScreen = () => {
                   useGameStore.getState().setScore(0);
                   useGameStore.getState().setStreak(0);
                   useGameStore.getState().setCorrectAnswers(0);
+                  useGameStore.getState().setTimeBonus(0);
                   navigate('/');
                 }}
               >
