@@ -123,6 +123,7 @@ const GameScreen = () => {
     const timeElapsed = (Date.now() - startTime) / 1000;
     const timeTaken = Math.round(timeElapsed * 100) / 100; // Round to 2 decimal places
     const fastestTime = useGameStore.getState().fastestTime;
+    const updateGuessNum = guessHistory.length + 1;
 
     const newGuess: Guess = {
       guessNum: guessHistory.length + 1,
@@ -133,6 +134,17 @@ const GameScreen = () => {
     setGuessHistory(prev => [...prev, newGuess]);
     setCurrentGuess('');
 
+    if(updateGuessNum > 5 && !isCorrect) {
+      alert('You have reached the maximum number of guesses for this question.');
+      setCurrentQuestion(prev => prev + 1);
+      setGuessHistory([]);
+      setStartTime(Date.now());
+      if (currentQuestion + 1 >= questions.length) {
+        navigate('/endscreen'); // Navigate to EndScreen when all questions are answered
+      }
+      return;
+    }
+
     if (isCorrect) {
       useGameStore.getState().setScore(useGameStore.getState().score + 1);
       useGameStore.getState().setStreak(useGameStore.getState().streak + 1);
@@ -140,7 +152,7 @@ const GameScreen = () => {
       if (fastestTime === Infinity || timeTaken < fastestTime) {
         useGameStore.getState().setFastestTime(timeTaken);
       }
-      useGameStore.getState().setTimeBonus(useGameStore.getState().timeBonus + timeTaken);
+      useGameStore.getState().setTimeBonus(parseFloat((useGameStore.getState().timeBonus + timeTaken).toFixed(2)));
       setCurrentQuestion(prev => prev + 1);
       setStartTime(Date.now());
       setGuessHistory([]);
