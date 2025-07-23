@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import useGameStore from '../stores/GameStore';
 import { ClassicModeSnippet } from '../types/classicModeSnippets';
 import { timeBonusPtSystem } from '../utils/timeBonusPtSystem';
-import { audio, nav } from 'framer-motion/client';
+import { audio, nav, s } from 'framer-motion/client';
 
 interface Guess {
   guessNum: number;
@@ -25,6 +25,8 @@ const GameScreen = () => {
   const currentSnippet = questions[currentQuestion];
   const correctAnswer = currentSnippet.title;
   const audioUrl = currentSnippet.audioUrl;
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [replayCount, setReplayCount] = useState(0);
 
   const soundRef = useRef<Howl | null>(null);
   const timeoutRef = useRef<number | null>(null);
@@ -33,11 +35,13 @@ const GameScreen = () => {
   const dataArrayRef = useRef<Uint8Array | null>(null);
   const animationRef = useRef<number | null>(null);
 
+  // plays the audio snippet and sets up the analyser
   useEffect(() => {
     const sound = new Howl({
       src: [audioUrl],
       volume: 1.0,
       onplay: () => setupAnalyser(),
+      onend: () => setIsPlaying(false)
     });
 
     soundRef.current = sound;
@@ -45,8 +49,12 @@ const GameScreen = () => {
 
     timeoutRef.current = window.setTimeout(() => {
       sound.stop();
+      setIsPlaying(false);
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     }, snippetLength * 1000);
+
+    setReplayCount(0);
+    setIsPlaying(true);
 
     return () => {
       sound.stop();
@@ -54,6 +62,23 @@ const GameScreen = () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, [audioUrl, snippetLength]);
+
+  const handleReplay = (): void => {
+    if (!soundRef.current || replayCount >= 1) return;
+
+    soundRef.current.play();
+    setupAnalyser();
+
+    timeoutRef.current = window.setTimeout(() => {
+      soundRef.current?.stop();
+      setIsPlaying(false);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    }, snippetLength * 1000);
+
+    setReplayCount(prev => prev + 1);
+    setIsPlaying(true);
+};
+
 
   const setupAnalyser = () => {
     const ctx = Howler.ctx;
@@ -111,6 +136,7 @@ const GameScreen = () => {
     drawLoop();
   };
 
+  // This function removes special characters and normalizes the case
   const normalize = (str: string) => {
     return str
       .toLowerCase()
@@ -119,6 +145,7 @@ const GameScreen = () => {
       .trim(); // Trim leading and trailing spaces
   };
 
+  // Calculates the time bonus based on the time taken and the game mode
   const getTimeBonus = (timeTaken: number): number => {
     const gameMode = useGameStore.getState().gameMode;
     const snippetLength = useGameStore.getState().snippetLength;
@@ -133,6 +160,7 @@ const GameScreen = () => {
     return 0;
   };
 
+  // Handles the user's guess, checks if it's correct, and updates the game state
   const handleGuess = (userGuess: string) => {
     const isCorrect = normalize(userGuess) === normalize(currentSnippet.title);
     const timeElapsed = (Date.now() - startTime) / 1000;
@@ -265,12 +293,28 @@ const GameScreen = () => {
               Snippet Length: {useGameStore.getState().snippetLength} seconds
             </p>
 
-            <canvas
-              ref={canvasRef}
-              width={600}
-              height={150}
-              className="border border-white rounded mb-6 block mx-auto"
-            />
+            {isPlaying ? (
+              <canvas
+                ref={canvasRef}
+                width={600}
+                height={150}
+                className="border border-white rounded mb-6 block mx-auto"
+              />
+            ) : replayCount < 1 ? (
+              <div className="flex justify-center mb-6">
+                <button
+                  onClick={handleReplay}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                >
+                  Replay Snippet
+                </button>
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 mb-6">
+                No more replays allowed for this round.
+              </p>
+            )}
+
 
             <input
               type="text"
