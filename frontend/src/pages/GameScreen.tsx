@@ -273,7 +273,7 @@ const GameScreen = () => {
           backgroundRepeat: 'repeat',
         }}
       />
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center font-montserrat">
         <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen">
           <div className="bg-darkblue rounded-xl p-10 w-full max-w-[900px] h-[600px] shadow-lg relative text-white">
             <div className="flex flex-row justify-between items-center">
