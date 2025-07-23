@@ -25,7 +25,7 @@ const GameScreen = () => {
   const currentSnippet = questions[currentQuestion];
   const correctAnswer = currentSnippet.title;
   const audioUrl = currentSnippet.audioUrl;
-  const [isPlaying, setIsPlaying] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(true);
   const [replayCount, setReplayCount] = useState(0);
 
   const soundRef = useRef<Howl | null>(null);
@@ -41,7 +41,7 @@ const GameScreen = () => {
       src: [audioUrl],
       volume: 1.0,
       onplay: () => setupAnalyser(),
-      onend: () => setIsPlaying(false)
+      onend: () => setIsPlaying(false),
     });
 
     soundRef.current = sound;
@@ -77,8 +77,7 @@ const GameScreen = () => {
 
     setReplayCount(prev => prev + 1);
     setIsPlaying(true);
-};
-
+  };
 
   const setupAnalyser = () => {
     const ctx = Howler.ctx;
@@ -314,7 +313,6 @@ const GameScreen = () => {
                 No more replays allowed for this round.
               </p>
             )}
-
 
             <input
               type="text"
