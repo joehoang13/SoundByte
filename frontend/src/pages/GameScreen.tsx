@@ -303,9 +303,9 @@ const GameScreen = () => {
               <div className="flex justify-center mb-6">
                 <button
                   onClick={handleReplay}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                  className="px-6 py-2 bg-white/10 border-white/20 text-white hover:bg-white/20 rounded"
                 >
-                  Replay Snippet
+                  Replay
                 </button>
               </div>
             ) : (
