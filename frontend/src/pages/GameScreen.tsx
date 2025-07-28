@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import useGameStore from '../stores/GameStore';
 import { ClassicModeSnippet } from '../types/classicModeSnippets';
 import { timeBonusPtSystem } from '../utils/timeBonusPtSystem';
-import replayIcon from '../assets/replay-white.png'; 
+import replayIcon from '../assets/replay-white.png';
 import { audio, nav, s } from 'framer-motion/client';
 
 interface Guess {
@@ -275,7 +275,7 @@ const GameScreen = () => {
         }}
       />
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
-       <div className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[900px] min-h-[90dvh] sm:min-h-[500px] h-auto shadow-lg relative text-white p-4 sm:p-10">
+        <div className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[900px] min-h-[90dvh] sm:min-h-[500px] h-auto shadow-lg relative text-white p-4 sm:p-10">
           {/* Header with score and streak display */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
             <div className="flex-1 flex justify-center">
@@ -307,7 +307,7 @@ const GameScreen = () => {
           </p>
 
           <div className="flex items-center justify-center w-full rounded-lg px-4 sm:px-6">
-          {/* Add bg-darkblue/75 back to the class to create a container */}
+            {/* Add bg-darkblue/75 back to the class to create a container */}
             {isPlaying ? (
               <div className="flex flex-col items-center py-4 mb-4 w-full">
                 <canvas

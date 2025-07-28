@@ -81,7 +81,9 @@ const Landing = () => {
               </motion.span>
             ))}
           </h1>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-montserrat text-darkestblue">HEAR IT. NAME IT.</h2>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-montserrat text-darkestblue">
+            HEAR IT. NAME IT.
+          </h2>
           <div className="grid grid-cols-1 gap-4 mt-6">
             <button
               className="w-48 px-4 py-2 bg-darkblue text-white rounded font-montserrat hover:bg-darkestblue transition"
