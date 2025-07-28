@@ -314,7 +314,7 @@ const GameScreen = () => {
                 height={100}
                 className="border border-white rounded mb-4 block mx-auto"
               />
-              <div className="text-white/60 text-sm">now playing...</div>
+              <div className="text-sm">now playing...</div>
             </div>
           ) : replayCount < 1 ? (
             <div className="flex justify-center mb-6">
