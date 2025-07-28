@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import useGameStore from '../stores/GameStore';
 import { ClassicModeSnippet } from '../types/classicModeSnippets';
 import { timeBonusPtSystem } from '../utils/timeBonusPtSystem';
+import replayIcon from '../assets/replay-white.png'; 
 import { audio, nav, s } from 'framer-motion/client';
 
 interface Guess {
@@ -305,29 +306,31 @@ const GameScreen = () => {
             Snippet Length: {useGameStore.getState().snippetLength} seconds
           </p>
 
+          <div className="flex items-center justify-center w-full h-40 rounded-lg ">
           {/* Add bg-darkblue/75 back to the class to create a container */}
-          {isPlaying ? (
-            <div className="w-full rounded-lg flex flex-col items-center justify-center py-4 mb-4">
-              <canvas
-                ref={canvasRef}
-                width={400}
-                height={100}
-                className="border border-white rounded mb-4 block mx-auto"
-              />
-              <div className="text-sm">now playing...</div>
-            </div>
-          ) : replayCount < 1 ? (
-            <div className="flex justify-center mb-6">
-              <button
-                onClick={handleReplay}
-                className="px-6 py-2 bg-white/10 border-white/20 text-white hover:bg-white/20 rounded"
-              >
-                Replay
-              </button>
-            </div>
-          ) : (
-            <p className="text-center mb-6">No more replays allowed for this round.</p>
-          )}
+            {isPlaying ? (
+              <div className="flex flex-col items-center py-4 mb-4">
+                <canvas
+                  ref={canvasRef}
+                  width={400}
+                  height={100}
+                  className="border border-white rounded mb-4 block mx-auto"
+                />
+                <div className="text-sm">now playing...</div>
+              </div>
+            ) : replayCount < 1 ? (
+              <div className="flex justify-center mb-6">
+                <button
+                  onClick={handleReplay}
+                  className="px-3 py-3 bg-white/10 hover:bg-white/20 rounded-3xl"
+                >
+                  <img src={replayIcon} alt="Replay" className="w-6 h-6" />
+                </button>
+              </div>
+            ) : (
+              <p className="text-center mb-6">No more replays allowed for this round.</p>
+            )}
+          </div>
 
           {/* Guess input and history display */}
           <input
