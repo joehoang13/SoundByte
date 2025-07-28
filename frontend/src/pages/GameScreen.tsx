@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import useGameStore from '../stores/GameStore';
 import { ClassicModeSnippet } from '../types/classicModeSnippets';
 import { timeBonusPtSystem } from '../utils/timeBonusPtSystem';
-import replayIcon from '../assets/replay-white.png'; 
+import replayIcon from '../assets/replay-white.png';
 import { audio, nav, s } from 'framer-motion/client';
 
 interface Guess {
@@ -307,7 +307,7 @@ const GameScreen = () => {
           </p>
 
           <div className="flex items-center justify-center w-full h-40 rounded-lg ">
-          {/* Add bg-darkblue/75 back to the class to create a container */}
+            {/* Add bg-darkblue/75 back to the class to create a container */}
             {isPlaying ? (
               <div className="flex flex-col items-center py-4 mb-4">
                 <canvas
