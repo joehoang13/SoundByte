@@ -70,6 +70,7 @@ exports.registerUser = async (req, res) => {
         artistChallenge: 0,
       },
       totalGamesPlayed: 0,
+      needsReset: false,
     });
 
     await newUser.save();
@@ -90,8 +91,6 @@ exports.loginUser = async (req, res) => {
     }
 
     const user = await User.findOne({ username: username });
-    console.log(username);
-    console.log(user);
     if (!user) {
       return res.status(401).json({ error: 'Invalid Username' });
     }
@@ -118,12 +117,12 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-exports.resetPassword = async (req, res) => {
+exports.requestPasswordReset = async (req, res) => {
   try {
-    const { username, newPassword } = req.body;
+    const { username } = req.body;
 
-    if (!username || !newPassword) {
-      return res.status(400).json({ error: 'Username and new password are required.' });
+    if (!username) {
+      return res.status(400).json({ error: 'Username is required.' });
     }
 
     const user = await User.findOne({ username });
@@ -132,8 +131,42 @@ exports.resetPassword = async (req, res) => {
       return res.status(404).json({ error: 'User not found.' });
     }
 
+    // Generate a 6-digit token (e.g. 123456)
+    const token = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.resetToken = token;
+    user.needsReset = true;
+
+    await user.save();
+
+    //TODO: Send user email with token
+
+    res.status(200).json({ message: 'Reset code sent to email' });
+  } catch (err) {
+    console.error('Error requesting password reset:', err);
+    res.status(500).json({ error: 'Server error while requesting password reset.' });
+  }
+};
+
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { username, newPassword, resetToken } = req.body;
+
+    if (!username || !newPassword || !resetToken) {
+      return res.status(400).json({ error: 'Username, new password, and reset token are required.' });
+    }
+
+    const user = await User.findOne({ username });
+
+    if (!user || !user.needsReset || user.resetToken !== resetToken) {
+      return res.status(403).json({ error: 'Invalid or expired reset token.' });
+    }
+
     const newHashedPassword = await bcrypt.hash(newPassword, 10);
     user.passwordHash = newHashedPassword;
+    user.resetToken = '';
+    user.needsReset = false;
 
     await user.save();
 
@@ -143,3 +176,4 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ error: 'Server error while resetting password.' });
   }
 };
+

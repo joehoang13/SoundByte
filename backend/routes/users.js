@@ -11,5 +11,6 @@ router.get('/dummy', userController.getUserDummy);
 router.post('/register', userController.registerUser);
 router.post('/login', userController.loginUser);
 router.post('/reset', userController.resetPassword);
+router.post('/requestReset', userController.requestPasswordReset);
 
 module.exports = router;

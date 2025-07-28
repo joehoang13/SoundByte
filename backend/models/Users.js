@@ -15,6 +15,8 @@ const UserSchema = new mongoose.Schema({
     artistChallenge: Number,
   },
   totalGamesPlayed: { type: Number, default: 0 },
+  resetToken: {type: String, default: '' },
+  needsReset: {type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('User', UserSchema);
