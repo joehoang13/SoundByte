@@ -29,7 +29,7 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
   };
 
   return (
-    <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen bg-black bg-opacity-50">
+    <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen bg-black bg-opacity-25">
       <div className="bg-darkblue rounded-xl p-10 w-[90%] max-w-lg shadow-lg relative text-white">
         <button
           onClick={onClose}
