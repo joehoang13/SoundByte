@@ -33,7 +33,7 @@ const EndScreen = () => {
             '70% 60%',
             '20% 70%',
             '50% 50%',
-            '30% 20%'
+            '30% 20%',
           ],
         }}
         transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}

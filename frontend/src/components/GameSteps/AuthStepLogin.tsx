@@ -23,9 +23,7 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
         </button>
 
         <h2 className="text-2xl font-bold mb-4 text-center">Welcome to SoundByte</h2>
-        <p className="text-center mb-6">
-          Log in or create an account to start playing!
-        </p>
+        <p className="text-center mb-6">Log in or create an account to start playing!</p>
 
         <div className="space-y-3 text-black">
           {/* make username and pass required after testing */}

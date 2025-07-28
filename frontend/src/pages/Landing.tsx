@@ -24,7 +24,7 @@ const Landing = () => {
           height: '100vh',
           zIndex: -1,
           backgroundColor: '#143D4D',
-         backgroundImage: `
+          backgroundImage: `
           radial-gradient(circle at 50% 40%, #0FC1E9 0%, transparent 65%),
           radial-gradient(circle at 60% 60%, #90A4AB 0%, transparent 70%),
           radial-gradient(circle at 85% 85%, #274D5B 0%, transparent 50%)
@@ -43,7 +43,7 @@ const Landing = () => {
             '70% 60%',
             '20% 70%',
             '50% 50%',
-            '30% 20%'
+            '30% 20%',
           ],
         }}
         transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
