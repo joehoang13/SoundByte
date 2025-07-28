@@ -17,13 +17,13 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
       <div className="bg-darkblue rounded-xl p-10 w-[90%] max-w-lg shadow-lg relative text-white">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-black dark:hover:text-white text-xl"
+          className="absolute top-4 right-4 hover:text-black dark:hover:text-white text-xl"
         >
           ×
         </button>
 
         <h2 className="text-2xl font-bold mb-4 text-center">Welcome to SoundByte</h2>
-        <p className="text-center text-gray-500 mb-6">
+        <p className="text-center mb-6">
           Log in or create an account to start playing!
         </p>
 
@@ -46,9 +46,9 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
           >
             Log In
           </motion.button>
-          <p className="text-center text-sm text-gray-400 mt-2">Don't have an account?</p>
+          <p className="text-center text-sm text-white mt-2">Don't have an account?</p>
           <button
-            className="w-full border border-darkestblue text-darkestblue py-2 rounded hover:bg-darkestblue hover:text-white transition"
+            className="w-full border border-darkestblue text-white py-2 rounded hover:bg-darkestblue hover:text-white transition"
             onClick={onSwitchToSignUp}
           >
             Sign Up

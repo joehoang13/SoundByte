@@ -33,13 +33,13 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
       <div className="bg-darkblue rounded-xl p-10 w-[90%] max-w-lg shadow-lg relative text-white">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-black dark:hover:text-white text-s"
+          className="absolute top-4 right-4 hover:text-black dark:hover:text-white text-s"
         >
           Logout
         </button>
 
         <h2 className="text-2xl font-bold mb-2 text-center">Game Difficulty</h2>
-        <p className="text-center text-gray-500 mb-6">Select desired clip snippet length</p>
+        <p className="text-center mb-6">Select desired clip snippet length</p>
 
         <div className="space-y-3 mb-6">
           <div className="flex flex-col items-center space-y-2">

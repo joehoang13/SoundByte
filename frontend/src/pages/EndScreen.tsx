@@ -18,22 +18,22 @@ const EndScreen = () => {
           zIndex: -1,
           backgroundColor: '#143D4D',
           backgroundImage: `
-                            radial-gradient(circle at 20% 30%, #0FC1E9 0%, transparent 50%),
-                            radial-gradient(circle at 80% 70%, #274D5B 0%, transparent 60%),
-                            radial-gradient(circle at 50% 50%, #90A4AB 0%, transparent 70%)
-                            `,
+            radial-gradient(circle at 50% 40%, #0FC1E9 0%, transparent 65%),
+            radial-gradient(circle at 60% 60%, #90A4AB 0%, transparent 70%),
+            radial-gradient(circle at 85% 85%, #274D5B 0%, transparent 50%)
+          `,
           backgroundSize: '250% 250%',
         }}
         initial={{ backgroundPosition: '0% 0%' }}
         animate={{
           backgroundPosition: [
-            '0% 0%',
-            '25% 45%',
-            '70% 30%',
-            '85% 75%',
-            '30% 60%',
-            '20% 90%',
-            '0% 0%',
+            '30% 20%',
+            '60% 40%',
+            '40% 75%',
+            '70% 60%',
+            '20% 70%',
+            '50% 50%',
+            '30% 20%'
           ],
         }}
         transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}

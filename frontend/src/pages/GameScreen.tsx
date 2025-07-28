@@ -238,22 +238,22 @@ const GameScreen = () => {
           zIndex: -1,
           backgroundColor: '#143D4D',
           backgroundImage: `
-                    radial-gradient(circle at 20% 30%, #0FC1E9 0%, transparent 50%),
-                    radial-gradient(circle at 80% 70%, #274D5B 0%, transparent 60%),
-                    radial-gradient(circle at 50% 50%, #90A4AB 0%, transparent 70%)
-                    `,
+            radial-gradient(circle at 50% 40%, #0FC1E9 0%, transparent 65%),
+            radial-gradient(circle at 60% 60%, #90A4AB 0%, transparent 70%),
+            radial-gradient(circle at 85% 85%, #274D5B 0%, transparent 50%)
+          `,
           backgroundSize: '250% 250%',
         }}
         initial={{ backgroundPosition: '0% 0%' }}
         animate={{
           backgroundPosition: [
-            '0% 0%',
-            '25% 45%',
-            '70% 30%',
-            '85% 75%',
-            '30% 60%',
-            '20% 90%',
-            '0% 0%',
+            '30% 20%',
+            '60% 40%',
+            '40% 75%',
+            '70% 60%',
+            '20% 70%',
+            '50% 50%',
+            '30% 20%'
           ],
         }}
         transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
@@ -277,18 +277,18 @@ const GameScreen = () => {
         <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen">
           <div className="bg-darkblue rounded-xl p-10 w-full max-w-[900px] h-[600px] shadow-lg relative text-white">
             <div className="flex flex-row justify-between items-center">
-              <h1 className="text-xl text-gray-500 font-bold mb-3 text-center">
+              <h1 className="text-xl font-bold mb-3 text-center">
                 {' '}
                 Score: {useGameStore.getState().score}
               </h1>
               <h1 className="text-3xl font-bold mb-3 text-center">Game Screen</h1>
-              <h1 className="text-xl text-gray-500 font-bold mb-3 text-center">
+              <h1 className="text-xl font-bold mb-3 text-center">
                 {' '}
                 Streak: {useGameStore.getState().streak}
               </h1>
             </div>
 
-            <p className="text-center text-gray-500 mb-6">
+            <p className="text-center mb-6">
               Snippet Length: {useGameStore.getState().snippetLength} seconds
             </p>
 
