@@ -310,8 +310,8 @@ const GameScreen = () => {
             <div className="w-full rounded-lg flex flex-col items-center justify-center py-4 mb-4">
               <canvas
                 ref={canvasRef}
-                width={300}
-                height={80}
+                width={400}
+                height={100}
                 className="border border-white rounded mb-4 block mx-auto"
               />
               <div className="text-white/60 text-sm">now playing...</div>
