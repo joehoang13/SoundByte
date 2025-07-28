@@ -33,7 +33,7 @@ const EndScreen = () => {
             '70% 60%',
             '20% 70%',
             '50% 50%',
-            '30% 20%',
+            '30% 20%'
           ],
         }}
         transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
@@ -54,9 +54,8 @@ const EndScreen = () => {
         }}
       />
 
-      <div className="min-h-screen flex items-center justify-center font-montserrat">
-        <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen">
-          <div className="bg-darkblue rounded-xl p-10 w-full max-w-[600px] h-[450px] flex flex-col justify-between shadow-lg relative text-white">
+      <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
+       <div className="bg-darkblue rounded-xl w-full max-w-[600px] min-h-[400px] sm:min-h-[450px] h-auto flex flex-col justify-between shadow-lg relative text-white p-4 sm:p-10">
             <div className="flex flex-col items-center">
               <h1 className="text-3xl font-bold mb-5 text-center">Game Complete</h1>
 
@@ -115,7 +114,6 @@ const EndScreen = () => {
             </div>
           </div>
         </div>
-      </div>
     </>
   );
 };

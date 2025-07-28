@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import useGameStore from '../stores/GameStore';
 import { ClassicModeSnippet } from '../types/classicModeSnippets';
 import { timeBonusPtSystem } from '../utils/timeBonusPtSystem';
-import replayIcon from '../assets/replay-white.png';
+import replayIcon from '../assets/replay-white.png'; 
 import { audio, nav, s } from 'framer-motion/client';
 
 interface Guess {
@@ -274,10 +274,10 @@ const GameScreen = () => {
           backgroundRepeat: 'repeat',
         }}
       />
-      <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen font-montserrat">
-        <div className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl p-10 w-full max-w-[900px] h-[600px] shadow-lg relative text-white">
+      <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
+       <div className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[900px] min-h-[90dvh] sm:min-h-[500px] h-auto shadow-lg relative text-white p-4 sm:p-10">
           {/* Header with score and streak display */}
-          <div className="flex flex-row justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
             <div className="flex-1 flex justify-center">
               <div className="flex flex-col items-center bg-darkblue/75 rounded-xl w-40 px-6 py-4">
                 <span className="text-sm font-bold text-center">Score</span>
@@ -306,15 +306,13 @@ const GameScreen = () => {
             Snippet Length: {useGameStore.getState().snippetLength} seconds
           </p>
 
-          <div className="flex items-center justify-center w-full h-40 rounded-lg ">
-            {/* Add bg-darkblue/75 back to the class to create a container */}
+          <div className="flex items-center justify-center w-full rounded-lg px-4 sm:px-6">
+          {/* Add bg-darkblue/75 back to the class to create a container */}
             {isPlaying ? (
-              <div className="flex flex-col items-center py-4 mb-4">
+              <div className="flex flex-col items-center py-4 mb-4 w-full">
                 <canvas
                   ref={canvasRef}
-                  width={400}
-                  height={100}
-                  className="border border-white rounded mb-4 block mx-auto"
+                  className="block mx-auto w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl h-[100px] border border-white rounded mb-4"
                 />
                 <div className="text-sm">now playing...</div>
               </div>
@@ -343,11 +341,11 @@ const GameScreen = () => {
               }
             }}
             placeholder="Enter your answer here..."
-            className="w-full p-4 mb-4 rounded-2xl bg-darkblue text-white text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 sm:p-4 text-sm sm:text-base mb-4 rounded-2xl bg-darkblue text-white text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <div className="bg-darkblue rounded-2xl p-4 max-h-48 flex-grow overflow-y-auto pr-2">
-            <h2 className="font-semibold mb-2">Your Guesses:</h2>
+            <h2 className="text-base sm:text-lg font-semibold mb-2">Your Guesses:</h2>
             <ul className="space-y-2 overflow-y-auto">
               {guessHistory.map(guess => (
                 <li key={guess.guessNum} className="flex justify-between">

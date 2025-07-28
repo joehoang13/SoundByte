@@ -69,7 +69,7 @@ const Landing = () => {
       {/* Main content of the landing page */}
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center justify-center p-4 text-center">
-          <h1 className="text-7xl font-exo text-darkestblue mb-2 tracking-wider flex gap-1">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-exo text-darkestblue mb-2 tracking-wider flex gap-1">
             {'SOUNDBYTE'.split('').map((char, index) => (
               <motion.span
                 key={index}
@@ -81,7 +81,7 @@ const Landing = () => {
               </motion.span>
             ))}
           </h1>
-          <h2 className="text-3xl font-montserrat text-darkestblue">HEAR IT. NAME IT.</h2>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-montserrat text-darkestblue">HEAR IT. NAME IT.</h2>
           <div className="grid grid-cols-1 gap-4 mt-6">
             <button
               className="w-48 px-4 py-2 bg-darkblue text-white rounded font-montserrat hover:bg-darkestblue transition"

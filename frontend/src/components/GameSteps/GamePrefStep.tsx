@@ -38,8 +38,8 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
           Logout
         </button>
 
-        <h2 className="text-2xl font-bold mb-2 text-center">Game Difficulty</h2>
-        <p className="text-center mb-6">Select desired clip snippet length</p>
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-center">Game Difficulty</h2>
+        <p className="text-sm sm:text-base text-center mb-6">Select desired clip snippet length</p>
 
         <div className="space-y-3 mb-6">
           <div className="flex flex-col items-center space-y-2">
