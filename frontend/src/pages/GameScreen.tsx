@@ -116,16 +116,18 @@ const GameScreen = () => {
       if (!ctx || !analyser) return;
 
       analyser.getByteFrequencyData(dataArray);
+      ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-      ctx.fillStyle = '#111827';
-      ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
+      // const barWidth = (WIDTH / Math.min(dataArray.length, 64)) * 0.8;
       const barWidth = (WIDTH / dataArray.length) * 2.5;
       let x = 0;
 
       for (let i = 0; i < dataArray.length; i++) {
         const barHeight = (dataArray[i] / 255) * HEIGHT;
-        ctx.fillStyle = '#3b82f6';
+        const gradient = ctx.createLinearGradient(0, HEIGHT, 0, HEIGHT - barHeight);
+        gradient.addColorStop(0, '#0FC1E9');
+        gradient.addColorStop(1, '#90A4AB');
+        ctx.fillStyle = gradient;
         ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
         x += barWidth + 1;
       }
@@ -311,10 +313,20 @@ const GameScreen = () => {
             {isPlaying ? (
               <div className="flex flex-col items-center py-4 mb-4 w-full">
                 <canvas
-                  ref={canvasRef}
-                  className="block mx-auto w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl h-[100px] border border-white rounded mb-4"
+                      ref={canvasRef}
+                      width={800}
+                      height={80}
+                      className="w-full h-full mb-4"
+                      style={{ imageRendering: 'pixelated' }}
                 />
-                <div className="text-sm">now playing...</div>
+                <motion.div 
+                  className="text-sm" 
+                  style={{ color: '#90A4AB' }}
+                  animate={{ opacity: [1, 0.5, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  now playing...
+                </motion.div>
               </div>
             ) : replayCount < 1 ? (
               <div className="flex justify-center mb-6">
