@@ -313,14 +313,14 @@ const GameScreen = () => {
             {isPlaying ? (
               <div className="flex flex-col items-center py-4 mb-4 w-full">
                 <canvas
-                      ref={canvasRef}
-                      width={800}
-                      height={80}
-                      className="w-full h-full mb-4"
-                      style={{ imageRendering: 'pixelated' }}
+                  ref={canvasRef}
+                  width={800}
+                  height={80}
+                  className="w-full h-full mb-4"
+                  style={{ imageRendering: 'pixelated' }}
                 />
-                <motion.div 
-                  className="text-sm" 
+                <motion.div
+                  className="text-sm"
                   style={{ color: '#90A4AB' }}
                   animate={{ opacity: [1, 0.5, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}

@@ -35,17 +35,12 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
   return (
     <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen bg-black bg-opacity-25 z-50">
       <div className="bg-darkblue rounded-xl p-10 w-[90%] max-w-lg shadow-lg relative text-white">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 hover:text-white text-xl"
-        >
+        <button onClick={onClose} className="absolute top-4 right-4 hover:text-white text-xl">
           ×
         </button>
 
         <h2 className="text-2xl font-bold mb-4 text-center">Welcome to SoundByte</h2>
-        <p className="text-sm text-center mb-6">
-          Log in or create an account to start playing!
-        </p>
+        <p className="text-sm text-center mb-6">Log in or create an account to start playing!</p>
 
         <div className="space-y-3 text-black">
           <input
@@ -53,7 +48,7 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
             placeholder="Username"
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value)}
             required
           />
           <input
@@ -61,7 +56,7 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
             placeholder="Password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             required
           />
           <motion.button
@@ -73,13 +68,9 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
             {loading ? 'Logging in...' : 'Log In'}
           </motion.button>
 
-          {error && (
-            <p className="text-red-400 text-center mt-2 text-sm">{error}</p>
-          )}
+          {error && <p className="text-red-400 text-center mt-2 text-sm">{error}</p>}
 
-          <p className="text-center text-sm text-white mt-2">
-            Don't have an account?
-          </p>
+          <p className="text-center text-sm text-white mt-2">Don't have an account?</p>
           <button
             className="w-full border border-darkestblue text-white py-2 rounded hover:bg-darkestblue transition"
             onClick={onSwitchToSignUp}

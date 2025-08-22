@@ -148,13 +148,14 @@ exports.requestPasswordReset = async (req, res) => {
   }
 };
 
-
 exports.resetPassword = async (req, res) => {
   try {
     const { username, newPassword, resetToken } = req.body;
 
     if (!username || !newPassword || !resetToken) {
-      return res.status(400).json({ error: 'Username, new password, and reset token are required.' });
+      return res
+        .status(400)
+        .json({ error: 'Username, new password, and reset token are required.' });
     }
 
     const user = await User.findOne({ username });
@@ -176,4 +177,3 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ error: 'Server error while resetting password.' });
   }
 };
-
