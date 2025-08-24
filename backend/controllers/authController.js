@@ -39,12 +39,10 @@ exports.signup = async (req, res) => {
     }
     console.error('signup error', e);
     // expose message in dev only
-    return res
-      .status(500)
-      .json({
-        error: 'Signup failed',
-        ...(process.env.NODE_ENV !== 'production' ? { message: e.message } : {}),
-      });
+    return res.status(500).json({
+      error: 'Signup failed',
+      ...(process.env.NODE_ENV !== 'production' ? { message: e.message } : {}),
+    });
   }
 };
 
