@@ -1,3 +1,4 @@
+// path: frontend/src/components/GameSteps/AuthStepLogin.tsx
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { loginUser } from '../../api/api';
@@ -13,20 +14,26 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
   onLoginSuccess,
   onSwitchToSignUp,
 }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState(''); // use email for auth
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async () => {
-    setLoading(true);
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
     setError(null);
+
+    if (!email || !password) {
+      setError('Email and password are required');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const user = await loginUser({ username, password });
-      console.log('Login successful:', user);
-      onLoginSuccess(); // You can also pass user data here if needed
+      await loginUser({ email, password }); // persists token via api.tsx
+      onLoginSuccess(); // parent handles navigation
     } catch (err: any) {
-      setError(err.message || 'Login failed.');
+      setError(err?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -45,10 +52,10 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
         <div className="space-y-3 text-black">
           <input
             className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Username"
-            type="text"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
+            placeholder="Email"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             required
           />
           <input
@@ -68,7 +75,11 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
             {loading ? 'Logging in...' : 'Log In'}
           </motion.button>
 
-          {error && <p className="text-red-400 text-center mt-2 text-sm">{error}</p>}
+          {error && (
+            <p className="text-red-400 text-center mt-2 text-sm" role="alert">
+              {error}
+            </p>
+          )}
 
           <p className="text-center text-sm text-white mt-2">Don't have an account?</p>
           <button

@@ -1,8 +1,8 @@
 {
-"watch": ["server.js", "routes", "models"],
-"ext": "js,json",
-"env": {
-"NODE_ENV": "development"
-},
-"delay": "200ms"
+  "watch": ["server.js", "routes", "models"],
+  "ext": "js,json",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": "200ms"
 }

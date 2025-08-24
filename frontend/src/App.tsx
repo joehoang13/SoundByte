@@ -1,13 +1,13 @@
 // path: frontend/src/App.tsx
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Landing from './pages/Landing'
-import GameScreen from './pages/GameScreen'
-import EndScreen from './pages/EndScreen'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import RequireAuth from './components/RequireAuth'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Landing from './pages/Landing';
+import GameScreen from './pages/GameScreen';
+import EndScreen from './pages/EndScreen';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import RequireAuth from './components/RequireAuth';
+import './App.css';
 
 export default function App() {
   return (
@@ -29,5 +29,5 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
-  )
+  );
 }
