@@ -8,8 +8,9 @@ const PlayerStats = require('../models/PlayerStats');
 
 router.get('/', userController.getUserByEmail);
 router.get('/dummy', userController.getUserDummy);
-router.post('/register', userController.registerUser);
-router.post('/login', userController.loginUser);
+const authController = require('../controllers/authController');
+router.post('/register', authController.signup);
+router.post('/login', authController.login);
 router.post('/reset', userController.resetPassword);
 router.post('/requestReset', userController.requestPasswordReset);
 

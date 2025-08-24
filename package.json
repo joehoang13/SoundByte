@@ -1,18 +1,29 @@
 {
-  "devDependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "husky": "^9.1.7",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.5"
-  },
+  "name": "soundbyte-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "prepare": "husky"
+    "dev": "concurrently -k \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "npm --workspace backend run dev",
+    "dev:frontend": "npm --workspace frontend run dev",
+    "build": "npm -w backend run build && npm -w frontend run build",
+    "lint": "npm -w backend run lint && npm -w frontend run lint",
+    "format": "prettier --write .",
+    "prepare": "husky install"
   },
-  "dependencies": {
-    "mongodb": "^6.17.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.9",
+    "prettier": "^3.3.3"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml,html}": [
+      "prettier --write"
+    ]
   }
 }

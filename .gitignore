@@ -26,3 +26,10 @@ Thumbs.db
 # IDEs
 .vscode/
 .idea/
+
+# Local tooling and snapshot reports — do not commit
+/tools/
+/FRONTEND_SNAPSHOT.md
+/PROJECT_SNAPSHOT.md
+# catch-all for any other snapshot files you might generate
+*SNAPSHOT*.md
