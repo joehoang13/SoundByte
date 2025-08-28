@@ -5,13 +5,14 @@ const User = require('../models/Users');
 const Snippet = require('../models/Snippet');
 const GameSession = require('../models/GameSession');
 const PlayerStats = require('../models/PlayerStats');
+const { userLimiter } = require('../middleware/rateLimit');
 
-router.get('/', userController.getUserByEmail);
-router.get('/dummy', userController.getUserDummy);
+router.get('/', userLimiter, userController.getUserByEmail);
+router.get('/dummy', userLimiter, userController.getUserDummy);
 const authController = require('../controllers/authController');
-router.post('/register', authController.signup);
-router.post('/login', authController.login);
-router.post('/reset', userController.resetPassword);
-router.post('/requestReset', userController.requestPasswordReset);
+router.post('/register', userLimiter, authController.signup);
+router.post('/login', userLimiter, authController.login);
+router.post('/reset', userLimiter, userController.resetPassword);
+router.post('/requestReset', userLimiter, userController.requestPasswordReset);
 
 module.exports = router;

@@ -4,7 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const authRoutes = require('./routes/auth');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
+const { authLimiter } = require('./middleware/rateLimit')
 require('dotenv').config();
 
 // Load models
@@ -45,7 +45,6 @@ if (!process.env.JWT_SECRET) {
 app.use(helmet());
 
 // Gentle rate limit for auth endpoints only
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 100 });
 app.use('/api/auth', authLimiter);
 
 // Routes
