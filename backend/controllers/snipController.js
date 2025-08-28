@@ -101,3 +101,18 @@ exports.getRandomSnippetByGenre = async (req, res) => {
     res.status(500).json({ error: 'Server error.' });
   }
 };
+
+exports.getRandomSnippet = async (req, res) => {
+  try {
+    const [snippet] = await Snippet.aggregate([{ $sample: { size: 1 } }]);
+
+    if (!snippet) {
+      return res.status(404).json({ message: 'No snippet found.' });
+    }
+
+    res.status(200).json(snippet);
+  } catch (err) {
+    console.error('Error fetching random snippet:', err);
+    res.status(500).json({ error: 'Server error while fetching snippet.' });
+  }
+};

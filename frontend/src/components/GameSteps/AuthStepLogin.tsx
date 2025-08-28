@@ -37,7 +37,7 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen bg-black bg-opacity-25 z-50">
