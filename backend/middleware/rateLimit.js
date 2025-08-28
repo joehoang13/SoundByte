@@ -12,13 +12,13 @@ const userLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10,
   message: { error: 'Try again later' },
-}); 
+});
 
 const sessionLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10,
-    message: { error: 'Try again later'}
-})
+  windowMs: 60 * 1000, // 1 minute
+  max: 10,
+  message: { error: 'Try again later' },
+});
 
 module.exports = {
   authLimiter,

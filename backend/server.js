@@ -4,7 +4,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const authRoutes = require('./routes/auth');
 const helmet = require('helmet');
-const { authLimiter } = require('./middleware/rateLimit')
+const { authLimiter } = require('./middleware/rateLimit');
 require('dotenv').config();
 
 // Load models
