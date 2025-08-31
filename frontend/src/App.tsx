@@ -4,18 +4,29 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Landing from './pages/Landing';
 import GameScreen from './pages/GameScreen';
 import EndScreen from './pages/EndScreen';
+import ReadyScreen from './pages/ReadyScreen';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import RequireAuth from './components/RequireAuth';
+import Background from './components/Background';
 import './App.css';
 
 export default function App() {
   return (
     <Router>
+      <Background />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route 
+          path="/ready" 
+          element={
+            <RequireAuth>
+              <ReadyScreen />
+            </RequireAuth>
+          } 
+        />
         <Route
           path="/gamescreen"
           element={

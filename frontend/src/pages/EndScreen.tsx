@@ -8,52 +8,6 @@ const EndScreen = () => {
 
   return (
     <>
-      <motion.div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: -1,
-          backgroundColor: '#143D4D',
-          backgroundImage: `
-            radial-gradient(circle at 50% 40%, #0FC1E9 0%, transparent 65%),
-            radial-gradient(circle at 60% 60%, #90A4AB 0%, transparent 70%),
-            radial-gradient(circle at 85% 85%, #274D5B 0%, transparent 50%)
-          `,
-          backgroundSize: '250% 250%',
-        }}
-        initial={{ backgroundPosition: '0% 0%' }}
-        animate={{
-          backgroundPosition: [
-            '30% 20%',
-            '60% 40%',
-            '40% 75%',
-            '70% 60%',
-            '20% 70%',
-            '50% 50%',
-            '30% 20%',
-          ],
-        }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
-      ></motion.div>
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: -1,
-          pointerEvents: 'none',
-          backgroundImage: "url('/noise.png')",
-          opacity: 0.4,
-          mixBlendMode: 'overlay',
-          backgroundRepeat: 'repeat',
-        }}
-      />
-
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <div className="bg-darkblue rounded-xl w-full max-w-[600px] min-h-[400px] sm:min-h-[450px] h-auto flex flex-col justify-between shadow-lg relative text-white p-4 sm:p-10">
           <div className="flex flex-col items-center">

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { registerUser } from '../../api/api';
+import Background from "../Background";
 
 interface AuthStepSignUpProps {
   onClose: () => void;
@@ -59,81 +60,119 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
   }
 
   return (
-    <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen bg-black bg-opacity-25">
-      <div className="bg-darkblue rounded-xl p-10 w-[90%] max-w-lg shadow-lg relative text-white">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 hover:text-black dark:hover:text-white text-xl"
+    <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen z-50 font-montserrat">
+
+      {/* Animated Background Layer */}
+      <Background />
+
+      {/* Modal Content */}
+      <div className="flex items-center justify-center p-4 w-full">
+        <motion.div
+          className="bg-darkblue/80 rounded-2xl w-full max-w-md shadow-2xl relative text-white overflow-hidden"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
         >
-          ×
-        </button>
-
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-center">
-          Welcome to SoundByte
-        </h2>
-        <p className="text-sm sm:text-base text-center mb-6">Create an account to start playing!</p>
-
-        <form onSubmit={handleSignup} className="space-y-3 text-black">
-          <input
-            className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Email"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-          />
-          <input
-            className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Username (optional)"
-            type="text"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-          />
-          <input
-            className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            minLength={8}
-          />
-          <input
-            className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="Confirm Password"
-            type="password"
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            required
-            minLength={8}
-          />
-
-          <motion.button
-            className="w-full bg-darkestblue text-white py-2 rounded hover:bg-darkestblue transition disabled:opacity-50"
-            whileHover={{ scale: busy ? 1 : 1.05 }}
-            type="submit"
-            disabled={busy}
-          >
-            {busy ? 'Creating account…' : 'Sign Up'}
-          </motion.button>
-
-          {error && (
-            <p className="text-red-300 text-sm text-center" role="alert" aria-live="polite">
-              {error}
-            </p>
-          )}
-
-          <p className="text-center text-sm sm:text-base text-white mt-2">
-            Already have an account?
-          </p>
           <button
-            type="button"
-            className="w-full border border-darkestblue text-white py-2 rounded hover:bg-darkestblue hover:text-white transition"
-            onClick={onSwitchToLogin}
+            onClick={onClose}
+            className="absolute top-4 right-4 hover:text-black dark:hover:text-white text-xl"
           >
-            Log In
+            ×
           </button>
-        </form>
+
+          <div className="p-8 pt-12 font-bold">
+            <motion.div
+              className="text-center mb-8"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+            >
+              <h2 className="text-2xl mb-4 text-center">
+                Welcome to SoundByte
+              </h2>
+              <p className="text-sm text-center mb-6">Create an account to start playing!</p>
+            </motion.div>
+
+
+            <div className="space-y-5">
+              <form onSubmit={handleSignup} className="space-y-3 text-black">
+                <motion.div
+                  className="w-full flex flex-col gap-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.4 }}
+                >
+                  <input
+                    className="w-full p-3 bg-white/10 backdrop-blur-sm border-2 border-gray-400/30 rounded-lg text-white placeholder-gray-200 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
+                    placeholder="Email"
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                  />
+                  <input
+                    className="w-full p-3 bg-white/10 backdrop-blur-sm border-2 border-gray-400/30 rounded-lg text-white placeholder-gray-200 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
+                    placeholder="Username (optional)"
+                    type="text"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                  />
+                  <input
+                    className="w-full p-3 bg-white/10 backdrop-blur-sm border-2 border-gray-400/30 rounded-lg text-white placeholder-gray-200 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
+                    placeholder="Password"
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                  <input
+                    className="w-full p-3 bg-white/10 backdrop-blur-sm border-2 border-gray-400/30 rounded-lg text-white placeholder-gray-200 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
+                    placeholder="Confirm Password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                </motion.div>
+
+                <motion.button
+                  className={`w-full py-3 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${busy
+                    ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
+                    : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
+                    }`}
+                  whileHover={{ scale: busy ? 1 : 1.02 }}
+                  whileTap={{ scale: busy ? 1 : 0.98 }}
+                  type="submit"
+                  disabled={busy}
+                >
+                  {busy ? 'Creating account…' : 'Sign Up'}
+                </motion.button>
+
+                {error && (
+                  <p className="text-red-300 text-sm text-center" role="alert" aria-live="polite">
+                    {error}
+                  </p>
+                )}
+
+                <p className="text-center text-sm text-white mt-4">
+                  Already have an account?
+                </p>
+                <button
+                  type="button"
+                  className="w-full border-2 border-cyan-500 text-white py-2 rounded-lg 
+                            font-semibold transition-all duration-300 
+                            hover:shadow-lg hover:scale-105"
+                  onClick={onSwitchToLogin}
+                >
+                  Log In
+                </button>
+              </form>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

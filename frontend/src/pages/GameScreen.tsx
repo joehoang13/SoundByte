@@ -231,51 +231,6 @@ const GameScreen = () => {
 
   return (
     <>
-      <motion.div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: -1,
-          backgroundColor: '#143D4D',
-          backgroundImage: `
-              radial-gradient(circle at 50% 40%, #0FC1E9 0%, transparent 65%),
-              radial-gradient(circle at 60% 60%, #90A4AB 0%, transparent 70%),
-              radial-gradient(circle at 85% 85%, #274D5B 0%, transparent 50%)
-            `,
-          backgroundSize: '250% 250%',
-        }}
-        initial={{ backgroundPosition: '0% 0%' }}
-        animate={{
-          backgroundPosition: [
-            '30% 20%',
-            '60% 40%',
-            '40% 75%',
-            '70% 60%',
-            '20% 70%',
-            '50% 50%',
-            '30% 20%',
-          ],
-        }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
-      ></motion.div>
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: -1,
-          pointerEvents: 'none',
-          backgroundImage: "url('/noise.png')",
-          opacity: 0.4,
-          mixBlendMode: 'overlay',
-          backgroundRepeat: 'repeat',
-        }}
-      />
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <div className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[900px] min-h-[90dvh] sm:min-h-[500px] h-auto shadow-lg relative text-white p-4 sm:p-10">
           {/* Header with score and streak display */}
@@ -343,19 +298,55 @@ const GameScreen = () => {
           </div>
 
           {/* Guess input and history display */}
-          <input
-            type="text"
-            value={currentGuess}
-            onChange={e => setCurrentGuess(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                handleGuess(currentGuess);
-              }
-            }}
-            placeholder="Enter your answer here..."
-            className="w-full p-3 sm:p-4 text-sm sm:text-base mb-4 rounded-2xl bg-darkblue text-white text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
+          <div className="relative mb-6">
+            <div className="relative bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-cyan-400/20 p-[2px] rounded-2xl">
+              <div className="flex bg-darkblue/90 rounded-2xl overflow-hidden backdrop-blur-sm">
+                <input
+                  type="text"
+                  value={currentGuess}
+                  onChange={e => setCurrentGuess(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && currentGuess.trim()) {
+                      handleGuess(currentGuess.trim());
+                    }
+                  }}
+                  placeholder="Enter your answer here..."
+                  className="flex-1 p-4 sm:p-5 text-sm sm:text-base bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent"
+                  style={{ textShadow: '0 0 10px rgba(15, 193, 233, 0.3)' }}
+                />
+                
+                <motion.button
+                  onClick={() => {
+                    if (currentGuess.trim()) {
+                      handleGuess(currentGuess.trim());
+                    }
+                  }}
+                  disabled={!currentGuess.trim()}
+                  className={`px-6 sm:px-8 font-bold py-4 sm:py-5 transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    !currentGuess.trim()
+                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500' 
+                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                  }`}
+                  whileHover={currentGuess.trim() ? { scale: 1.02 } : {}}
+                  whileTap={currentGuess.trim() ? { scale: 0.98 } : {}}
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    Submit
+                  </span>
+                </motion.button>
+              </div>
+            </div>
+            
+            {currentGuess.trim() && (
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 rounded-2xl blur-xl"
+                animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.02, 1] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                style={{ zIndex: -1 }}
+              />
+            )}
+          </div>
+                    
           <div className="bg-darkblue rounded-2xl p-4 max-h-48 flex-grow overflow-y-auto pr-2">
             <h2 className="text-base sm:text-lg font-semibold mb-2">Your Guesses:</h2>
             <ul className="space-y-2 overflow-y-auto">

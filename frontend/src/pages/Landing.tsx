@@ -12,60 +12,13 @@ const Landing = () => {
     navigate('/gamescreen');
   };
 
+  const showSettings = () => {
+    console.log('Navigating to Settings');
+    navigate('/ready');
+  };
+
   return (
     <>
-      {/* Background animation using Framer Motion */}
-      <motion.div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: -1,
-          backgroundColor: '#143D4D',
-          backgroundImage: `
-          radial-gradient(circle at 50% 40%, #0FC1E9 0%, transparent 65%),
-          radial-gradient(circle at 60% 60%, #90A4AB 0%, transparent 70%),
-          radial-gradient(circle at 85% 85%, #274D5B 0%, transparent 50%)
-        `,
-          // light teal color
-          // second darkest blue color
-          // gray color
-          backgroundSize: '250% 250%',
-        }}
-        initial={{ backgroundPosition: '0% 0%' }}
-        animate={{
-          backgroundPosition: [
-            '30% 20%',
-            '60% 40%',
-            '40% 75%',
-            '70% 60%',
-            '20% 70%',
-            '50% 50%',
-            '30% 20%',
-          ],
-        }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
-      ></motion.div>
-
-      {/* Overlay for noise effect */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: -1,
-          pointerEvents: 'none',
-          backgroundImage: "url('/noise.png')",
-          opacity: 0.4,
-          mixBlendMode: 'overlay',
-          backgroundRepeat: 'repeat',
-        }}
-      />
-
       {/* Main content of the landing page */}
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center justify-center p-4 text-center">
@@ -93,7 +46,7 @@ const Landing = () => {
             </button>
             <button
               className="w-48 px-4 py-2 bg-darkblue text-white rounded font-montserrat hover:bg-darkestblue transition"
-              onClick={startGame}
+              onClick={showSettings}
             >
               Settings
             </button>
