@@ -26,14 +26,14 @@ const ReadyScreen = () => {
   };
 
   const handleBackToMenu = () => {
-    navigate('/'); 
+    navigate('/');
   };
 
   useEffect(() => {
     if (!isStarting) return;
 
     const countdownInterval = setInterval(() => {
-      setCountdown((prev) => {
+      setCountdown(prev => {
         if (prev === 1) {
           clearInterval(countdownInterval);
           navigate('/gamescreen');
@@ -144,10 +144,11 @@ const ReadyScreen = () => {
             <motion.button
               onClick={handleStartGame}
               disabled={isStarting}
-              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${isStarting
+              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${
+                isStarting
                   ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
                   : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
-                }`}
+              }`}
               whileHover={!isStarting ? { scale: 1.02 } : {}}
               whileTap={!isStarting ? { scale: 0.98 } : {}}
             >

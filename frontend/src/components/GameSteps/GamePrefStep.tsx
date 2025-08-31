@@ -40,7 +40,8 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
           Logout
         </button>
 
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-center text-cyan-400"
+        <h2
+          className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-center text-cyan-400"
           style={{ textShadow: '0 0 20px rgba(34, 211, 238, 0.5)' }}
         >
           Game Difficulty
@@ -49,16 +50,17 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
 
         <div className="space-y-3 mb-6">
           <div className="grid gap-3 mb-6">
-            {[3, 5, 10].map((len) => (
+            {[3, 5, 10].map(len => (
               <motion.button
                 key={len}
                 onClick={() => setFormData({ snippetLength: len })}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                  ${formData.snippetLength === len
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  ${
+                    formData.snippetLength === len
+                      ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                      : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
                   }`}
               >
                 {len} Seconds
