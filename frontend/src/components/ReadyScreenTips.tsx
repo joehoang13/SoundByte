@@ -20,11 +20,11 @@ const ReadyScreenTips = () => {
   }, []);
 
   return (
-    <div className="relative h-[50px] sm:h-[60px]">
+    <div className="relative mt-4 min-h-[2rem] sm:min-h-[2.5rem]">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentTip}
-          className="absolute w-full text-center text-gray-300 font-medium text-lg sm:text-xl"
+          className="absolute w-full text-center text-gray-300 font-medium text-lg sm:text-xl leading-snug"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}

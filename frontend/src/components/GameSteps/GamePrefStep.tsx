@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import useGameStore from '../../stores/GameStore';
+import Background from '../Background';
 
 interface GamePrefStepProps {
   onClose: () => void;
@@ -30,7 +31,8 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
 
   return (
     <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen">
-      <div className="bg-darkblue rounded-xl p-10 w-[90%] max-w-lg shadow-lg relative text-white">
+      <Background />
+      <div className="bg-darkblue/80 rounded-xl p-10 w-[90%] max-w-lg shadow-lg relative text-white">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 hover:text-black dark:hover:text-white text-s"
@@ -38,54 +40,41 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
           Logout
         </button>
 
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-center">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-center text-cyan-400"
+          style={{ textShadow: '0 0 20px rgba(34, 211, 238, 0.5)' }}
+        >
           Game Difficulty
         </h2>
         <p className="text-sm sm:text-base text-center mb-6">Select desired clip snippet length</p>
 
         <div className="space-y-3 mb-6">
-          <div className="flex flex-col items-center space-y-2">
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="snippetLength"
-                value="3"
-                checked={formData.snippetLength === 3}
-                onChange={e => handleInputChange('snippetLength', e.target.value)}
-              />
-              <span>3 Seconds</span>
-            </label>
-
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="snippetLength"
-                value="5"
-                checked={formData.snippetLength === 5}
-                onChange={e => handleInputChange('snippetLength', e.target.value)}
-              />
-              <span>5 Seconds</span>
-            </label>
-
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="snippetLength"
-                value="10"
-                checked={formData.snippetLength === 10}
-                onChange={e => handleInputChange('snippetLength', e.target.value)}
-              />
-              <span>10 Seconds</span>
-            </label>
+          <div className="grid gap-3 mb-6">
+            {[3, 5, 10].map((len) => (
+              <motion.button
+                key={len}
+                onClick={() => setFormData({ snippetLength: len })}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`w-full py-3 font-bold rounded-xl transition-all duration-300
+                  ${formData.snippetLength === len
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  }`}
+              >
+                {len} Seconds
+              </motion.button>
+            ))}
           </div>
         </div>
 
-        <button
-          className="w-full bg-darkestblue text-white py-2 rounded hover:bg-darkestblue transition"
+        <motion.button
+          className={`w-full py-3 font-bold rounded-xl transition-all duration-300 border border-cyan-500 relative overflow-hidden hover:bg-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25`}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={handleSubmit}
         >
-          Start Game
-        </button>
+          Next
+        </motion.button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useGameStore from '../stores/GameStore';
@@ -11,6 +11,7 @@ const ReadyScreen = () => {
   const gameMode = useGameStore.getState().gameMode;
   const snippetLength = useGameStore.getState().snippetLength;
   const { user, token } = useAuth();
+  const [countdown, setCountdown] = useState(3);
 
   const isAuthenticated = !!(user && token);
 
@@ -21,16 +22,29 @@ const ReadyScreen = () => {
     }
 
     setIsStarting(true);
-
-    // small delay for the animation effect
-    setTimeout(() => {
-      navigate('/gamescreen');
-    }, 3000);
+    setCountdown(3);
   };
 
   const handleBackToMenu = () => {
-    navigate('/'); // or wherever your main menu is
+    navigate('/'); 
   };
+
+  useEffect(() => {
+    if (!isStarting) return;
+
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          clearInterval(countdownInterval);
+          navigate('/gamescreen');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdownInterval);
+  }, [isStarting, countdown, navigate]);
 
   return (
     <>
@@ -61,26 +75,27 @@ const ReadyScreen = () => {
 
           {/* Game Settings Display */}
           <motion.div
-            className="bg-darkblue/60 rounded-xl p-6 mb-4 space-y-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
           >
             <h2 className="text-xl font-semibold mb-4 text-center">Game Settings</h2>
 
-            <div className="flex justify-between items-center">
-              <span className="text-gray-300">Mode:</span>
-              <span className="font-semibold text-cyan-400 capitalize">{gameMode}</span>
-            </div>
+            <div className="bg-darkblue/60 rounded-xl p-6 mb-4 space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300">Mode:</span>
+                <span className="font-semibold text-cyan-400 capitalize">{gameMode}</span>
+              </div>
 
-            <div className="flex justify-between items-center">
-              <span className="text-gray-300">Snippet Length:</span>
-              <span className="font-semibold text-cyan-400">{snippetLength} seconds</span>
-            </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300">Snippet Length:</span>
+                <span className="font-semibold text-cyan-400">{snippetLength} seconds</span>
+              </div>
 
-            <div className="flex justify-between items-center">
-              <span className="text-gray-300">Max Guesses:</span>
-              <span className="font-semibold text-cyan-400">5 per song</span>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300">Max Guesses:</span>
+                <span className="font-semibold text-cyan-400">5 per song</span>
+              </div>
             </div>
           </motion.div>
 
@@ -129,11 +144,10 @@ const ReadyScreen = () => {
             <motion.button
               onClick={handleStartGame}
               disabled={isStarting}
-              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${
-                isStarting
+              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${isStarting
                   ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
                   : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
-              }`}
+                }`}
               whileHover={!isStarting ? { scale: 1.02 } : {}}
               whileTap={!isStarting ? { scale: 0.98 } : {}}
             >
@@ -144,21 +158,7 @@ const ReadyScreen = () => {
                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 />
               )}
-
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                {isStarting ? (
-                  <>
-                    <motion.div
-                      className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    />
-                    Starting...
-                  </>
-                ) : (
-                  <>Start Game</>
-                )}
-              </span>
+              Start Game
             </motion.button>
           </motion.div>
 
@@ -176,7 +176,7 @@ const ReadyScreen = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                Get Ready! 🎵
+                {countdown}
               </motion.div>
             </motion.div>
           )}
