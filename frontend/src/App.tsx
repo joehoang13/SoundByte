@@ -19,13 +19,13 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route 
-          path="/ready" 
+        <Route
+          path="/ready"
           element={
             <RequireAuth>
               <ReadyScreen />
             </RequireAuth>
-          } 
+          }
         />
         <Route
           path="/gamescreen"

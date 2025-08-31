@@ -44,4 +44,3 @@ const Background: React.FC = () => (
 );
 
 export default Background;
-

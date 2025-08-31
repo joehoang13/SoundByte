@@ -39,7 +39,7 @@ const ReadyScreen = () => {
           className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[600px] min-h-[500px] shadow-lg text-white p-8 sm:p-12"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
         >
           {/* Header */}
           <motion.div
@@ -48,7 +48,10 @@ const ReadyScreen = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-cyan-400" style={{ textShadow: '0 0 20px rgba(34, 211, 238, 0.5)' }}>
+            <h1
+              className="text-4xl sm:text-5xl font-bold mb-4 text-cyan-400"
+              style={{ textShadow: '0 0 20px rgba(34, 211, 238, 0.5)' }}
+            >
               Ready to Play?
             </h1>
             <div className="text-center">
@@ -126,10 +129,11 @@ const ReadyScreen = () => {
             <motion.button
               onClick={handleStartGame}
               disabled={isStarting}
-              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${isStarting
+              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${
+                isStarting
                   ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
                   : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
-                }`}
+              }`}
               whileHover={!isStarting ? { scale: 1.02 } : {}}
               whileTap={!isStarting ? { scale: 0.98 } : {}}
             >
@@ -137,7 +141,7 @@ const ReadyScreen = () => {
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-blue-500/20"
                   animate={{ opacity: [0.5, 0.8, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 />
               )}
 
@@ -147,14 +151,12 @@ const ReadyScreen = () => {
                     <motion.div
                       className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full"
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     />
                     Starting...
                   </>
                 ) : (
-                  <>
-                    Start Game
-                  </>
+                  <>Start Game</>
                 )}
               </span>
             </motion.button>

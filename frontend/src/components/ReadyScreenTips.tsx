@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const gameTips = [
-  "♩ Listen carefully to each audio snippet",
-  "♫ Faster guesses earn bonus points",
-  "♪ Build streaks for higher scores",
-  "♬ Guess the song before time runs out",
+  '♩ Listen carefully to each audio snippet',
+  '♫ Faster guesses earn bonus points',
+  '♪ Build streaks for higher scores',
+  '♬ Guess the song before time runs out',
 ];
 
 const ReadyScreenTips = () => {

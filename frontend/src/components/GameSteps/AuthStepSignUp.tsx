@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { registerUser } from '../../api/api';
-import Background from "../Background";
+import Background from '../Background';
 
 interface AuthStepSignUpProps {
   onClose: () => void;
@@ -61,7 +61,6 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
 
   return (
     <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen z-50 font-montserrat">
-
       {/* Animated Background Layer */}
       <Background />
 
@@ -72,7 +71,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
         >
           <button
             onClick={onClose}
@@ -88,12 +87,9 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.4 }}
             >
-              <h2 className="text-2xl mb-4 text-center">
-                Welcome to SoundByte
-              </h2>
+              <h2 className="text-2xl mb-4 text-center">Welcome to SoundByte</h2>
               <p className="text-sm text-center mb-6">Create an account to start playing!</p>
             </motion.div>
-
 
             <div className="space-y-5">
               <form onSubmit={handleSignup} className="space-y-3 text-black">
@@ -139,10 +135,11 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
                 </motion.div>
 
                 <motion.button
-                  className={`w-full py-3 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${busy
-                    ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
-                    : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
+                  className={`w-full py-3 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${
+                    busy
+                      ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
+                      : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
+                  }`}
                   whileHover={{ scale: busy ? 1 : 1.02 }}
                   whileTap={{ scale: busy ? 1 : 0.98 }}
                   type="submit"
@@ -157,9 +154,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
                   </p>
                 )}
 
-                <p className="text-center text-sm text-white mt-4">
-                  Already have an account?
-                </p>
+                <p className="text-center text-sm text-white mt-4">Already have an account?</p>
                 <button
                   type="button"
                   className="w-full border-2 border-cyan-500 text-white py-2 rounded-lg 

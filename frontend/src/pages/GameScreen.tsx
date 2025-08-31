@@ -314,7 +314,7 @@ const GameScreen = () => {
                   className="flex-1 p-4 sm:p-5 text-sm sm:text-base bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent"
                   style={{ textShadow: '0 0 10px rgba(15, 193, 233, 0.3)' }}
                 />
-                
+
                 <motion.button
                   onClick={() => {
                     if (currentGuess.trim()) {
@@ -324,29 +324,27 @@ const GameScreen = () => {
                   disabled={!currentGuess.trim()}
                   className={`px-6 sm:px-8 font-bold py-4 sm:py-5 transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
                     !currentGuess.trim()
-                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500' 
+                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                       : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
                   }`}
                   whileHover={currentGuess.trim() ? { scale: 1.02 } : {}}
                   whileTap={currentGuess.trim() ? { scale: 0.98 } : {}}
                 >
-                  <span className="relative z-10 flex items-center gap-2">
-                    Submit
-                  </span>
+                  <span className="relative z-10 flex items-center gap-2">Submit</span>
                 </motion.button>
               </div>
             </div>
-            
+
             {currentGuess.trim() && (
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 rounded-2xl blur-xl"
                 animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.02, 1] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                 style={{ zIndex: -1 }}
               />
             )}
           </div>
-                    
+
           <div className="bg-darkblue rounded-2xl p-4 max-h-48 flex-grow overflow-y-auto pr-2">
             <h2 className="text-base sm:text-lg font-semibold mb-2">Your Guesses:</h2>
             <ul className="space-y-2 overflow-y-auto">
