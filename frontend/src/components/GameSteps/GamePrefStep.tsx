@@ -32,7 +32,13 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
   return (
     <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen">
       <Background />
-      <div className="bg-darkblue/80 rounded-xl p-10 w-[90%] max-w-lg shadow-lg relative text-white">
+      <motion.div
+        className="bg-darkblue/80 rounded-xl p-10 w-[90%] max-w-lg shadow-lg relative text-white"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 30 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 hover:text-black dark:hover:text-white text-s"
@@ -57,10 +63,9 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                  ${
-                    formData.snippetLength === len
-                      ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                      : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  ${formData.snippetLength === len
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
                   }`}
               >
                 {len} Seconds
@@ -77,7 +82,7 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
         >
           Next
         </motion.button>
-      </div>
+      </motion.div>
     </div>
   );
 };

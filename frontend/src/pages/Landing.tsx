@@ -17,6 +17,11 @@ const Landing = () => {
     navigate('/ready');
   };
 
+  const showProfile = () => {
+    console.log('Navigating to User Profile');
+    navigate('/profile');
+  };
+
   return (
     <>
       {/* Main content of the landing page */}
@@ -39,13 +44,13 @@ const Landing = () => {
           </h2>
           <div className="grid grid-cols-1 gap-4 mt-6">
             <button
-              className="w-48 px-4 py-2 bg-darkblue text-white rounded font-montserrat hover:bg-darkestblue transition"
+              className="w-48 px-4 py-2 bg-darkblue text-white rounded-xl font-montserrat hover:bg-darkestblue transition"
               onClick={() => setShowModal(true)}
             >
               Play
             </button>
             <button
-              className="w-48 px-4 py-2 bg-darkblue text-white rounded font-montserrat hover:bg-darkestblue transition"
+              className="w-48 px-4 py-2 bg-darkblue text-white rounded-xl font-montserrat hover:bg-darkestblue transition"
               onClick={showSettings}
             >
               Settings
@@ -53,6 +58,35 @@ const Landing = () => {
           </div>
         </div>
       </div>
+      {/* Profile Button */}
+      <motion.button
+        className="fixed bottom-10 right-10 w-14 h-14 bg-darkblue text-white rounded-full shadow-lg flex items-center justify-center hover:bg-darkestblue transition-all duration-300 z-50"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={showProfile}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 20c0-3.31 2.69-6 6-6s6 2.69 6 6"
+          />
+        </svg>
+
+      </motion.button>
+
       {showModal && <GameStepsModal onClose={() => setShowModal(false)} />}
     </>
   );

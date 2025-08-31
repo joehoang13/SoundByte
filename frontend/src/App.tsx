@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
+import UserProfile from './pages/UserProfile';
 import GameScreen from './pages/GameScreen';
 import EndScreen from './pages/EndScreen';
 import ReadyScreen from './pages/ReadyScreen';
@@ -19,6 +20,14 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <UserProfile />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/ready"
           element={

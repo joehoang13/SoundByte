@@ -120,7 +120,7 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
               <p className="text-center text-sm text-white mt-4">Don't have an account?</p>
               <button
                 className="w-full border-2 border-cyan-500 text-white py-2 rounded-lg 
-                            font-semibold transition-all duration-300 
+                          font-semibold transition-all duration-300 
                           hover:shadow-lg hover:scale-105"
                 onClick={onSwitchToSignUp}
               >
