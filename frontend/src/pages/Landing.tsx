@@ -84,7 +84,6 @@ const Landing = () => {
             d="M6 20c0-3.31 2.69-6 6-6s6 2.69 6 6"
           />
         </svg>
-
       </motion.button>
 
       {showModal && <GameStepsModal onClose={() => setShowModal(false)} />}

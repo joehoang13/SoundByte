@@ -63,9 +63,10 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                  ${formData.snippetLength === len
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  ${
+                    formData.snippetLength === len
+                      ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                      : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
                   }`}
               >
                 {len} Seconds
