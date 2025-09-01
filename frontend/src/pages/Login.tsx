@@ -1,36 +1,60 @@
-// path: frontend/src/pages/Login.tsx
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import AuthStepLogin from '../components/GameSteps/AuthStepLogin';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { authApi } from '../api/auth';
 
-/**
- * Adapter page for AuthStepLogin.
- * Note: AuthStepLoginProps.onLoginSuccess is typed as () => void (no args),
- * so we pass a zero-argument handler and only handle navigation here.
- */
 export default function Login() {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as any)?.from?.pathname || '/gamescreen';
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      await authApi.login(email.trim(), password);
+      // if backend sets httpOnly cookie, no need to store token — RequireAuth will call /auth/me
+      navigate(from, { replace: true });
+    } catch (err: any) {
+      setError(err?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-3">
-        <AuthStepLogin
-          onClose={() => navigate('/')} // close → back to landing
-          onSwitchToSignUp={() => navigate('/signup')} // switch → signup route
-          onLoginSuccess={() => {
-            // If AuthStepLogin stores token itself, just navigate.
-            // Otherwise, we can add a global store later.
-            navigate('/gamescreen');
-          }}
+    <div className="min-h-screen grid place-items-center">
+      <form
+        onSubmit={onSubmit}
+        className="bg-slate-800/70 p-6 rounded-xl w-full max-w-md text-white"
+      >
+        <h1 className="text-xl font-bold mb-4">Welcome to SoundByte</h1>
+        <input
+          className="w-full mb-2 p-3 rounded bg-slate-900"
+          placeholder="email"
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
         />
-
-        <p className="text-center text-sm">
-          Don’t have an account?{' '}
-          <Link className="underline" to="/signup">
-            Sign up
-          </Link>
-        </p>
-      </div>
+        <input
+          className="w-full mb-2 p-3 rounded bg-slate-900"
+          placeholder="password"
+          type="password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+        <button
+          disabled={loading}
+          className="w-full p-3 rounded bg-cyan-500 text-black disabled:opacity-50"
+        >
+          {loading ? 'Logging in…' : 'Log in'}
+        </button>
+        {error && <div className="mt-3 text-red-400 text-sm">{error}</div>}
+      </form>
     </div>
   );
 }

@@ -1,0 +1,46 @@
+### VS Code REST Client friendly HTTP smoke tests
+@base = http://localhost:4000/api/gs
+
+### inventory
+GET http://localhost:3001/api/gs/inventory
+Authorization: Bearer {{token}}
+
+
+### start (easy/5) – should be 200 after seeding
+POST http://localhost:3001/api/gs/game/start
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+{
+"userId": "{{userId}}",
+"difficulty": "easy",
+"snippetSize": 5,
+"rounds": 1
+}
+
+### (Copy returned sessionId)
+# @sessionId = <paste-here>
+
+### Mark round started
+POST {{base}}/game/{{sessionId}}/round/started
+Content-Type: application/json
+
+{
+  "roundIndex": 0
+}
+
+### Submit a guess
+POST {{base}}/game/{{sessionId}}/guess
+Content-Type: application/json
+
+{
+  "roundIndex": 0,
+  "guess": "Song A"
+}
+
+### Next round
+POST {{base}}/game/{{sessionId}}/next
+
+### Finish
+POST {{base}}/game/{{sessionId}}/finish

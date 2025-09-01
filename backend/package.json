@@ -8,7 +8,10 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "lint": "echo 'no lint yet' && exit 0",
-    "build": "echo 'nothing to build' && exit 0"
+    "build": "echo 'nothing to build' && exit 0",
+    "test": "jest --config ./jest.config.ts --runInBand",
+    "test:watch": "jest --config ./jest.config.ts --watch",
+    "seed": "ts-node ./scripts/seedSnippets.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -24,7 +27,15 @@
     "morgan": "^1.10.1"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/supertest": "^2.0.16",
     "husky": "^9.1.7",
-    "nodemon": "^3.1.10"
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.2.0",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }
