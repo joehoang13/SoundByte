@@ -22,21 +22,21 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route
-          path="/profile"
-          element={
-            <RequireAuth>
-              <UserProfile />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/ready"
-          element={
-            <RequireAuth>
-              <ReadyScreen />
-            </RequireAuth>
-          }
-        />
+            path="/profile"
+            element={
+              <RequireAuth>
+                <UserProfile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/ready"
+            element={
+              <RequireAuth>
+                <ReadyScreen />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/gamescreen"
             element={
