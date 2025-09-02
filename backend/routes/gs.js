@@ -6,7 +6,7 @@ module.exports = function createGameRouter({ auth } = {}) {
   const useAuth = auth || require('../middleware/auth');
 
   router.get('/ping', (req, res) => res.json({ ok: true, scope: 'gs' }));
-  router.get('/inventory', useAuth, gs.inventory);
+  // router.get('/inventory', useAuth, gs.inventory);
 
   router.post('/game/start', useAuth, gs.startGame);
   router.post('/game/:sessionId/round/started', useAuth, gs.setRoundStarted);
