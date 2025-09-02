@@ -68,7 +68,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   // Visualizer refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const animRef = useRef<number | null>(null);
 
   const snippetSeconds = useMemo(() => snippetSize ?? 5, [snippetSize]);
