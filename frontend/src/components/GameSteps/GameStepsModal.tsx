@@ -29,7 +29,7 @@ const GameStepsModal: React.FC<GameStepsModalProps> = ({ onClose }) => {
 
   const handleStartGame = (snippetLength: number) => {
     console.log('Start game with snippet length:', snippetLength);
-    navigate('/ready');
+    navigate('/gamescreen');
   };
 
   return (
