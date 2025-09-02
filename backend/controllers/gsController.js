@@ -66,19 +66,30 @@ function currentAnswer(session) {
 // ---------- handlers ----------
 
 // POST /api/gs/game/start
+// backend/controllers/gsController.js
+
+// …
 exports.startGame = async function startGame(req, res) {
   try {
-    const userId = req.user?.id || req.body?.userId; // tests may pass a dummy userId
+    const userId = req.user?.id || req.body?.userId; // ok if blank in dev
     const snippetSize = Number(req.body?.snippetSize) || 5;
-    const difficulty = difficultyFromSize(snippetSize); // derive from size per product rule
+
+    // Derive difficulty from the snippet size (3->hard, 5->medium, 10->easy)
+    const difficulty = difficultyFromSize(snippetSize);
+
     const roundsReq = Math.max(1, Math.min(Number(req.body?.rounds) || 10, 20));
 
-    const match = { snippetSize, difficulty, type: 'classic' };
+    // ✅ Be less strict: match by size (+type) only
+    const match = { snippetSize, type: 'classic' };
+
     const available = await Snippet.countDocuments(match).exec();
     if (!available) {
       return res
         .status(400)
-        .json({ error: 'No snippets available for the chosen length', filters: match });
+        .json({
+          error: 'No snippets available for the chosen length',
+          filters: match
+        });
     }
 
     const take = Math.min(roundsReq, available);
@@ -98,13 +109,13 @@ exports.startGame = async function startGame(req, res) {
       timeTaken: 0,
       pointsAwarded: 0,
       matched: { title: false, artist: false },
-      maxAttempts: MAX_ATTEMPTS,
+      maxAttempts: 5,
     }));
 
     const session = await GameSession.create({
       userId,
       mode: 'classic',
-      difficulty,
+      difficulty,          // ← derived, not used for querying
       snippetSize,
       rounds: take,
       answers,
@@ -128,6 +139,7 @@ exports.startGame = async function startGame(req, res) {
     return res.status(500).json({ error: 'Failed to start game' });
   }
 };
+
 
 // POST /api/gs/game/:sessionId/round/started
 exports.setRoundStarted = async function setRoundStarted(req, res) {
