@@ -84,12 +84,10 @@ exports.startGame = async function startGame(req, res) {
 
     const available = await Snippet.countDocuments(match).exec();
     if (!available) {
-      return res
-        .status(400)
-        .json({
-          error: 'No snippets available for the chosen length',
-          filters: match
-        });
+      return res.status(400).json({
+        error: 'No snippets available for the chosen length',
+        filters: match,
+      });
     }
 
     const take = Math.min(roundsReq, available);
@@ -115,7 +113,7 @@ exports.startGame = async function startGame(req, res) {
     const session = await GameSession.create({
       userId,
       mode: 'classic',
-      difficulty,          // ← derived, not used for querying
+      difficulty, // ← derived, not used for querying
       snippetSize,
       rounds: take,
       answers,
@@ -139,7 +137,6 @@ exports.startGame = async function startGame(req, res) {
     return res.status(500).json({ error: 'Failed to start game' });
   }
 };
-
 
 // POST /api/gs/game/:sessionId/round/started
 exports.setRoundStarted = async function setRoundStarted(req, res) {
