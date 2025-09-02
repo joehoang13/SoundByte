@@ -1,64 +1,89 @@
+// backend/server.js — normalized CORS + preflight + quick pings
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
-const authRoutes = require('./routes/auth');
 const helmet = require('helmet');
-const { authLimiter } = require('./middleware/rateLimit');
 require('dotenv').config();
 
-// Load models
+// Models (side-effect)
 require('./models/Users');
 require('./models/Snippet');
 require('./models/GameSession');
 require('./models/PlayerStats');
 
-console.log('Loaded MONGODB_URI:', process.env.MONGODB_URI);
+// Rate limiter
+const { authLimiter } = require('./middleware/rateLimit');
 
 const app = express();
-const ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 
-app.use(cors({ origin: ORIGIN })); // why: avoid wide-open CORS in prod
-app.use(express.json({ limit: '1mb' })); // why: protect against large payloads
+app.use((req, res, next) => {
+  const t0 = Date.now();
+  res.on('finish', () => {
+    const ms = Date.now() - t0;
+    console.log(`${req.method} ${req.originalUrl} -> ${res.statusCode} ${ms}ms`);
+  });
+  next();
+});
+
+// ── CORS (single, normalized) ──────────────────────────────────────────────
+const ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin(origin, cb) {
+    if (!origin) return cb(null, true); // non-browser clients
+    return ORIGINS.includes(origin) ? cb(null, true) : cb(new Error('CORS: origin not allowed'));
+  },
+  credentials: true,
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'], // allow JWT header
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // reply to preflight
+
+// ── Middleware ─────────────────────────────────────────────────────────────
+app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
-app.use('/api/auth', authRoutes);
+app.use(helmet());
 
-// Health for uptime checks and docker-compose
+// Health + ping
 app.get('/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/ping', (_req, res) => res.json({ ok: true, ts: Date.now() }));
+app.get('/api/gs/ping', (_req, res) => res.json({ ok: true, scope: 'gs' }));
 
-// Connect to MongoDB
+// ── DB + secrets ───────────────────────────────────────────────────────────
 if (!process.env.MONGODB_URI) {
   console.error('Missing MONGODB_URI in environment');
   process.exit(1);
 }
-
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connection to MongoDB successful'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB error:', err));
 
 if (!process.env.JWT_SECRET) {
   console.error('Missing JWT_SECRET in environment');
-  process.exit(1); // why: fail fast in all envs
+  process.exit(1);
 }
 
-app.use(helmet());
-
-// Gentle rate limit for auth endpoints only
-app.use('/api/auth', authLimiter);
-
-// Routes
+// Routers
+const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
-const gsRoutes = require('./routes/gs');
+const createGsRouter = require('./routes/gs');
 const snipRoutes = require('./routes/snip');
 
+// Mount
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/gs', gsRoutes);
+app.use('/api/gs', createGsRouter()); // IMPORTANT: invoke factory
+app.use('/api/snip', snipRoutes);
 app.use('/api/snippets', snipRoutes);
 
-// 404 for any unmatched route
+// 404
 app.use((req, res) => res.status(404).json({ error: 'Not Found' }));
 
-// Start server on 3001 (so it won’t collide with a React app on 3000)
 const PORT = Number(process.env.PORT || 3001);
-app.listen(PORT, () => console.log(`Server running on port ${PORT} (CORS origin: ${ORIGIN})`));
+app.listen(PORT, () => console.log(`Server on :${PORT} (CORS: ${ORIGINS.join(', ')})`));
