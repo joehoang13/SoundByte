@@ -7,6 +7,7 @@ import EndScreen from './pages/EndScreen';
 import ReadyScreen from './pages/ReadyScreen';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Background from './components/Background';
 import RequireAuth from './components/RequireAuth';
 import { GameProvider } from './stores/GameSessionStore';
 import './App.css';
@@ -15,10 +16,27 @@ export default function App() {
   return (
     <GameProvider>
       <Router>
+        <Background />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <UserProfile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/ready"
+          element={
+            <RequireAuth>
+              <ReadyScreen />
+            </RequireAuth>
+          }
+        />
           <Route
             path="/gamescreen"
             element={
