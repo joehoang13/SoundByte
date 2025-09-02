@@ -118,14 +118,16 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
               )}
 
               <p className="text-center text-sm text-white mt-4">Don't have an account?</p>
-              <button
+              <motion.button
                 className="w-full border-2 border-cyan-500 text-white py-2 rounded-lg 
                           font-semibold transition-all duration-300 
-                          hover:shadow-lg hover:scale-105"
+                          hover:shadow-lg"
                 onClick={onSwitchToSignUp}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 Sign Up
-              </button>
+              </motion.button>
             </div>
           </div>
         </motion.div>

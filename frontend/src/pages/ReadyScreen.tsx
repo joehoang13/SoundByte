@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import useGameStore from '../stores/GameStore';
+import useGameStore from '../stores/GameSessionStore';
 import ReadyScreenTips from '../components/ReadyScreenTips';
 import { useAuth } from '../stores/auth';
 
 const ReadyScreen = () => {
   const navigate = useNavigate();
   const [isStarting, setIsStarting] = useState(false);
-  const gameMode = useGameStore.getState().gameMode;
-  const snippetLength = useGameStore.getState().snippetLength;
+  const gameMode = useGameStore(state => state.mode);
+  const snippetLength = useGameStore(state => state.snippetSize);
   const { user, token } = useAuth();
   const [countdown, setCountdown] = useState(3);
 

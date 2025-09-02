@@ -71,7 +71,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
         >
           <button
             onClick={onClose}
@@ -155,15 +155,17 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
                 )}
 
                 <p className="text-center text-sm text-white mt-4">Already have an account?</p>
-                <button
+                <motion.button
                   type="button"
                   className="w-full border-2 border-cyan-500 text-white py-2 rounded-lg 
                             font-semibold transition-all duration-300 
                             hover:shadow-lg hover:scale-105"
                   onClick={onSwitchToLogin}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   Log In
-                </button>
+                </motion.button>
               </form>
             </div>
           </div>

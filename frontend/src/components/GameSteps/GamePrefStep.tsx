@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import useGameStore from '../../stores/GameStore';
+import useGameStore from '../../stores/GameSessionStore';
+import type { SnippetSize } from '../../types/game';
 import Background from '../Background';
 
 interface GamePrefStepProps {
@@ -12,7 +13,7 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
   const [formData, setFormData] = useState<{ snippetLength: number | null }>({
     snippetLength: null,
   });
-  const setSnippetLength = useGameStore(state => state.setSnippetLength);
+  const setConfig = useGameStore(state => state.setConfig);
 
   const handleInputChange = (field: string, value: string) => {
     const difficulty = parseInt(value);
@@ -25,7 +26,7 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
       return;
     }
 
-    setSnippetLength(formData.snippetLength);
+    setConfig({ snippetSize: formData.snippetLength as SnippetSize });
     onStartGame(formData.snippetLength);
   };
 
