@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import GameStepsModal from '../components/GameSteps/GameStepsModal';
@@ -9,10 +9,10 @@ const Landing = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
-  const startGame = () => {
+  /*const startGame = () => {
     console.log('Navigating to GameScreen');
     navigate('/gamescreen');
-  };
+  };*/
 
   const showSettings = () => {
     console.log('Navigating to Settings');
