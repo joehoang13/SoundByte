@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import GameStepsModal from '../components/GameSteps/GameStepsModal';
+import discdb from '../../public/discdb.png';
+import needledb from '../../public/needledb.png';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -27,6 +29,33 @@ const Landing = () => {
       {/* Main content of the landing page */}
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center justify-center p-4 text-center">
+          <div className="relative w-32 h-32 mb-4">
+            <motion.img
+              src={discdb}
+              alt="SoundByte Logo"
+              className="w-32 h-32 select-none cursor-pointer"
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
+              initial={{ rotate: 0 }}
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, ease: 'linear', duration: 10 }}
+            />
+            <motion.img
+              src={needledb}
+              alt="Needle"
+              className="absolute w-20 h-20 z-10 select-none pointer-events-none"
+              style={{
+                top: '-5%',
+                right: '12%',
+              }}
+              initial={{y: 0}}
+              animate={{y: [0, -1, 0]}}
+              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+
+            />
+          </div>
+
+          {/* Animated SOUNDBYTE text */}
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-exo text-darkestblue mb-2 tracking-wider flex gap-1">
             {'SOUNDBYTE'.split('').map((char, index) => (
               <motion.span

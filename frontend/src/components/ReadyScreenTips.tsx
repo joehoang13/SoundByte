@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const gameTips = [
   '♩ Listen carefully to each audio snippet',
   '♫ Faster guesses earn bonus points',
-  '♪ Build streaks for higher scores',
+  '♪ Build streaks and earn points',
   '♬ Guess the song before time runs out',
 ];
 
