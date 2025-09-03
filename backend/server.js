@@ -27,15 +27,43 @@ app.use((req, res, next) => {
 });
 
 // ── CORS (single, normalized) ──────────────────────────────────────────────
-const ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+// Accept multiple env names, allow common dev ports by default, and never 500 on CORS.
+const DEFAULT_ORIGINS = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173', // vite preview
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+];
+const ENV_ORIGINS = (
+  process.env.CORS_ORIGINS ||
+  process.env.CORS_ORIGIN ||
+  process.env.CLIENT_ORIGIN ||
+  ''
+)
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
 
+const normalize = o => (o || '').replace(/\/$/, '');
+const ORIGINS = Array.from(new Set([...DEFAULT_ORIGINS, ...ENV_ORIGINS])).map(normalize);
+
 const corsOptions = {
   origin(origin, cb) {
-    if (!origin) return cb(null, true); // non-browser clients
-    return ORIGINS.includes(origin) ? cb(null, true) : cb(new Error('CORS: origin not allowed'));
+    if (!origin) return cb(null, true); // non-browser / same-origin
+    const ok = ORIGINS.includes(normalize(origin));
+
+    // In dev, be permissive to avoid local 500s if origin isn't listed yet
+    if (!ok && process.env.NODE_ENV !== 'production') {
+      console.warn('CORS (dev allow):', origin);
+      return cb(null, true);
+    }
+
+    if (ok) return cb(null, true);
+
+    // Do NOT throw an error here (causes 500). Deny politely.
+    console.warn('CORS blocked:', origin);
+    return cb(null, false);
   },
   credentials: true,
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],

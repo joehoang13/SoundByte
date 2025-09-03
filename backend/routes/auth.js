@@ -1,5 +1,6 @@
+// backend/routes/auth.js
 const express = require('express');
-const { body, validationResult } = require('express-validator');
+const { body, oneOf, validationResult } = require('express-validator');
 const authCtl = require('../controllers/authController');
 const auth = require('../middleware/auth');
 
@@ -19,15 +20,25 @@ router.post(
   '/signup',
   validate([
     body('email').isEmail().normalizeEmail(),
+    body('username').isString().trim().isLength({ min: 3, max: 32 }),
     body('password').isLength({ min: 8 }),
-    body('username').optional().isString().trim(),
   ]),
   authCtl.signup
 );
 
 router.post(
   '/login',
-  validate([body('email').isEmail().normalizeEmail(), body('password').notEmpty()]),
+  validate([
+    oneOf(
+      [
+        body('identifier').isString().trim().notEmpty(),
+        body('email').isString().trim().notEmpty(), // may be username text too
+        body('username').isString().trim().notEmpty(),
+      ],
+      'identifier/email/username required'
+    ),
+    body('password').notEmpty(),
+  ]),
   authCtl.login
 );
 

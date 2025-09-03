@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '../api/auth';
 
 export default function Login() {
+  // keep local name but it now carries email OR username
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -16,8 +17,8 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
+      // backend accepts identifier/email/username in the same field
       await authApi.login(email.trim(), password);
-      // if backend sets httpOnly cookie, no need to store token — RequireAuth will call /auth/me
       navigate(from, { replace: true });
     } catch (err: any) {
       setError(err?.message || 'Login failed');
@@ -35,8 +36,9 @@ export default function Login() {
         <h1 className="text-xl font-bold mb-4">Welcome to SoundByte</h1>
         <input
           className="w-full mb-2 p-3 rounded bg-slate-900"
-          placeholder="email"
-          type="email"
+          placeholder="Email or username"
+          type="text"
+          autoComplete="username"
           value={email}
           onChange={e => setEmail(e.target.value)}
         />
