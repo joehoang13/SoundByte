@@ -47,7 +47,7 @@ const GameSessionSchema = new mongoose.Schema({
 
   answers: { type: [AnswerSchema], default: [] },
 
-  status: { type: String, enum: ['active', 'finished'], default: 'active' },
+  status: { type: String, enum: ['active', 'completed'], default: 'active' },
   startedAt: { type: Date, default: Date.now },
   endedAt: { type: Date },
 });

@@ -15,10 +15,10 @@ const GamePrefStep: React.FC<GamePrefStepProps> = ({ onClose, onStartGame }) => 
   });
   const setConfig = useGameStore(state => state.setConfig);
 
-  const handleInputChange = (field: string, value: string) => {
+  /*const handleInputChange = (field: string, value: string) => {
     const difficulty = parseInt(value);
     setFormData(prev => ({ ...prev, [field]: difficulty }));
-  };
+  };*/
 
   const handleSubmit = () => {
     if (formData.snippetLength === null) {

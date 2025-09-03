@@ -1,5 +1,3 @@
-// path: frontend/src/pages/Signup.tsx
-import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthStepSignUp from '../components/GameSteps/AuthStepSignUp';
 

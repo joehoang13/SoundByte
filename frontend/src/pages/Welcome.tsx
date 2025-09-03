@@ -10,7 +10,7 @@ const Welcome = () => {
   const dataArrayRef = useRef<Uint8Array | null>(null);
   const animationRef = useRef<number | null>(null);
   const soundRef = useRef<Howl | null>(null);
-  const sourceRef = useRef<AudioNode | null>(null);
+  //const sourceRef = useRef<AudioNode | null>(null);
   const [isPaused, setIsPaused] = React.useState(false);
   const [duration, setDuration] = React.useState(0);
   const [currentTime, setCurrentTime] = React.useState(0);

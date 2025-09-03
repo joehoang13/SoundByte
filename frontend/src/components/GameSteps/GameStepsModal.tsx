@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import AuthStepLogin from './AuthStepLogin';
 import AuthStepSignUp from './AuthStepSignUp';
 import GamePrefStep from './GamePrefStep';
