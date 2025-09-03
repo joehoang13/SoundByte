@@ -35,7 +35,7 @@ const Landing = () => {
               alt="SoundByte Logo"
               className="w-32 h-32 select-none cursor-pointer"
               draggable={false}
-              onDragStart={(e) => e.preventDefault()}
+              onDragStart={e => e.preventDefault()}
               initial={{ rotate: 0 }}
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, ease: 'linear', duration: 10 }}
@@ -48,10 +48,9 @@ const Landing = () => {
                 top: '-5%',
                 right: '12%',
               }}
-              initial={{y: 0}}
-              animate={{y: [0, -1, 0]}}
+              initial={{ y: 0 }}
+              animate={{ y: [0, -1, 0] }}
               transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-
             />
           </div>
 
