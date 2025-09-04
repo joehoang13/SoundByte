@@ -2,12 +2,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { loginUser } from '../../api/api';
-import Background from '../Background';
 
 interface AuthStepLoginProps {
   onClose: () => void;
   onLoginSuccess: () => void;
   onSwitchToSignUp: () => void;
+  /** presentational only; used by parent for alignment */
+  align?: 'start' | 'end';
+  /** presentational only; parent sometimes hides a close button */
+  hideClose?: boolean;
 }
 
 const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
@@ -15,10 +18,16 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
   onLoginSuccess,
   onSwitchToSignUp,
 }) => {
-  const [email, setEmail] = useState(''); // use email for auth
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const inputCls =
+    'w-full py-3.5 px-4 rounded-2xl bg-white/5 text-white/90 placeholder-white/45 ' +
+    'border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,.06)] ' +
+    'focus:outline-none focus:ring-4 focus:ring-cyan-500/20 focus:border-cyan-400 ' +
+    'transition-colors duration-200';
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -31,107 +40,64 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
 
     setLoading(true);
     try {
-      await loginUser({ email, password }); // persists token via api.tsx
-      onLoginSuccess(); // parent handles navigation
+      await loginUser({ email, password });
+      onLoginSuccess();
     } catch (err: any) {
       setError(err?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
-    console.log('Token after login:', localStorage.getItem('sb_token'));
   }
 
   return (
-    <div className="fixed left-0 top-0 flex items-center justify-center w-screen h-screen z-50 font-montserrat">
-      {/* Animated Background Layer */}
-      <Background />
+    <div className="w-full">
+      <h2 className="mb-6 text-2xl font-exo text-white text-center">Log In</h2>
+      {/* Added pl-6 to push content slightly right */}
+      <form onSubmit={handleLogin} className="space-y-4 pl-6">
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-white/75">Email</label>
+          <input
+            className={inputCls}
+            placeholder="you@example.com"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
+        </div>
 
-      {/* Modal Content */}
-      <div className="flex items-center justify-center p-4 w-full">
-        <motion.div
-          className="bg-darkblue/80 rounded-2xl w-full max-w-md shadow-2xl relative text-white overflow-hidden"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 30 }}
-          transition={{ duration: 0.35, ease: 'easeOut' }}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-white/75">Password</label>
+          <input
+            className={inputCls}
+            placeholder="••••••••"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+        </div>
+
+        <motion.button
+          type="submit"
+          disabled={loading}
+          className="w-full py-3 rounded-2xl font-semibold bg-cyan-600 text-white
+                     hover:bg-cyan-500 disabled:opacity-60 disabled:cursor-not-allowed
+                     transition-colors duration-200"
+          whileHover={{ scale: loading ? 1 : 1.01 }}
+          whileTap={{ scale: loading ? 1 : 0.99 }}
         >
-          <button onClick={onClose} className="absolute top-4 right-4 hover:text-white text-xl">
-            ×
-          </button>
+          {loading ? 'Logging in…' : 'Log In'}
+        </motion.button>
 
-          <div className="p-8 pt-12 font-bold">
-            <motion.div
-              className="text-center mb-8"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-            >
-              <h2 className="text-2xl font-bold mb-4 text-center">Welcome to SoundByte</h2>
-              <p className="text-sm text-center mb-6">
-                Log in or create an account to start playing!
-              </p>
-            </motion.div>
-
-            <div className="space-y-5 text-black">
-              <motion.div
-                className="w-full flex flex-col gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.4 }}
-              >
-                <input
-                  className="w-full p-3 bg-white/10 backdrop-blur-sm border-2 border-gray-400/30 rounded-lg text-white placeholder-gray-200 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
-                  placeholder="Email"
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                />
-                <input
-                  className="w-full p-3 bg-white/10 backdrop-blur-sm border-2 border-gray-400/30 rounded-lg text-white placeholder-gray-200 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300"
-                  placeholder="Password"
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                />
-              </motion.div>
-
-              <motion.button
-                className={`w-full py-3 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${
-                  loading
-                    ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
-                    : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleLogin}
-                disabled={loading}
-              >
-                {loading ? 'Logging in...' : 'Log In'}
-              </motion.button>
-
-              {error && (
-                <p className="text-red-400 text-center mt-2 text-sm" role="alert">
-                  {error}
-                </p>
-              )}
-
-              <p className="text-center text-sm text-white mt-4">Don't have an account?</p>
-              <motion.button
-                className="w-full border-2 border-cyan-500 text-white py-2 rounded-lg 
-                          font-semibold transition-all duration-300 
-                          hover:shadow-lg"
-                onClick={onSwitchToSignUp}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Sign Up
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+        {error && (
+          <p className="text-red-300 text-sm text-center" role="alert" aria-live="polite">
+            {error}
+          </p>
+        )}
+      </form>
     </div>
   );
 };
