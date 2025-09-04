@@ -3,6 +3,10 @@ const express = require('express');
 const { body, oneOf, validationResult } = require('express-validator');
 const authCtl = require('../controllers/authController');
 const auth = require('../middleware/auth');
+const authMiddleware = require('../middleware/auth');
+const authController = require('../controllers/authController');
+
+
 
 const router = express.Router();
 
@@ -43,5 +47,7 @@ router.post(
 );
 
 router.get('/me', auth, authCtl.me);
+router.post('/logout', authMiddleware, authController.logout);
+
 
 module.exports = router;

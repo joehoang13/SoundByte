@@ -92,6 +92,13 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.logout = async (req, res) => {
+  // Since we're using stateless JWT, the server can't "destroy" the token.
+  // The client just needs to delete it.
+  return res.status(200).json({ message: 'Logged out successfully' });
+};
+
+
 exports.me = async (req, res) => {
   try {
     const id = req.user?.id;
