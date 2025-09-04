@@ -85,6 +85,7 @@ const Landing = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={showProfile}
+        aria-label="Open User Profile" 
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
