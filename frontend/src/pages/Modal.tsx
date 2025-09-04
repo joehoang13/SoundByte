@@ -11,7 +11,6 @@ interface ModalProps {
   initialTab?: 'login' | 'signup';
 }
 
-
 const LEFT_LABEL_NUDGE = { marginLeft: 40, marginTop: -200 };
 const RIGHT_LABEL_NUDGE = { marginRight: 90, marginTop: -200 };
 
@@ -62,7 +61,6 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
         >
           {/* Two halves */}
           <div className="relative bg-darkblue/85 mx-auto grid h-full w-full grid-cols-2">
-          
             {/* Divider */}
             <div className="pointer-events-none absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-white/15 md:block" />
 
@@ -110,7 +108,7 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
                   animate={{ opacity: leftActive ? 1 : 0, y: leftActive ? 0 : 8 }}
                   transition={{ duration: 0.25 }}
                 >
-                  <AuthStepLogin 
+                  <AuthStepLogin
                     hideClose
                     onClose={onClose}
                     onLoginSuccess={() => {

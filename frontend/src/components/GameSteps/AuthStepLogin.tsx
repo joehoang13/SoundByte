@@ -61,7 +61,7 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
             placeholder="you@example.com"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             autoComplete="email"
             required
           />
@@ -74,7 +74,7 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
             placeholder="••••••••"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             autoComplete="current-password"
             required
           />

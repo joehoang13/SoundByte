@@ -69,7 +69,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
 
   return (
     <div className="w-full">
-       <h2 className="mb-6 text-2xl font-exo text-white text-center">Sign Up</h2>
+      <h2 className="mb-6 text-2xl font-exo text-white text-center">Sign Up</h2>
       <form onSubmit={handleSignup} className="space-y-4">
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-white/75">Email</label>
@@ -78,7 +78,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
             placeholder="you@example.com"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             autoComplete="email"
             required
           />
@@ -93,7 +93,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
             placeholder="yourname"
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value)}
             autoComplete="username"
           />
         </div>
@@ -105,7 +105,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
             placeholder="Create a password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             autoComplete="new-password"
             minLength={8}
             required
@@ -119,7 +119,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
             placeholder="Re-enter password"
             type="password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={e => setConfirmPassword(e.target.value)}
             autoComplete="new-password"
             minLength={8}
             required
@@ -145,7 +145,6 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
             {error}
           </p>
         )}
-
       </form>
     </div>
   );

@@ -22,9 +22,7 @@ exports.signup = async (req, res) => {
   try {
     const { email, password, username } = req.body || {};
     if (!email || !password || !username) {
-      return res
-        .status(400)
-        .json({ error: 'email, username and password are required' });
+      return res.status(400).json({ error: 'email, username and password are required' });
     }
 
     const emailLC = String(email).trim().toLowerCase();
@@ -74,9 +72,7 @@ exports.login = async (req, res) => {
     const { password } = req.body || {};
 
     if (!identifier || !password) {
-      return res
-        .status(400)
-        .json({ error: 'identifier/email/username and password required' });
+      return res.status(400).json({ error: 'identifier/email/username and password required' });
     }
 
     const user = await User.findByIdentifier(identifier);
@@ -86,7 +82,10 @@ exports.login = async (req, res) => {
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = sign(user);
-    return res.json({ token, user: { id: String(user._id), email: user.email, username: user.username } });
+    return res.json({
+      token,
+      user: { id: String(user._id), email: user.email, username: user.username },
+    });
   } catch (e) {
     console.error('login error', e);
     return res.status(500).json({ error: 'Login failed' });

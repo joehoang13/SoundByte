@@ -16,8 +16,10 @@ const Landing = () => {
   return (
     <>
       {/* Landing content (dims when auth open) */}
-      <div className={`min-h-screen flex items-center justify-center transition-all duration-300
-        ${showAuth ? 'opacity-30 blur-[2px] pointer-events-none select-none' : ''}`}>
+      <div
+        className={`min-h-screen flex items-center justify-center transition-all duration-300
+        ${showAuth ? 'opacity-30 blur-[2px] pointer-events-none select-none' : ''}`}
+      >
         <div className="flex flex-col items-center justify-center p-4 text-center">
           <div className="relative w-32 h-32 mb-4">
             <motion.img
@@ -84,9 +86,24 @@ const Landing = () => {
         whileTap={{ scale: 0.95 }}
         onClick={showProfile}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 20c0-3.31 2.69-6 6-6s6 2.69 6 6" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 20c0-3.31 2.69-6 6-6s6 2.69 6 6"
+          />
         </svg>
       </motion.button>
 

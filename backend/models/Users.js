@@ -48,7 +48,9 @@ UserSchema.methods.comparePassword = async function comparePassword(plain) {
 
 // Find by either email OR username (case-insensitive)
 UserSchema.statics.findByIdentifier = function findByIdentifier(identifier) {
-  const id = String(identifier || '').trim().toLowerCase();
+  const id = String(identifier || '')
+    .trim()
+    .toLowerCase();
   if (!id) return null;
   return this.findOne({ $or: [{ emailLower: id }, { usernameLower: id }] });
 };
