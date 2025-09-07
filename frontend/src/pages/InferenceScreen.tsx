@@ -62,7 +62,10 @@ const SAMPLE_PROMPTS: Prompt[] = [
 ];
 
 function norm(x: string) {
-  return x.toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+  return x
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
 }
 
 const InferenceScreen: React.FC = () => {
@@ -136,7 +139,9 @@ const InferenceScreen: React.FC = () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     } catch {}
-    try { localStorage.removeItem('token'); } catch {}
+    try {
+      localStorage.removeItem('token');
+    } catch {}
     navigate('/');
   };
 
@@ -161,9 +166,17 @@ const InferenceScreen: React.FC = () => {
           aria-label="Open Settings"
           title="Settings"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor"/>
-            <path d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z" fill="currentColor"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-5 h-5"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor" />
+            <path
+              d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z"
+              fill="currentColor"
+            />
           </svg>
         </motion.button>
 
@@ -197,7 +210,10 @@ const InferenceScreen: React.FC = () => {
                 aria-haspopup="listbox"
                 aria-expanded={modeOpen}
               >
-                <span className="inline-block rounded-full" style={{ width: 8, height: 8, backgroundColor: COLORS.teal }} />
+                <span
+                  className="inline-block rounded-full"
+                  style={{ width: 8, height: 8, backgroundColor: COLORS.teal }}
+                />
                 Inference Mode
                 <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
                   <path fill="currentColor" d="M7 10l5 5 5-5z" />
@@ -206,7 +222,7 @@ const InferenceScreen: React.FC = () => {
 
               {modeOpen && (
                 <div
-                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-20"
+                  className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-20"
                   role="listbox"
                   style={{
                     backgroundColor: COLORS.darkestblue,
@@ -376,7 +392,7 @@ const InferenceScreen: React.FC = () => {
             initial={{ y: 20, scale: 0.98, opacity: 0 }}
             animate={{ y: 0, scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Close X */}
             <button
@@ -426,7 +442,7 @@ const InferenceScreen: React.FC = () => {
                   </p>
                 ) : (
                   <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {players.map((p) => (
+                    {players.map(p => (
                       <li
                         key={p.id}
                         className="flex items-center gap-3 p-3 rounded-xl"
@@ -434,7 +450,11 @@ const InferenceScreen: React.FC = () => {
                       >
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
                           {p.avatarUrl ? (
-                            <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                            <img
+                              src={p.avatarUrl}
+                              alt={p.name}
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             <span className="text-sm font-bold">
                               {p.name?.[0]?.toUpperCase() ?? 'P'}
@@ -465,13 +485,15 @@ const InferenceScreen: React.FC = () => {
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm" style={{ color: COLORS.grayblue }}>0</span>
+                    <span className="text-sm" style={{ color: COLORS.grayblue }}>
+                      0
+                    </span>
                     <input
                       type="range"
                       min={0}
                       max={100}
                       value={volume}
-                      onChange={(e) => setVolume(Number(e.target.value))}
+                      onChange={e => setVolume(Number(e.target.value))}
                       className="flex-1 accent-cyan-400"
                       aria-label="Master volume"
                     />
@@ -501,7 +523,10 @@ const InferenceScreen: React.FC = () => {
                     type="button"
                     onClick={handleLogout}
                     className="w-full px-4 py-2 rounded-xl font-semibold"
-                    style={{ background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)', color: '#fff' }}
+                    style={{
+                      background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)',
+                      color: '#fff',
+                    }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >

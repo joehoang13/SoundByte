@@ -2,13 +2,16 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Howl, Howler } from 'howler';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../stores/GameSessionStore';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion, type Transition } from 'framer-motion';
+import discdb from '../../public/discdb.png';
+import needledb from '../../public/needledb.png';
 
 /**
- * GameScreen — Classic mode with in-screen Settings modal
- * - Cog button opens a modal (no route change).
- * - Settings modal shows: Game Settings header, Players, Volume, Back to Game, Log Out.
- * - Gameplay unchanged.
+ * GameScreen — Classic mode
+ * - No autoplay on load; user clicks the disc to start
+ * - Disc + needle act as play/pause/replay control
+ * - markRoundStarted() is called on first user-initiated play
+ * - Settings modal (Players, Volume, Back to Game, Log Out)
  */
 
 function useHowl(url?: string, useWebAudio = true) {
@@ -16,6 +19,7 @@ function useHowl(url?: string, useWebAudio = true) {
   useEffect(() => {
     ref.current?.unload();
     if (url) {
+      // Use WebAudio for visualizer; html5 fallback via flag
       ref.current = new Howl({ src: [url], html5: !useWebAudio, volume: 1.0 });
     } else {
       ref.current = null;
@@ -34,6 +38,12 @@ interface GuessRow {
   timeTakenSec: number;
 }
 
+type Player = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+};
+
 const COLORS = {
   grayblue: '#90A4AB',
   darkblue: '#274D5B',
@@ -41,11 +51,13 @@ const COLORS = {
   darkestblue: '#143D4D',
 };
 
-type Player = {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-};
+// Easing arrays for Framer Motion (TS-safe)
+const EASE_LINEAR: [number, number, number, number] = [0, 0, 1, 1];
+const EASE_IN_OUT: [number, number, number, number] = [0.42, 0, 0.58, 1];
+
+// Teal tint filter for PNG assets (approximate #0FC1E9)
+const TEAL_TINT_FILTER =
+  'brightness(0) saturate(100%) invert(76%) sepia(63%) saturate(6240%) hue-rotate(157deg) brightness(101%) contrast(97%)';
 
 const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   const navigate = useNavigate();
@@ -67,22 +79,23 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     loading,
   } = useGameStore();
 
-  // Try to read players from store (fallback empty)
-  const players: Player[] =
-    // @ts-ignore — tolerate unknown store shape
-    (useGameStore.getState?.().players as Player[] | undefined) ?? [];
+  // Try to read players from store (graceful fallback)
+  // @ts-ignore tolerate different store shapes
+  const players: Player[] = useGameStore.getState?.().players ?? [];
 
   const [guess, setGuess] = useState('');
   const [ready, setReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [replayCount, setReplayCount] = useState(0);
   const [guessHistory, setGuessHistory] = useState<GuessRow[]>([]);
   const [modeOpen, setModeOpen] = useState(false);
 
-  // Settings modal
+  // Settings modal state
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Volume (persist + Howler)
+  // Volume control (0–100)
   const [volume, setVolume] = useState<number>(() => {
     const saved = localStorage.getItem('sb_volume');
     const initial = saved ? Math.min(100, Math.max(0, Number(saved))) : 80;
@@ -94,12 +107,17 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     localStorage.setItem('sb_volume', String(volume));
   }, [volume]);
 
-  const howl = useHowl(current?.audioUrl, true);
-  const stopTimer = useRef<number | undefined>(undefined);
-  const startedOnceRef = useRef(false);
-  const roundStartMs = useRef<number>(Date.now());
+  const shouldReduceMotion = useReducedMotion();
 
-  // Visualizer
+  const howl = useHowl(current?.audioUrl, true);
+
+  // timers + timing refs
+  const stopTimerRef = useRef<number | undefined>(undefined);
+  const startedOnceRef = useRef(false);
+  const roundStartMsRef = useRef<number>(Date.now());
+  const remainingMsRef = useRef<number>(0); // remaining window for current play/pause cycle
+
+  // Visualizer refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
@@ -107,13 +125,13 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
   const snippetSeconds = useMemo(() => snippetSize ?? 5, [snippetSize]);
 
-  // Boot a session once
+  // Start session once
   useEffect(() => {
     if (!sessionId && !loading) start(userId || '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, loading, start, userId]);
 
-  // Load & play current snippet
+  // Prepare round when audio changes (NO AUTOPLAY)
   useEffect(() => {
     setGuess('');
     setReady(false);
@@ -121,73 +139,124 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     setGuessHistory([]);
     startedOnceRef.current = false;
 
+    // user must click disc to begin
+    setIsPlaying(false);
+    setIsPaused(false);
+    setIsFinished(false);
+    remainingMsRef.current = snippetSeconds * 1000;
+
     const h = howl.current;
     if (!h) return;
 
     const handleLoad = async () => {
       setReady(true);
-      if (!startedOnceRef.current) {
-        startedOnceRef.current = true;
-        await markRoundStarted();
-      }
-      roundStartMs.current = Date.now();
-      setIsPlaying(true);
-      setupAnalyser();
-      h.play();
-
-      window.clearTimeout(stopTimer.current);
-      stopTimer.current = window.setTimeout(
-        () => {
-          h.stop();
-          setIsPlaying(false);
-          teardownAnalyser();
-        },
-        Math.max(0, snippetSeconds * 1000)
-      ) as unknown as number;
+      // Do NOT mark round started or autostart here
+      // We wait for user interaction (disc click) to start and mark
     };
 
     h.once('load', handleLoad);
 
     return () => {
-      window.clearTimeout(stopTimer.current);
+      window.clearTimeout(stopTimerRef.current);
       teardownAnalyser();
       h.stop();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [howl, markRoundStarted, current?.audioUrl, snippetSeconds]);
+  }, [howl, current?.audioUrl, snippetSeconds]);
 
-  // Stop audio on conclude
+  // Stop on conclusion
   useEffect(() => {
     if (lastResult?.concluded) {
-      howl.current?.stop();
-      setIsPlaying(false);
-      window.clearTimeout(stopTimer.current);
-      teardownAnalyser();
+      finishWindow(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastResult?.concluded]);
 
-  const handleReplay = () => {
-    if (!howl.current || replayCount >= 1 || !ready) return;
-    roundStartMs.current = Date.now();
-    setIsPlaying(true);
-    setupAnalyser();
-    howl.current.play();
-    window.clearTimeout(stopTimer.current);
-    stopTimer.current = window.setTimeout(
-      () => {
-        howl.current?.stop();
-        setIsPlaying(false);
-        teardownAnalyser();
-      },
-      Math.max(0, snippetSeconds * 1000)
-    ) as unknown as number;
-    setReplayCount(c => c + 1);
-  };
+  /**
+   * Start or resume play for `windowMs` milliseconds
+   * If this is the very first user-initiated start, mark round started.
+   */
+  async function startWindowPlay(windowMs: number) {
+    const h = howl.current;
+    if (!h || windowMs <= 0) {
+      // nothing to play; treat as finished
+      finishWindow();
+      return;
+    }
 
+    if (!startedOnceRef.current) {
+      startedOnceRef.current = true;
+      try {
+        await markRoundStarted();
+      } catch {
+        // ignore
+      }
+    }
+
+    setIsPlaying(true);
+    setIsPaused(false);
+    setIsFinished(false);
+    roundStartMsRef.current = Date.now();
+
+    setupAnalyser();
+    h.play();
+
+    // clear any previous timer
+    window.clearTimeout(stopTimerRef.current);
+    stopTimerRef.current = window.setTimeout(() => {
+      finishWindow(); // ends this window
+    }, windowMs) as unknown as number;
+  }
+
+  /**
+   * Pause current window (without concluding)
+   */
+  function pauseWindow() {
+    if (!howl.current || !isPlaying) return;
+    const elapsed = Date.now() - roundStartMsRef.current;
+    remainingMsRef.current = Math.max(0, remainingMsRef.current - elapsed);
+
+    window.clearTimeout(stopTimerRef.current);
+    howl.current.pause();
+    setIsPlaying(false);
+    setIsPaused(true);
+    teardownAnalyser();
+  }
+
+  /**
+   * Finish current window (natural end). Marks round snippet window as finished,
+   * tears down analyser, and stops audio.
+   * If called due to game conclusion, also ensures playback is stopped.
+   */
+  function finishWindow(forceStopAudio = false) {
+    const h = howl.current;
+    window.clearTimeout(stopTimerRef.current);
+    if (h) {
+      if (forceStopAudio) h.stop();
+      else h.stop(); // window concluded anyway
+    }
+    setIsPlaying(false);
+    setIsPaused(false);
+    setIsFinished(true);
+    remainingMsRef.current = 0;
+    teardownAnalyser();
+  }
+
+  /**
+   * Replay window (if allowed)
+   */
+  function replayWindow() {
+    if (replayCount >= 1 || !ready || !howl.current) return;
+    remainingMsRef.current = snippetSeconds * 1000;
+    setReplayCount(c => c + 1);
+    startWindowPlay(remainingMsRef.current);
+  }
+
+  // Visualizer: setup / teardown / draw
   function setupAnalyser() {
     try {
       const ctx = Howler.ctx as AudioContext | undefined;
-      if (!ctx) return;
+      if (!ctx) return; // html5 fallback lacks WebAudio graph
 
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
@@ -197,12 +266,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
         raw?._node?.bufferSource || raw?._node?._panner || raw?._node;
       if (!srcNode || !('connect' in srcNode)) return;
 
-      try {
-        (srcNode as any).connect(analyser);
-      } catch {}
-      try {
-        analyser.connect(ctx.destination);
-      } catch {}
+      try { (srcNode as any).connect(analyser); } catch {}
+      try { analyser.connect(ctx.destination); } catch {}
 
       const bufferLen = analyser.frequencyBinCount;
       const data = new Uint8Array(bufferLen);
@@ -210,7 +275,9 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       dataArrayRef.current = data;
 
       drawBars();
-    } catch {}
+    } catch {
+      // fail-soft
+    }
   }
 
   function teardownAnalyser() {
@@ -252,13 +319,14 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     loop();
   }
 
+  // Submit guess logic (unchanged)
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const g = guess.trim();
     if (!g) return;
 
     const res = await submitGuess(g);
-    const elapsedMs = Date.now() - roundStartMs.current;
+    const elapsedMs = Date.now() - roundStartMsRef.current;
     setGuessHistory(prev => [
       ...prev,
       {
@@ -283,19 +351,60 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     }, 350);
   };
 
-  // Settings actions
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
-    } catch {}
-    try {
-      localStorage.removeItem('token');
-    } catch {}
-    navigate('/');
+  // Disc click handler
+  const onDiscClick = () => {
+    if (!ready || !howl.current) return;
+
+    // initial (not started yet)
+    if (!isPlaying && !isPaused && !isFinished) {
+      startWindowPlay(remainingMsRef.current);
+      return;
+    }
+
+    if (isPlaying) {
+      // playing -> pause
+      pauseWindow();
+      return;
+    }
+    if (isPaused && !isFinished) {
+      // paused (not finished) -> resume from remaining
+      startWindowPlay(remainingMsRef.current);
+      return;
+    }
+    // finished -> try replay (respect 1x limit)
+    if (isFinished) {
+      replayWindow();
+      return;
+    }
   };
 
   const concluded = !!lastResult?.concluded;
   const disable = !ready || concluded || (attemptsLeft !== undefined && attemptsLeft <= 0);
+
+  // Disc rotation animation toggles based on isPlaying
+  const discAnimate = shouldReduceMotion
+    ? { rotate: 0 }
+    : isPlaying
+      ? { rotate: 360 }
+      : { rotate: 0 };
+
+  const discTransition: Transition = shouldReduceMotion
+    ? { duration: 0 }
+    : isPlaying
+      ? { repeat: Infinity, repeatType: 'loop', ease: EASE_LINEAR, duration: 10 }
+      : { duration: 0.2 };
+
+  const needleTransition: Transition = shouldReduceMotion
+    ? { duration: 0 }
+    : { repeat: Infinity, duration: 2, ease: EASE_IN_OUT };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    } catch {}
+    try { localStorage.removeItem('token'); } catch {}
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
@@ -306,7 +415,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
       >
-        {/* Settings (opens modal) */}
+        {/* Settings button (opens in-screen modal) */}
         <motion.button
           type="button"
           className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
@@ -316,17 +425,9 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
           aria-label="Open Settings"
           title="Settings"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor" />
-            <path
-              d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a.5.5 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z"
-              fill="currentColor"
-            />
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor"/>
+            <path d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z" fill="currentColor"/>
           </svg>
         </motion.button>
 
@@ -345,7 +446,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
           <div className="flex-1 flex flex-col items-center justify-center relative">
             <h1 className="text-2xl font-bold text-center">Game Screen</h1>
 
-            {/* Mode pill (kept) */}
+            {/* Gamemode pill w/ dropdown */}
             <div className="mt-2 relative">
               <button
                 type="button"
@@ -360,10 +461,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 aria-haspopup="listbox"
                 aria-expanded={modeOpen}
               >
-                <span
-                  className="inline-block rounded-full"
-                  style={{ width: 8, height: 8, backgroundColor: COLORS.teal }}
-                />
+                <span className="inline-block rounded-full" style={{ width: 8, height: 8, backgroundColor: COLORS.teal }} />
                 Classic Mode
                 <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
                   <path fill="currentColor" d="M7 10l5 5 5-5z" />
@@ -374,15 +472,12 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 <div
                   className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-20"
                   role="listbox"
-                  style={{
-                    backgroundColor: COLORS.darkestblue,
-                    borderColor: 'rgba(255,255,255,0.08)',
-                  }}
+                  style={{ backgroundColor: COLORS.darkestblue, borderColor: 'rgba(255,255,255,0.08)' }}
                 >
                   <button
                     type="button"
                     className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                    onMouseDown={e => e.preventDefault()}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => navigate('/gamescreen')}
                   >
                     Classic Mode
@@ -390,7 +485,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                   <button
                     type="button"
                     className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                    onMouseDown={e => e.preventDefault()}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => navigate('/inference')}
                   >
                     Inference Mode
@@ -411,17 +506,62 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
           </div>
         </div>
 
-        <p className="text-center mb-6">Snippet Length: {snippetSeconds} seconds</p>
+        {/* Logo cluster — control (teal tinted) */}
+        <div className="flex items-center justify-center w-full px-4 sm:px-6 mt-2 mb-4">
+          <div className="relative w-28 h-28">
+            {/* Disc (clickable) */}
+            <motion.img
+              src={discdb}
+              alt="Vinyl control"
+              className="w-28 h-28 select-none cursor-pointer"
+              draggable={false}
+              onDragStart={e => e.preventDefault()}
+              initial={{ rotate: 0 }}
+              animate={discAnimate}
+              transition={discTransition}
+              whileHover={!shouldReduceMotion ? { scale: 1.03 } : undefined}
+              whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
+              onClick={onDiscClick}
+              style={{
+                willChange: 'transform',
+                filter: TEAL_TINT_FILTER,
+                // soft glow to reinforce the color
+                boxShadow: '0 0 20px rgba(15, 193, 233, 0.35)',
+                borderRadius: '50%',
+              }}
+            />
+            {/* Needle (decorative; subtle motion, tinted) */}
+            <motion.img
+              src={needledb}
+              alt=""
+              aria-hidden="true"
+              className="absolute w-16 h-16 z-10 select-none pointer-events-none"
+              style={{
+                top: '-6%',
+                right: '14%',
+                transformOrigin: '85% 20%',
+                willChange: 'transform',
+                filter: TEAL_TINT_FILTER,
+              }}
+              initial={{ y: 0, rotate: -2 }}
+              animate={{
+                y: shouldReduceMotion ? 0 : [0, -1, 0],
+                rotate: shouldReduceMotion ? -2 : [-2, -3, -2],
+              }}
+              transition={needleTransition}
+            />
+          </div>
+        </div>
 
-        {/* Visualizer / replay */}
+        {/* Visualizer / status */}
         <div className="flex items-center justify-center w-full rounded-lg px-4 sm:px-6">
           {isPlaying ? (
-            <div className="flex flex-col items-center py-4 mb-4 w-full">
+            <div className="flex flex-col items-center py-2 mb-2 w-full">
               <canvas
                 ref={canvasRef}
                 width={800}
                 height={80}
-                className="w-full h-full mb-4"
+                className="w-full h-full mb-3"
                 style={{ imageRendering: 'pixelated' }}
               />
               <motion.div
@@ -430,27 +570,19 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 animate={{ opacity: [1, 0.5, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                now playing...
+                Now Playing… (Click the Record to Pause)
               </motion.div>
             </div>
-          ) : replayCount < 1 ? (
-            <div className="flex justify-center mb-6">
-              <button
-                type="button"
-                onClick={handleReplay}
-                className="px-3 py-3 bg-white/10 hover:bg-white/20 rounded-3xl"
-                aria-label="Replay"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 5V1L7 6l5 5V7c3.314 0 6 2.686 6 6s-2.686 6-6 6-6-2.686-6-6H4c0 4.418 3.582 8 8 8s8-3.582 8-8-3.582-8-8-8z"
-                    fill="white"
-                  />
-                </svg>
-              </button>
-            </div>
           ) : (
-            <p className="text-center mb-6">No more replays allowed for this round.</p>
+            <div className="text-center mb-2" style={{ color: COLORS.grayblue }}>
+              {isFinished
+                ? (replayCount < 1
+                    ? 'Snippet Finished — Click the Record to Replay'
+                    : 'No More Replays for This Round')
+                : (ready
+                    ? 'Ready — Click the Record to Play'
+                    : 'Loading…')}
+            </div>
           )}
         </div>
 
@@ -462,15 +594,12 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 type="text"
                 value={guess}
                 onChange={e => setGuess(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && guess.trim()) onSubmit(e as any);
-                }}
+                onKeyDown={e => { if (e.key === 'Enter' && guess.trim()) onSubmit(e as any); }}
                 placeholder={concluded ? 'Round concluded' : 'Enter your answer here...'}
                 className="flex-1 p-4 sm:p-5 text-sm sm:text-base bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
                 disabled={disable}
                 autoFocus
               />
-
               <motion.button
                 type="submit"
                 disabled={disable || !guess.trim()}
@@ -488,7 +617,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
           </div>
         </form>
 
-        {/* History */}
+        {/* Guess history */}
         <div
           className="rounded-2xl p-4 max-h-48 flex-grow overflow-y-auto pr-2"
           style={{ backgroundColor: COLORS.darkestblue }}
@@ -497,9 +626,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
           <ul className="space-y-2 overflow-y-auto">
             {guessHistory.map(g => (
               <li key={g.guessNum} className="flex justify-between">
-                <span>
-                  Attempt {g.guessNum}: {g.userGuess}
-                </span>
+                <span>Attempt {g.guessNum}: {g.userGuess}</span>
                 <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
                   {g.isCorrect ? 'Correct' : `Incorrect (${g.timeTakenSec}s)`}
                 </span>
@@ -521,7 +648,6 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
           exit={{ opacity: 0 }}
           onClick={() => setSettingsOpen(false)}
         >
-          {/* Stop click-through inside the card */}
           <motion.div
             className="relative w-full max-w-3xl bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-6 sm:p-8 text-white"
             style={{ backgroundColor: 'rgba(39,77,91,0.9)' }}
