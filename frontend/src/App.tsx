@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Landing from './pages/Landing';
 import UserProfile from './pages/UserProfile';
 import GameScreen from './pages/GameScreen';
+import InferenceScreen from './pages/InferenceScreen'; 
 import EndScreen from './pages/EndScreen';
 import ReadyScreen from './pages/ReadyScreen';
 import Login from './pages/Login';
@@ -17,9 +18,12 @@ export default function App() {
       <Router>
         <Background />
         <Routes>
+          {/* Public */}
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+
+          {/* Protected */}
           <Route
             path="/profile"
             element={
@@ -44,7 +48,18 @@ export default function App() {
               </RequireAuth>
             }
           />
+          <Route
+            path="/inference" 
+            element={
+              <RequireAuth>
+                <InferenceScreen />
+              </RequireAuth>
+            }
+          />
+
+          {/* Shared */}
           <Route path="/endscreen" element={<EndScreen />} />
+
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
