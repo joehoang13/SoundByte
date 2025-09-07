@@ -6,12 +6,14 @@ import { motion, useReducedMotion, type Transition } from 'framer-motion';
 import discdb from '../../public/discdb.png';
 import needledb from '../../public/needledb.png';
 
+import { useAuth } from '../stores/auth';
+import { logout } from '../api/auth';
+
 /**
  * GameScreen — Classic mode
- * - No autoplay on load; user clicks the disc to start
- * - Disc + needle act as play/pause/replay control
- * - markRoundStarted() is called on first user-initiated play
- * - Settings modal (Players, Volume, Back to Game, Log Out)
+ * - Username badge (top-left, outside the card) with Friends/Stats quick links
+ * - No autoplay: click the disc to start; disc toggles play/pause and handles replay
+ * - Settings modal (Players full-width rows, Volume, Back, Log Out)
  */
 
 function useHowl(url?: string, useWebAudio = true) {
@@ -19,7 +21,6 @@ function useHowl(url?: string, useWebAudio = true) {
   useEffect(() => {
     ref.current?.unload();
     if (url) {
-      // Use WebAudio for visualizer; html5 fallback via flag
       ref.current = new Howl({ src: [url], html5: !useWebAudio, volume: 1.0 });
     } else {
       ref.current = null;
@@ -51,11 +52,10 @@ const COLORS = {
   darkestblue: '#143D4D',
 };
 
-// Easing arrays for Framer Motion (TS-safe)
 const EASE_LINEAR: [number, number, number, number] = [0, 0, 1, 1];
 const EASE_IN_OUT: [number, number, number, number] = [0.42, 0, 0.58, 1];
 
-// Teal tint filter for PNG assets (approximate #0FC1E9)
+// Teal-ish filter for PNG tinting
 const TEAL_TINT_FILTER =
   'brightness(0) saturate(100%) invert(76%) sepia(63%) saturate(6240%) hue-rotate(157deg) brightness(101%) contrast(97%)';
 
@@ -79,8 +79,11 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     loading,
   } = useGameStore();
 
-  // Try to read players from store (graceful fallback)
-  // @ts-ignore tolerate different store shapes
+  const { user } = useAuth();
+  const username = user?.username ?? 'Player';
+  const avatarUrl = user?.avatarUrl as string | undefined;
+
+  // @ts-ignore optional players in store
   const players: Player[] = useGameStore.getState?.().players ?? [];
 
   const [guess, setGuess] = useState('');
@@ -92,10 +95,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   const [guessHistory, setGuessHistory] = useState<GuessRow[]>([]);
   const [modeOpen, setModeOpen] = useState(false);
 
-  // Settings modal state
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Volume control (0–100)
   const [volume, setVolume] = useState<number>(() => {
     const saved = localStorage.getItem('sb_volume');
     const initial = saved ? Math.min(100, Math.max(0, Number(saved))) : 80;
@@ -108,16 +109,13 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   }, [volume]);
 
   const shouldReduceMotion = useReducedMotion();
-
   const howl = useHowl(current?.audioUrl, true);
 
-  // timers + timing refs
   const stopTimerRef = useRef<number | undefined>(undefined);
   const startedOnceRef = useRef(false);
   const roundStartMsRef = useRef<number>(Date.now());
-  const remainingMsRef = useRef<number>(0); // remaining window for current play/pause cycle
+  const remainingMsRef = useRef<number>(0);
 
-  // Visualizer refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
@@ -139,7 +137,6 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     setGuessHistory([]);
     startedOnceRef.current = false;
 
-    // user must click disc to begin
     setIsPlaying(false);
     setIsPaused(false);
     setIsFinished(false);
@@ -148,12 +145,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     const h = howl.current;
     if (!h) return;
 
-    const handleLoad = async () => {
-      setReady(true);
-      // Do NOT mark round started or autostart here
-      // We wait for user interaction (disc click) to start and mark
-    };
-
+    const handleLoad = () => setReady(true);
     h.once('load', handleLoad);
 
     return () => {
@@ -166,31 +158,17 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
   // Stop on conclusion
   useEffect(() => {
-    if (lastResult?.concluded) {
-      finishWindow(true);
-    }
+    if (lastResult?.concluded) finishWindow(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastResult?.concluded]);
 
-  /**
-   * Start or resume play for `windowMs` milliseconds
-   * If this is the very first user-initiated start, mark round started.
-   */
   async function startWindowPlay(windowMs: number) {
     const h = howl.current;
-    if (!h || windowMs <= 0) {
-      // nothing to play; treat as finished
-      finishWindow();
-      return;
-    }
+    if (!h || windowMs <= 0) return finishWindow();
 
     if (!startedOnceRef.current) {
       startedOnceRef.current = true;
-      try {
-        await markRoundStarted();
-      } catch {
-        // ignore
-      }
+      try { await markRoundStarted(); } catch {}
     }
 
     setIsPlaying(true);
@@ -201,21 +179,16 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     setupAnalyser();
     h.play();
 
-    // clear any previous timer
     window.clearTimeout(stopTimerRef.current);
     stopTimerRef.current = window.setTimeout(() => {
-      finishWindow(); // ends this window
+      finishWindow();
     }, windowMs) as unknown as number;
   }
 
-  /**
-   * Pause current window (without concluding)
-   */
   function pauseWindow() {
     if (!howl.current || !isPlaying) return;
     const elapsed = Date.now() - roundStartMsRef.current;
     remainingMsRef.current = Math.max(0, remainingMsRef.current - elapsed);
-
     window.clearTimeout(stopTimerRef.current);
     howl.current.pause();
     setIsPlaying(false);
@@ -223,18 +196,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     teardownAnalyser();
   }
 
-  /**
-   * Finish current window (natural end). Marks round snippet window as finished,
-   * tears down analyser, and stops audio.
-   * If called due to game conclusion, also ensures playback is stopped.
-   */
   function finishWindow(forceStopAudio = false) {
     const h = howl.current;
     window.clearTimeout(stopTimerRef.current);
-    if (h) {
-      if (forceStopAudio) h.stop();
-      else h.stop(); // window concluded anyway
-    }
+    if (h) (forceStopAudio ? h.stop() : h.stop());
     setIsPlaying(false);
     setIsPaused(false);
     setIsFinished(true);
@@ -242,9 +207,6 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     teardownAnalyser();
   }
 
-  /**
-   * Replay window (if allowed)
-   */
   function replayWindow() {
     if (replayCount >= 1 || !ready || !howl.current) return;
     remainingMsRef.current = snippetSeconds * 1000;
@@ -252,12 +214,11 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     startWindowPlay(remainingMsRef.current);
   }
 
-  // Visualizer: setup / teardown / draw
+  // Visualizer
   function setupAnalyser() {
     try {
       const ctx = Howler.ctx as AudioContext | undefined;
-      if (!ctx) return; // html5 fallback lacks WebAudio graph
-
+      if (!ctx) return;
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
 
@@ -269,15 +230,12 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       try { (srcNode as any).connect(analyser); } catch {}
       try { analyser.connect(ctx.destination); } catch {}
 
-      const bufferLen = analyser.frequencyBinCount;
-      const data = new Uint8Array(bufferLen);
+      const data = new Uint8Array(analyser.frequencyBinCount);
       analyserRef.current = analyser;
       dataArrayRef.current = data;
 
       drawBars();
-    } catch {
-      // fail-soft
-    }
+    } catch {}
   }
 
   function teardownAnalyser() {
@@ -319,7 +277,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     loop();
   }
 
-  // Submit guess logic (unchanged)
+  // Submit guess
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const g = guess.trim();
@@ -354,290 +312,315 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   // Disc click handler
   const onDiscClick = () => {
     if (!ready || !howl.current) return;
-
-    // initial (not started yet)
-    if (!isPlaying && !isPaused && !isFinished) {
-      startWindowPlay(remainingMsRef.current);
-      return;
-    }
-
-    if (isPlaying) {
-      // playing -> pause
-      pauseWindow();
-      return;
-    }
-    if (isPaused && !isFinished) {
-      // paused (not finished) -> resume from remaining
-      startWindowPlay(remainingMsRef.current);
-      return;
-    }
-    // finished -> try replay (respect 1x limit)
-    if (isFinished) {
-      replayWindow();
-      return;
-    }
+    if (!isPlaying && !isPaused && !isFinished) return startWindowPlay(remainingMsRef.current);
+    if (isPlaying) return pauseWindow();
+    if (isPaused && !isFinished) return startWindowPlay(remainingMsRef.current);
+    if (isFinished) return replayWindow();
   };
 
   const concluded = !!lastResult?.concluded;
   const disable = !ready || concluded || (attemptsLeft !== undefined && attemptsLeft <= 0);
 
-  // Disc rotation animation toggles based on isPlaying
-  const discAnimate = shouldReduceMotion
-    ? { rotate: 0 }
-    : isPlaying
-      ? { rotate: 360 }
-      : { rotate: 0 };
-
-  const discTransition: Transition = shouldReduceMotion
-    ? { duration: 0 }
-    : isPlaying
-      ? { repeat: Infinity, repeatType: 'loop', ease: EASE_LINEAR, duration: 10 }
-      : { duration: 0.2 };
-
+  const shouldSpin = isPlaying && !shouldReduceMotion;
+  const discTransition: Transition = shouldSpin
+    ? { repeat: Infinity, repeatType: 'loop', ease: EASE_LINEAR, duration: 10 }
+    : { duration: 0.2 };
   const needleTransition: Transition = shouldReduceMotion
     ? { duration: 0 }
     : { repeat: Infinity, duration: 2, ease: EASE_IN_OUT };
 
   const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
-    } catch {}
+    await logout().catch(() => {});
     try { localStorage.removeItem('token'); } catch {}
-    navigate('/');
+    navigate('/welcome');
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
-      <motion.div
-        className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[900px] min-h-[90dvh] sm:min-h-[500px] h-auto shadow-lg relative text-white p-4 sm:p-10"
-        style={{ backgroundColor: COLORS.darkblue }}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
-      >
-        {/* Settings button (opens in-screen modal) */}
-        <motion.button
-          type="button"
-          className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setSettingsOpen(true)}
-          aria-label="Open Settings"
-          title="Settings"
+    <>
+      {/* USERNAME BADGE — fixed, outside the card */}
+      {user && (
+        <div
+          className="fixed top-6 left-6 z-[60] flex items-center gap-4 rounded-2xl px-5 py-4"
+          style={{
+            backgroundColor: 'rgba(20, 61, 77, 0.7)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            boxShadow: '0 6px 24px rgba(15,193,233,0.20)',
+            backdropFilter: 'blur(6px)',
+          }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor"/>
-            <path d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z" fill="currentColor"/>
-          </svg>
-        </motion.button>
-
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
-          <div className="flex-1 flex justify-center">
-            <div
-              className="flex flex-col items-center rounded-xl w-40 px-6 py-4"
-              style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
-            >
-              <span className="text-sm font-bold text-center">Score</span>
-              <span className="text-xl font-bold text-center">{score}</span>
-            </div>
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-base font-bold" style={{ color: COLORS.teal }}>
+                {username?.[0]?.toUpperCase() ?? 'P'}
+              </span>
+            )}
           </div>
 
-          <div className="flex-1 flex flex-col items-center justify-center relative">
-            <h1 className="text-2xl font-bold text-center">Game Screen</h1>
-
-            {/* Gamemode pill w/ dropdown */}
-            <div className="mt-2 relative">
+          <div className="leading-tight">
+            {/* Username + small links on the same row */}
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <div className="text-xl font-extrabold" style={{ color: '#E6F6FA' }}>
+                {username}
+              </div>
               <button
                 type="button"
-                onClick={() => setModeOpen(o => !o)}
-                onBlur={() => setTimeout(() => setModeOpen(false), 150)}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs sm:text-sm tracking-wide"
-                style={{
-                  borderColor: COLORS.teal,
-                  backgroundColor: 'rgba(20, 61, 77, 0.4)',
-                  color: COLORS.grayblue,
-                }}
-                aria-haspopup="listbox"
-                aria-expanded={modeOpen}
+                className="text-xs font-semibold hover:underline"
+                style={{ color: 'rgba(15,193,233,0.9)' }}
+                // onClick={() => navigate('/friends')} // wire up later
               >
-                <span className="inline-block rounded-full" style={{ width: 8, height: 8, backgroundColor: COLORS.teal }} />
-                Classic Mode
-                <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
-                  <path fill="currentColor" d="M7 10l5 5 5-5z" />
-                </svg>
+                Friends
               </button>
-
-              {modeOpen && (
-                <div
-                  className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-20"
-                  role="listbox"
-                  style={{ backgroundColor: COLORS.darkestblue, borderColor: 'rgba(255,255,255,0.08)' }}
-                >
-                  <button
-                    type="button"
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => navigate('/gamescreen')}
-                  >
-                    Classic Mode
-                  </button>
-                  <button
-                    type="button"
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => navigate('/inference')}
-                  >
-                    Inference Mode
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex-1 flex justify-center">
-            <div
-              className="flex flex-col items-center rounded-xl w-40 px-6 py-4"
-              style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
-            >
-              <span className="text-sm font-bold text-center">Streak</span>
-              <span className="text-xl font-bold text-center">{streak}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Logo cluster — control (teal tinted) */}
-        <div className="flex items-center justify-center w-full px-4 sm:px-6 mt-2 mb-4">
-          <div className="relative w-28 h-28">
-            {/* Disc (clickable) */}
-            <motion.img
-              src={discdb}
-              alt="Vinyl control"
-              className="w-28 h-28 select-none cursor-pointer"
-              draggable={false}
-              onDragStart={e => e.preventDefault()}
-              initial={{ rotate: 0 }}
-              animate={discAnimate}
-              transition={discTransition}
-              whileHover={!shouldReduceMotion ? { scale: 1.03 } : undefined}
-              whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
-              onClick={onDiscClick}
-              style={{
-                willChange: 'transform',
-                filter: TEAL_TINT_FILTER,
-                // soft glow to reinforce the color
-                boxShadow: '0 0 20px rgba(15, 193, 233, 0.35)',
-                borderRadius: '50%',
-              }}
-            />
-            {/* Needle (decorative; subtle motion, tinted) */}
-            <motion.img
-              src={needledb}
-              alt=""
-              aria-hidden="true"
-              className="absolute w-16 h-16 z-10 select-none pointer-events-none"
-              style={{
-                top: '-6%',
-                right: '14%',
-                transformOrigin: '85% 20%',
-                willChange: 'transform',
-                filter: TEAL_TINT_FILTER,
-              }}
-              initial={{ y: 0, rotate: -2 }}
-              animate={{
-                y: shouldReduceMotion ? 0 : [0, -1, 0],
-                rotate: shouldReduceMotion ? -2 : [-2, -3, -2],
-              }}
-              transition={needleTransition}
-            />
-          </div>
-        </div>
-
-        {/* Visualizer / status */}
-        <div className="flex items-center justify-center w-full rounded-lg px-4 sm:px-6">
-          {isPlaying ? (
-            <div className="flex flex-col items-center py-2 mb-2 w-full">
-              <canvas
-                ref={canvasRef}
-                width={800}
-                height={80}
-                className="w-full h-full mb-3"
-                style={{ imageRendering: 'pixelated' }}
-              />
-              <motion.div
-                className="text-sm"
-                style={{ color: COLORS.grayblue }}
-                animate={{ opacity: [1, 0.5, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
+              <button
+                type="button"
+                className="text-xs font-semibold hover:underline"
+                style={{ color: 'rgba(15,193,233,0.9)' }}
+                // onClick={() => navigate('/stats')} // wire up later
               >
-                Now Playing… (Click the Record to Pause)
-              </motion.div>
+                Stats
+              </button>
             </div>
-          ) : (
-            <div className="text-center mb-2" style={{ color: COLORS.grayblue }}>
-              {isFinished
-                ? (replayCount < 1
-                    ? 'Snippet Finished — Click the Record to Replay'
-                    : 'No More Replays for This Round')
-                : (ready
-                    ? 'Ready — Click the Record to Play'
-                    : 'Loading…')}
-            </div>
-          )}
-        </div>
-
-        {/* Guess input */}
-        <form onSubmit={onSubmit} className="relative mb-6">
-          <div className="relative bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-cyan-400/20 p-[2px] rounded-2xl">
-            <div className="flex bg-darkblue/90 rounded-2xl overflow-hidden backdrop-blur-sm">
-              <input
-                type="text"
-                value={guess}
-                onChange={e => setGuess(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && guess.trim()) onSubmit(e as any); }}
-                placeholder={concluded ? 'Round concluded' : 'Enter your answer here...'}
-                className="flex-1 p-4 sm:p-5 text-sm sm:text-base bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
-                disabled={disable}
-                autoFocus
-              />
-              <motion.button
-                type="submit"
-                disabled={disable || !guess.trim()}
-                className={`px-6 sm:px-8 font-bold py-4 sm:py-5 transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
-                  disable || !guess.trim()
-                    ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                }`}
-                whileHover={!disable && !!guess.trim() ? { scale: 1.02 } : {}}
-                whileTap={!disable && !!guess.trim() ? { scale: 0.98 } : {}}
-              >
-                <span className="relative z-10 flex items-center gap-2">Submit</span>
-              </motion.button>
+            <div className="text-xs" style={{ color: COLORS.grayblue }}>
+              online
             </div>
           </div>
-        </form>
+        </div>
+      )}
 
-        {/* Guess history */}
-        <div
-          className="rounded-2xl p-4 max-h-48 flex-grow overflow-y-auto pr-2"
-          style={{ backgroundColor: COLORS.darkestblue }}
+      <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
+        <motion.div
+          className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[900px] min-h-[90dvh] sm:min-h-[500px] h-auto shadow-lg relative text-white p-4 sm:p-10"
+          style={{ backgroundColor: COLORS.darkblue }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
         >
-          <h2 className="text-base sm:text-lg font-semibold mb-2">Your Guesses:</h2>
-          <ul className="space-y-2 overflow-y-auto">
-            {guessHistory.map(g => (
-              <li key={g.guessNum} className="flex justify-between">
-                <span>Attempt {g.guessNum}: {g.userGuess}</span>
-                <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
-                  {g.isCorrect ? 'Correct' : `Incorrect (${g.timeTakenSec}s)`}
-                </span>
-              </li>
-            ))}
-          </ul>
-          {typeof attemptsLeft === 'number' && (
-            <p className="mt-3 text-sm opacity-80">Attempts left: {attemptsLeft}</p>
-          )}
-        </div>
-      </motion.div>
+          {/* Settings button (opens in-screen modal) */}
+          <motion.button
+            type="button"
+            className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Open Settings"
+            title="Settings"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor"/>
+              <path d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z" fill="currentColor"/>
+            </svg>
+          </motion.button>
+
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
+            <div className="flex-1 flex justify-center">
+              <div
+                className="flex flex-col items-center rounded-xl w-44 px-6 py-5"
+                style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
+              >
+                <span className="text-sm font-bold text-center">Score</span>
+                <span className="text-2xl font-bold text-center">{score}</span>
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center relative">
+              <h1 className="text-2xl font-bold text-center">Classic</h1>
+
+              {/* Gamemode pill */}
+              <div className="mt-2 relative">
+                <button
+                  type="button"
+                  onClick={() => setModeOpen(o => !o)}
+                  onBlur={() => setTimeout(() => setModeOpen(false), 150)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm tracking-wide"
+                  style={{
+                    borderColor: COLORS.teal,
+                    backgroundColor: 'rgba(20, 61, 77, 0.4)',
+                    color: COLORS.grayblue,
+                  }}
+                  aria-haspopup="listbox"
+                  aria-expanded={modeOpen}
+                >
+                  <span className="inline-block rounded-full" style={{ width: 8, height: 8, backgroundColor: COLORS.teal }} />
+                  Classic Mode
+                  <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
+                    <path fill="currentColor" d="M7 10l5 5 5-5z" />
+                  </svg>
+                </button>
+
+                {modeOpen && (
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl border shadow-lg overflow-hidden z-20"
+                    role="listbox"
+                    style={{ backgroundColor: COLORS.darkestblue, borderColor: 'rgba(255,255,255,0.08)' }}
+                  >
+                    <button
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => navigate('/gamescreen')}
+                    >
+                      Classic Mode
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => navigate('/inference')}
+                    >
+                      Inference Mode
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 flex justify-center">
+              <div
+                className="flex flex-col items-center rounded-xl w-44 px-6 py-5"
+                style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
+              >
+                <span className="text-sm font-bold text-center">Streak</span>
+                <span className="text-2xl font-bold text-center">{streak}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Disc + needle control */}
+          <div className="flex items-center justify-center w-full px-4 sm:px-6 mt-2 mb-4">
+            <div className="relative w-28 h-28">
+              <motion.img
+                src={discdb}
+                alt="Vinyl control"
+                className="w-28 h-28 select-none cursor-pointer"
+                draggable={false}
+                onDragStart={e => e.preventDefault()}
+                initial={{ rotate: 0 }}
+                animate={shouldSpin ? { rotate: 360 } : { rotate: 0 }}
+                transition={
+                  (shouldSpin
+                    ? { repeat: Infinity, repeatType: 'loop', ease: EASE_LINEAR, duration: 10 }
+                    : { duration: 0.2 }) as Transition
+                }
+                whileHover={!shouldReduceMotion ? { scale: 1.03 } : undefined}
+                whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
+                onClick={onDiscClick}
+                style={{
+                  willChange: 'transform',
+                  filter: TEAL_TINT_FILTER,
+                  boxShadow: '0 0 20px rgba(15, 193, 233, 0.35)',
+                  borderRadius: '50%',
+                }}
+              />
+              <motion.img
+                src={needledb}
+                alt=""
+                aria-hidden="true"
+                className="absolute w-16 h-16 z-10 select-none pointer-events-none"
+                style={{
+                  top: '-6%',
+                  right: '14%',
+                  transformOrigin: '85% 20%',
+                  willChange: 'transform',
+                  filter: TEAL_TINT_FILTER,
+                }}
+                initial={{ y: 0, rotate: -2 }}
+                animate={{
+                  y: shouldReduceMotion ? 0 : [0, -1, 0],
+                  rotate: shouldReduceMotion ? -2 : [-2, -3, -2],
+                }}
+                transition={(shouldReduceMotion ? { duration: 0 } : { repeat: Infinity, duration: 2, ease: EASE_IN_OUT }) as Transition}
+              />
+            </div>
+          </div>
+
+          {/* Status / visualizer */}
+          <div className="flex items-center justify-center w-full rounded-lg px-4 sm:px-6">
+            {isPlaying ? (
+              <div className="flex flex-col items-center py-2 mb-2 w-full">
+                <canvas
+                  ref={canvasRef}
+                  width={800}
+                  height={80}
+                  className="w-full h-full mb-3"
+                  style={{ imageRendering: 'pixelated' }}
+                />
+                <motion.div
+                  className="text-sm"
+                  style={{ color: COLORS.grayblue }}
+                  animate={{ opacity: [1, 0.5, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  now playing… (click the record to pause)
+                </motion.div>
+              </div>
+            ) : (
+              <div className="text-center mb-2" style={{ color: COLORS.grayblue }}>
+                {isFinished
+                  ? (replayCount < 1
+                      ? 'Snippet Finished — Click the Record to Replay'
+                      : 'No more replays for this round')
+                  : (ready
+                      ? 'Ready — Click the Record to Play'
+                      : 'Loading…')}
+              </div>
+            )}
+          </div>
+
+          {/* Guess input */}
+          <form onSubmit={onSubmit} className="relative mb-6">
+            <div className="relative bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-cyan-400/20 p-[2px] rounded-2xl">
+              <div className="flex bg-darkblue/90 rounded-2xl overflow-hidden backdrop-blur-sm">
+                <input
+                  type="text"
+                  value={guess}
+                  onChange={e => setGuess(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && guess.trim()) onSubmit(e as any); }}
+                  placeholder={concluded ? 'Round concluded' : ''}
+                  className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
+                  disabled={disable}
+                  autoFocus
+                />
+                <motion.button
+                  type="submit"
+                  disabled={disable || !guess.trim()}
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    disable || !guess.trim()
+                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                  }`}
+                  whileHover={!disable && !!guess.trim() ? { scale: 1.02 } : {}}
+                  whileTap={!disable && !!guess.trim() ? { scale: 0.98 } : {}}
+                >
+                  <span className="relative z-10 flex items-center gap-2">Submit</span>
+                </motion.button>
+              </div>
+            </div>
+          </form>
+
+          {/* Guess history */}
+          <div
+            className="rounded-2xl p-5 max-h-48 flex-grow overflow-y-auto pr-2"
+            style={{ backgroundColor: COLORS.darkestblue }}
+          >
+            <h2 className="text-lg font-semibold mb-2">Your Guesses:</h2>
+            <ul className="space-y-2 overflow-y-auto">
+              {guessHistory.map(g => (
+                <li key={g.guessNum} className="flex justify-between">
+                  <span>Attempt {g.guessNum}: {g.userGuess}</span>
+                  <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
+                    {g.isCorrect ? 'Correct' : `Incorrect (${g.timeTakenSec}s)`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {typeof attemptsLeft === 'number' && (
+              <p className="mt-3 text-sm opacity-80">Attempts left: {attemptsLeft}</p>
+            )}
+          </div>
+        </motion.div>
+      </div>
 
       {/* SETTINGS MODAL */}
       {settingsOpen && (
@@ -694,45 +677,59 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                       backgroundColor: 'rgba(20, 61, 77, 0.35)',
                     }}
                   >
-                    {players.length} {players.length === 1 ? 'player' : 'players'}
+                    {players.length + (user ? 1 : 0)}{' '}
+                    {players.length + (user ? 1 : 0) === 1 ? 'player' : 'players'}
                   </span>
                 </header>
 
-                {players.length === 0 ? (
-                  <p className="text-sm" style={{ color: COLORS.grayblue }}>
-                    No players joined yet.
-                  </p>
-                ) : (
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {players.map(p => (
-                      <li
-                        key={p.id}
-                        className="flex items-center gap-3 p-3 rounded-xl"
-                        style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
-                      >
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
-                          {p.avatarUrl ? (
-                            <img
-                              src={p.avatarUrl}
-                              alt={p.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-sm font-bold">
-                              {p.name?.[0]?.toUpperCase() ?? 'P'}
-                            </span>
-                          )}
+                {/* FULL-WIDTH player rows with larger padding */}
+                <ul className="grid grid-cols-1 gap-3">
+                  {user && (
+                    <li
+                      key="self"
+                      className="w-full flex items-center gap-4 p-4 rounded-xl"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+                    >
+                      <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
+                        {avatarUrl ? (
+                          <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-sm font-bold">{username[0].toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold truncate" style={{ color: COLORS.teal }}>
+                          {username}
                         </div>
-                        <div className="flex-1">
-                          <div className="font-semibold">{p.name || 'Player'}</div>
-                          <div className="text-xs" style={{ color: COLORS.grayblue }}>
-                            Ready
-                          </div>
+                        <div className="text-xs" style={{ color: COLORS.grayblue }}>
+                          You
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                      </div>
+                    </li>
+                  )}
+
+                  {players.map(p => (
+                    <li
+                      key={p.id}
+                      className="w-full flex items-center gap-4 p-4 rounded-xl"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+                    >
+                      <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
+                        {p.avatarUrl ? (
+                          <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-sm font-bold">{p.name?.[0]?.toUpperCase() ?? 'P'}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold truncate">{p.name || 'Player'}</div>
+                        <div className="text-xs" style={{ color: COLORS.grayblue }}>
+                          Ready
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </section>
 
               {/* Controls */}
@@ -800,7 +797,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
           </motion.div>
         </motion.div>
       )}
-    </div>
+    </>
   );
 };
 
