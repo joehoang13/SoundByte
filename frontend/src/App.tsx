@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Landing from './pages/Landing';
 import UserProfile from './pages/UserProfile';
 import GameScreen from './pages/GameScreen';
-import InferenceScreen from './pages/InferenceScreen'; 
+import InferenceScreen from './pages/InferenceScreen';
 import EndScreen from './pages/EndScreen';
 import ReadyScreen from './pages/ReadyScreen';
 import Login from './pages/Login';
@@ -49,7 +49,7 @@ export default function App() {
             }
           />
           <Route
-            path="/inference" 
+            path="/inference"
             element={
               <RequireAuth>
                 <InferenceScreen />

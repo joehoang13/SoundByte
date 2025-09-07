@@ -28,13 +28,31 @@ const COLORS = {
 };
 
 const SAMPLE_PROMPTS: Prompt[] = [
-  { id: 'p1', question: 'Which National Anthem opens with these lines?', lyrics: `"O say can you see, by the dawn’s early light,"`, answer: 'Star Spangled Banner' },
-  { id: 'p2', question: 'Name the artist who sings this hook:', lyrics: `"Cause baby you’re a firework\nCome on, show ’em what you’re worth"`, answer: 'Katy Perry' },
-  { id: 'p3', question: 'What song is this chorus from?', lyrics: `"Hello from the other side\nI must’ve called a thousand times"`, answer: 'Hello' },
+  {
+    id: 'p1',
+    question: 'Which National Anthem opens with these lines?',
+    lyrics: `"O say can you see, by the dawn’s early light,"`,
+    answer: 'Star Spangled Banner',
+  },
+  {
+    id: 'p2',
+    question: 'Name the artist who sings this hook:',
+    lyrics: `"Cause baby you’re a firework\nCome on, show ’em what you’re worth"`,
+    answer: 'Katy Perry',
+  },
+  {
+    id: 'p3',
+    question: 'What song is this chorus from?',
+    lyrics: `"Hello from the other side\nI must’ve called a thousand times"`,
+    answer: 'Hello',
+  },
 ];
 
 function norm(x: string) {
-  return x.toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+  return x
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
 }
 
 const InferenceScreen: React.FC = () => {
@@ -103,16 +121,27 @@ const InferenceScreen: React.FC = () => {
           aria-label="Open Settings"
           title="Settings"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor"/>
-            <path d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z" fill="currentColor"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-5 h-5"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor" />
+            <path
+              d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z"
+              fill="currentColor"
+            />
           </svg>
         </motion.button>
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
           <div className="flex-1 flex justify-center">
-            <div className="flex flex-col items-center rounded-xl w-40 px-6 py-4" style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}>
+            <div
+              className="flex flex-col items-center rounded-xl w-40 px-6 py-4"
+              style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
+            >
               <span className="text-sm font-bold text-center">Score</span>
               <span className="text-xl font-bold text-center">{score}</span>
             </div>
@@ -135,7 +164,10 @@ const InferenceScreen: React.FC = () => {
                 aria-haspopup="listbox"
                 aria-expanded={modeOpen}
               >
-                <span className="inline-block rounded-full" style={{ width: 8, height: 8, backgroundColor: COLORS.teal }} />
+                <span
+                  className="inline-block rounded-full"
+                  style={{ width: 8, height: 8, backgroundColor: COLORS.teal }}
+                />
                 Inference Mode
                 <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
                   <path fill="currentColor" d="M7 10l5 5 5-5z" />
@@ -146,18 +178,21 @@ const InferenceScreen: React.FC = () => {
                 <div
                   className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-20"
                   role="listbox"
-                  style={{ backgroundColor: COLORS.darkestblue, borderColor: 'rgba(255,255,255,0.08)' }}
+                  style={{
+                    backgroundColor: COLORS.darkestblue,
+                    borderColor: 'rgba(255,255,255,0.08)',
+                  }}
                 >
                   <button
                     className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                    onMouseDown={(e) => e.preventDefault()}
+                    onMouseDown={e => e.preventDefault()}
                     onClick={() => navigate('/gamescreen')}
                   >
                     Classic Mode
                   </button>
                   <button
                     className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                    onMouseDown={(e) => e.preventDefault()}
+                    onMouseDown={e => e.preventDefault()}
                     onClick={() => navigate('/inference')}
                   >
                     Inference Mode
@@ -168,7 +203,10 @@ const InferenceScreen: React.FC = () => {
           </div>
 
           <div className="flex-1 flex justify-center">
-            <div className="flex flex-col items-center rounded-xl w-40 px-6 py-4" style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}>
+            <div
+              className="flex flex-col items-center rounded-xl w-40 px-6 py-4"
+              style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
+            >
               <span className="text-sm font-bold text-center">Streak</span>
               <span className="text-xl font-bold text-center">{streak}</span>
             </div>
@@ -198,9 +236,18 @@ const InferenceScreen: React.FC = () => {
           <div className="mb-2 text-sm tracking-wide" style={{ color: COLORS.grayblue }}>
             Lyrics Excerpt
           </div>
-          <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(144,164,171,0.35)' }}>
-            <pre className="whitespace-pre-wrap font-mono text-sm sm:text-base" style={{ color: '#E9F1F5' }}>
-{current.lyrics}
+          <div
+            className="rounded-xl p-4"
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.04)',
+              border: '1px dashed rgba(144,164,171,0.35)',
+            }}
+          >
+            <pre
+              className="whitespace-pre-wrap font-mono text-sm sm:text-base"
+              style={{ color: '#E9F1F5' }}
+            >
+              {current.lyrics}
             </pre>
           </div>
         </div>
@@ -208,7 +255,10 @@ const InferenceScreen: React.FC = () => {
         {/* Answer input */}
         <form onSubmit={submit} className="relative mb-6">
           <div className="relative bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-cyan-400/20 p-[2px] rounded-2xl">
-            <div className="flex rounded-2xl overflow-hidden backdrop-blur-sm" style={{ backgroundColor: 'rgba(20,61,77,0.9)' }}>
+            <div
+              className="flex rounded-2xl overflow-hidden backdrop-blur-sm"
+              style={{ backgroundColor: 'rgba(20,61,77,0.9)' }}
+            >
               <input
                 type="text"
                 value={guess}
@@ -245,7 +295,10 @@ const InferenceScreen: React.FC = () => {
             <motion.button
               onClick={goNext}
               className="px-5 py-2 rounded-xl font-semibold"
-              style={{ background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)', color: '#fff' }}
+              style={{
+                background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
+                color: '#fff',
+              }}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -255,12 +308,17 @@ const InferenceScreen: React.FC = () => {
         )}
 
         {/* Guess history */}
-        <div className="rounded-2xl p-4 max-h-48 flex-grow overflow-y-auto pr-2" style={{ backgroundColor: COLORS.darkestblue }}>
+        <div
+          className="rounded-2xl p-4 max-h-48 flex-grow overflow-y-auto pr-2"
+          style={{ backgroundColor: COLORS.darkestblue }}
+        >
           <h2 className="text-base sm:text-lg font-semibold mb-2">Your Guesses:</h2>
           <ul className="space-y-2 overflow-y-auto">
             {history.map(g => (
               <li key={g.guessNum} className="flex justify-between">
-                <span>Attempt {g.guessNum}: {g.userGuess}</span>
+                <span>
+                  Attempt {g.guessNum}: {g.userGuess}
+                </span>
                 <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
                   {g.isCorrect ? 'Correct' : 'Incorrect'}
                 </span>
@@ -274,4 +332,3 @@ const InferenceScreen: React.FC = () => {
 };
 
 export default InferenceScreen;
-
