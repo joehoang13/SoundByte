@@ -11,9 +11,10 @@ interface ModalProps {
   initialTab?: 'login' | 'signup';
 }
 
-const LEFT_LABEL_NUDGE = { marginLeft: 40, marginTop: -200 };
-const RIGHT_LABEL_NUDGE = { marginRight: 90, marginTop: -200 };
-
+/**
+ * Tweak these freely to reposition the vinyls under each label.
+ * Left vinyl remains mirrored for visual symmetry.
+ */
 const LEFT_VINYL_NUDGE = { marginLeft: 110, marginTop: 12 };
 const RIGHT_VINYL_NUDGE = { marginRight: 50, marginTop: 12 };
 
@@ -21,13 +22,17 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
   const [hover, setHover] = useState<Side>(initialTab ?? null);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     window.addEventListener('keydown', onKey);
-    const prev = document.body.style.overflow;
+
+    const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
+      document.body.style.overflow = prevOverflow;
     };
   }, [onClose]);
 
@@ -38,30 +43,35 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
     <AnimatePresence>
       <motion.div
         className="fixed inset-0 z-50 bg-darkblue/30 flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute right-4 top-3 z-50 rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white text-xl"
-        >
-          ×
-        </button>
-
-        {/* Main Modal */}
+        {/* Modal Shell */}
         <motion.div
-          className="relative w-full max-w-6xl h-[80vh] max-h-[600px] min-h-[500px] bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
+          className="relative w-full max-w-7xl h-[85vh] max-h-[750px] min-h-[550px]
+                     bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10
+                     shadow-2xl overflow-hidden"
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-          {/* Two halves */}
+          {/* Close Button (inside modal, top-right) */}
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute right-4 top-4 z-50 rounded-full p-2 text-white/70
+                       hover:bg-white/10 hover:text-white text-xl"
+          >
+            ×
+          </button>
+
+          {/* Split Grid */}
           <div className="relative bg-darkblue/85 mx-auto grid h-full w-full grid-cols-2">
-            {/* Divider */}
+            {/* Divider (desktop) */}
             <div className="pointer-events-none absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-white/15 md:block" />
 
             {/* LEFT (Login) */}
@@ -73,7 +83,7 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
               animate={{ opacity: leftActive ? 1 : hover === 'signup' ? 0.35 : 0.9 }}
               transition={{ duration: 0.25 }}
             >
-              {/* LABEL (separate, nudged; fades out on hover) */}
+              {/* Label layer */}
               <motion.div
                 className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
                 initial={false}
@@ -82,8 +92,6 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
               >
                 <div className="flex flex-col items-start">
                   <h2 className="font-exo text-6xl text-white select-none">Returning?</h2>
-
-                  {/* Vinyl under the label — fades with the label (mirrored on LEFT) */}
                   <div
                     className="select-none"
                     style={{
@@ -100,7 +108,7 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
                 </div>
               </motion.div>
 
-              {/* FORM (fixed alignment; appears on hover) */}
+              {/* Form layer */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <motion.div
                   className="relative w-full max-w-md"
@@ -130,7 +138,7 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
               animate={{ opacity: rightActive ? 1 : hover === 'login' ? 0.35 : 0.9 }}
               transition={{ duration: 0.25 }}
             >
-              {/* LABEL (separate, nudged; fades out on hover) */}
+              {/* Label layer */}
               <motion.div
                 className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
                 initial={false}
@@ -139,8 +147,6 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
               >
                 <div className="flex flex-col text-center items-end">
                   <h2 className="font-exo text-6xl text-white select-none">New?</h2>
-
-                  {/* Vinyl under the label — fades with the label (normal on RIGHT) */}
                   <div
                     className="select-none"
                     style={{
@@ -157,7 +163,7 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
                 </div>
               </motion.div>
 
-              {/* FORM (fixed alignment; appears on hover) */}
+              {/* Form layer */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <motion.div
                   className="relative w-full max-w-md"
@@ -180,7 +186,7 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
           </div>
         </motion.div>
 
-        {/* Footer */}
+        {/* Footer Note */}
         <div className="pointer-events-none absolute bottom-3 left-0 right-0 text-center text-xs text-white/60">
           By continuing you agree to our Terms & Privacy.
         </div>

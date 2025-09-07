@@ -6,8 +6,6 @@ const auth = require('../middleware/auth');
 const authMiddleware = require('../middleware/auth');
 const authController = require('../controllers/authController');
 
-
-
 const router = express.Router();
 
 function validate(rules) {
@@ -48,6 +46,5 @@ router.post(
 
 router.get('/me', auth, authCtl.me);
 router.post('/logout', authMiddleware, authController.logout);
-
 
 module.exports = router;

@@ -1,7 +1,6 @@
 import { AUTH_BASE, json, withAuth, setToken } from './base';
 import { useAuth } from '../stores/auth';
 
-
 export interface AuthUser {
   id: string;
   email: string;
@@ -53,7 +52,7 @@ export const authApi = {
   logout: async () => {
     try {
       await fetch(`${AUTH_BASE}/logout`, withAuth({ method: 'POST' }));
-    } catch { }
+    } catch {}
     setToken(null);
     return true;
   },
