@@ -60,7 +60,10 @@ const SAMPLE_PROMPTS: Prompt[] = [
 ];
 
 function norm(x: string) {
-  return x.toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+  return x
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
 }
 
 const InferenceScreen: React.FC = () => {
@@ -496,7 +499,11 @@ const InferenceScreen: React.FC = () => {
                     >
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
                         {avatarUrl ? (
-                          <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                          <img
+                            src={avatarUrl}
+                            alt={username}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <span className="text-sm font-bold">{username[0].toUpperCase()}</span>
                         )}
@@ -520,9 +527,15 @@ const InferenceScreen: React.FC = () => {
                     >
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
                         {p.avatarUrl ? (
-                          <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                          <img
+                            src={p.avatarUrl}
+                            alt={p.name}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
-                          <span className="text-sm font-bold">{p.name?.[0]?.toUpperCase() ?? 'P'}</span>
+                          <span className="text-sm font-bold">
+                            {p.name?.[0]?.toUpperCase() ?? 'P'}
+                          </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
