@@ -1,10 +1,17 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Howler } from 'howler';
+import useGameStore from '../stores/GameSessionStore';
 
 /**
  * InferenceScreen — Inference mode (question + lyrics)
- * Adds a gamemode pill with a dropdown to switch to Classic mode.
+ * Adds an in-screen Settings modal that shows:
+ * - Game Settings header
+ * - Players list
+ * - Volume slider (persists to localStorage and controls Howler)
+ * - Back to Game / Log Out
+ * Keeps your existing UI, score/streak, mode pill, and sample prompts.
  */
 
 type Prompt = {
@@ -18,6 +25,12 @@ type GuessRow = {
   guessNum: number;
   userGuess: string;
   isCorrect: boolean;
+};
+
+type Player = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
 };
 
 const COLORS = {
@@ -49,14 +62,17 @@ const SAMPLE_PROMPTS: Prompt[] = [
 ];
 
 function norm(x: string) {
-  return x
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '')
-    .trim();
+  return x.toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
 }
 
 const InferenceScreen: React.FC = () => {
   const navigate = useNavigate();
+
+  // Players sourced from store if present; falls back gracefully
+  const players: Player[] =
+    // @ts-ignore tolerate various store shapes
+    (useGameStore.getState?.().players as Player[] | undefined) ?? [];
+
   const prompts = useMemo(() => SAMPLE_PROMPTS, []);
   const [idx, setIdx] = useState(0);
   const [guess, setGuess] = useState('');
@@ -66,6 +82,21 @@ const InferenceScreen: React.FC = () => {
   const [streak, setStreak] = useState(0);
   const [concluded, setConcluded] = useState(false);
   const [modeOpen, setModeOpen] = useState(false);
+
+  // Settings modal state
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Volume (0–100), persists + controls Howler master volume
+  const [volume, setVolume] = useState<number>(() => {
+    const saved = localStorage.getItem('sb_volume');
+    const initial = saved ? Math.min(100, Math.max(0, Number(saved))) : 80;
+    Howler.volume(initial / 100);
+    return initial;
+  });
+  useEffect(() => {
+    Howler.volume(volume / 100);
+    localStorage.setItem('sb_volume', String(volume));
+  }, [volume]);
 
   const current = prompts[idx];
   const totalRounds = prompts.length;
@@ -101,6 +132,14 @@ const InferenceScreen: React.FC = () => {
     setGuess('');
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    } catch {}
+    try { localStorage.removeItem('token'); } catch {}
+    navigate('/');
+  };
+
   const disableInput = concluded || attemptsLeft <= 0;
 
   return (
@@ -112,26 +151,19 @@ const InferenceScreen: React.FC = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
       >
-        {/* Settings */}
+        {/* Settings (now opens in-screen modal) */}
         <motion.button
+          type="button"
           className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/ready')}
+          onClick={() => setSettingsOpen(true)}
           aria-label="Open Settings"
           title="Settings"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor" />
-            <path
-              d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z"
-              fill="currentColor"
-            />
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor"/>
+            <path d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z" fill="currentColor"/>
           </svg>
         </motion.button>
 
@@ -153,6 +185,7 @@ const InferenceScreen: React.FC = () => {
             {/* Gamemode pill w/ dropdown */}
             <div className="mt-2 relative">
               <button
+                type="button"
                 onClick={() => setModeOpen(o => !o)}
                 onBlur={() => setTimeout(() => setModeOpen(false), 150)}
                 className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs sm:text-sm tracking-wide"
@@ -164,10 +197,7 @@ const InferenceScreen: React.FC = () => {
                 aria-haspopup="listbox"
                 aria-expanded={modeOpen}
               >
-                <span
-                  className="inline-block rounded-full"
-                  style={{ width: 8, height: 8, backgroundColor: COLORS.teal }}
-                />
+                <span className="inline-block rounded-full" style={{ width: 8, height: 8, backgroundColor: COLORS.teal }} />
                 Inference Mode
                 <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
                   <path fill="currentColor" d="M7 10l5 5 5-5z" />
@@ -176,7 +206,7 @@ const InferenceScreen: React.FC = () => {
 
               {modeOpen && (
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-20"
+                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-20"
                   role="listbox"
                   style={{
                     backgroundColor: COLORS.darkestblue,
@@ -184,6 +214,7 @@ const InferenceScreen: React.FC = () => {
                   }}
                 >
                   <button
+                    type="button"
                     className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
                     onMouseDown={e => e.preventDefault()}
                     onClick={() => navigate('/gamescreen')}
@@ -191,6 +222,7 @@ const InferenceScreen: React.FC = () => {
                     Classic Mode
                   </button>
                   <button
+                    type="button"
                     className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
                     onMouseDown={e => e.preventDefault()}
                     onClick={() => navigate('/inference')}
@@ -293,6 +325,7 @@ const InferenceScreen: React.FC = () => {
               Correct answer: <span className="font-semibold text-white">{current.answer}</span>
             </p>
             <motion.button
+              type="button"
               onClick={goNext}
               className="px-5 py-2 rounded-xl font-semibold"
               style={{
@@ -327,6 +360,159 @@ const InferenceScreen: React.FC = () => {
           </ul>
         </div>
       </motion.div>
+
+      {/* SETTINGS MODAL */}
+      {settingsOpen && (
+        <motion.div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setSettingsOpen(false)}
+        >
+          <motion.div
+            className="relative w-full max-w-3xl bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-6 sm:p-8 text-white"
+            style={{ backgroundColor: 'rgba(39,77,91,0.9)' }}
+            initial={{ y: 20, scale: 0.98, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close X */}
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white text-xl"
+            >
+              ×
+            </button>
+
+            {/* Header */}
+            <div className="mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold">Game Settings</h2>
+              <p className="text-sm mt-1" style={{ color: COLORS.grayblue }}>
+                Adjust volume, manage your session, and see who’s playing.
+              </p>
+            </div>
+
+            {/* Content grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Players */}
+              <section
+                className="lg:col-span-2 rounded-2xl p-5"
+                style={{
+                  backgroundColor: 'rgba(20, 61, 77, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
+                <header className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold">Players</h3>
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full border"
+                    style={{
+                      borderColor: COLORS.teal,
+                      color: COLORS.grayblue,
+                      backgroundColor: 'rgba(20, 61, 77, 0.35)',
+                    }}
+                  >
+                    {players.length} {players.length === 1 ? 'player' : 'players'}
+                  </span>
+                </header>
+
+                {players.length === 0 ? (
+                  <p className="text-sm" style={{ color: COLORS.grayblue }}>
+                    No players joined yet.
+                  </p>
+                ) : (
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {players.map((p) => (
+                      <li
+                        key={p.id}
+                        className="flex items-center gap-3 p-3 rounded-xl"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
+                      >
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
+                          {p.avatarUrl ? (
+                            <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-sm font-bold">
+                              {p.name?.[0]?.toUpperCase() ?? 'P'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold">{p.name || 'Player'}</div>
+                          <div className="text-xs" style={{ color: COLORS.grayblue }}>
+                            Ready
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              {/* Controls */}
+              <section
+                className="rounded-2xl p-5 flex flex-col gap-6"
+                style={{
+                  backgroundColor: 'rgba(20, 61, 77, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
+                {/* Volume */}
+                <div>
+                  <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm" style={{ color: COLORS.grayblue }}>0</span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={volume}
+                      onChange={(e) => setVolume(Number(e.target.value))}
+                      className="flex-1 accent-cyan-400"
+                      aria-label="Master volume"
+                    />
+                    <span className="text-sm w-10 text-right" style={{ color: COLORS.grayblue }}>
+                      {volume}
+                    </span>
+                  </div>
+                  <p className="text-xs mt-2" style={{ color: COLORS.grayblue }}>
+                    Controls the game’s master volume.
+                  </p>
+                </div>
+
+                {/* Back / Logout */}
+                <div className="flex flex-col gap-3">
+                  <motion.button
+                    type="button"
+                    onClick={() => setSettingsOpen(false)}
+                    className="w-full px-4 py-2 rounded-xl font-semibold"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Back to Game
+                  </motion.button>
+
+                  <motion.button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2 rounded-xl font-semibold"
+                    style={{ background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)', color: '#fff' }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Log Out
+                  </motion.button>
+                </div>
+              </section>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };
