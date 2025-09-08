@@ -183,7 +183,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     return () => {
       try {
         s.disconnect();
-      } catch {}
+      } catch { }
       socketRef.current = null;
     };
   }, [username]);
@@ -266,7 +266,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       startedOnceRef.current = true;
       try {
         await markRoundStarted();
-      } catch {}
+      } catch { }
     }
 
     setIsPlaying(true);
@@ -279,8 +279,12 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
     window.clearTimeout(stopTimerRef.current);
     stopTimerRef.current = window.setTimeout(() => {
+      if (howl.current?.playing()) {
+        howl.current.stop();
+      }
       finishWindow();
     }, windowMs) as unknown as number;
+
   }
 
   function pauseWindow() {
@@ -327,17 +331,17 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
       try {
         (srcNode as any).connect(analyser);
-      } catch {}
+      } catch { }
       try {
         analyser.connect(ctx.destination);
-      } catch {}
+      } catch { }
 
       const data = new Uint8Array(analyser.frequencyBinCount);
       analyserRef.current = analyser;
       dataArrayRef.current = data;
 
       drawBars();
-    } catch {}
+    } catch { }
   }
 
   function teardownAnalyser() {
@@ -432,10 +436,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     : { repeat: Infinity, duration: 2, ease: EASE_IN_OUT };
 
   const handleLogout = async () => {
-    await logout().catch(() => {});
+    await logout().catch(() => { });
     try {
       localStorage.removeItem('token');
-    } catch {}
+    } catch { }
     navigate('/welcome');
   };
 
@@ -936,11 +940,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                     <motion.button
                       type="submit"
                       disabled={disable || !guess.trim()}
-                      className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
-                        disable || !guess.trim()
+                      className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${disable || !guess.trim()
                           ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                           : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                      }`}
+                        }`}
                       whileHover={!disable && !!guess.trim() ? { scale: 1.02 } : {}}
                       whileTap={!disable && !!guess.trim() ? { scale: 0.98 } : {}}
                     >
