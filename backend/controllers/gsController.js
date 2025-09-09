@@ -113,8 +113,8 @@ exports.startGame = async function startGame(req, res) {
     const session = await GameSession.create({
       userId,
       mode: 'classic',
-      difficulty,       // still stored
-      snippetSize,      // still stored — frontend uses it
+      difficulty, // still stored
+      snippetSize, // still stored — frontend uses it
       rounds: take,
       answers,
       currentRound: 0,
@@ -137,7 +137,6 @@ exports.startGame = async function startGame(req, res) {
     return res.status(500).json({ error: 'Failed to start game' });
   }
 };
-
 
 // POST /api/gs/game/:sessionId/round/started
 exports.setRoundStarted = async function setRoundStarted(req, res) {

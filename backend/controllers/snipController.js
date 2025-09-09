@@ -58,7 +58,6 @@ exports.getRandomSnippetByDifficulty = async (req, res) => {
       },
     ]);
 
-
     if (!result) return res.status(404).json({ message: 'No snippet found.' });
 
     res.json(result);
@@ -89,7 +88,6 @@ exports.getRandomSnippetByGenre = async (req, res) => {
         },
       },
     ]);
-
 
     if (!result) return res.status(404).json({ message: 'No snippet found.' });
 

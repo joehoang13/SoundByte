@@ -110,11 +110,7 @@ const Landing = () => {
       </motion.button>
 
       {/* Full-screen auth overlay */}
-      {showAuth && (
-        <GameStepsModal
-          onClose={() => setShowAuth(false)}
-        />
-      )}
+      {showAuth && <GameStepsModal onClose={() => setShowAuth(false)} />}
     </>
   );
 };

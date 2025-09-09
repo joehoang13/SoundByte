@@ -12,7 +12,7 @@ interface GameStepsModalProps {
 type Side = 'login' | 'signup' | null;
 
 /**
- * Vinyl positioning constants 
+ * Vinyl positioning constants
  */
 const LEFT_VINYL_NUDGE = { marginLeft: 110, marginTop: 12 };
 const RIGHT_VINYL_NUDGE = { marginRight: 50, marginTop: 12 };
@@ -41,11 +41,11 @@ const GameStepsModal: React.FC<GameStepsModalProps> = ({ onClose }) => {
   const handleSwitchToLogin = () => setHover('login');
 
   const handleLoginSuccess = () => {
-    setStep('gamepref'); 
+    setStep('gamepref');
   };
 
   const handleSignUpSuccess = () => {
-    setStep('gamepref'); 
+    setStep('gamepref');
   };
 
   const handleStartGame = (snippetLength: number) => {

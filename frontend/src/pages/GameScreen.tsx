@@ -92,7 +92,6 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   const discdb = '/discdb.png';
   const needledb = '/needledb.png';
 
-
   // local players list (store may or may not have one)
   // @ts-ignore optional players in store
   const storePlayers: Player[] = useGameStore.getState?.().players ?? [];
@@ -184,7 +183,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     return () => {
       try {
         s.disconnect();
-      } catch { }
+      } catch {}
       socketRef.current = null;
     };
   }, [username]);
@@ -267,7 +266,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       startedOnceRef.current = true;
       try {
         await markRoundStarted();
-      } catch { }
+      } catch {}
     }
 
     setIsPlaying(true);
@@ -285,7 +284,6 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       }
       finishWindow();
     }, windowMs) as unknown as number;
-
   }
 
   function pauseWindow() {
@@ -332,17 +330,17 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
       try {
         (srcNode as any).connect(analyser);
-      } catch { }
+      } catch {}
       try {
         analyser.connect(ctx.destination);
-      } catch { }
+      } catch {}
 
       const data = new Uint8Array(analyser.frequencyBinCount);
       analyserRef.current = analyser;
       dataArrayRef.current = data;
 
       drawBars();
-    } catch { }
+    } catch {}
   }
 
   function teardownAnalyser() {
@@ -437,10 +435,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     : { repeat: Infinity, duration: 2, ease: EASE_IN_OUT };
 
   const handleLogout = async () => {
-    await logout().catch(() => { });
+    await logout().catch(() => {});
     try {
       localStorage.removeItem('token');
-    } catch { }
+    } catch {}
     navigate('/welcome');
   };
 
@@ -545,9 +543,17 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
             aria-label="Open Settings"
             title="Settings"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
               <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor" />
-              <path d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z" fill="currentColor" />
+              <path
+                d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z"
+                fill="currentColor"
+              />
             </svg>
           </motion.button>
 
@@ -567,14 +573,20 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div
                     className="rounded-2xl p-5"
-                    style={{ backgroundColor: 'rgba(20,61,77,0.65)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    style={{
+                      backgroundColor: 'rgba(20,61,77,0.65)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                    }}
                   >
                     <h3 className="font-semibold mb-3">Create a Room</h3>
                     <motion.button
                       type="button"
                       onClick={createRoom}
                       className="w-full px-4 py-2 rounded-xl font-semibold"
-                      style={{ background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)', color: '#fff' }}
+                      style={{
+                        background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
+                        color: '#fff',
+                      }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -584,7 +596,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
                   <div
                     className="rounded-2xl p-5"
-                    style={{ backgroundColor: 'rgba(20,61,77,0.65)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    style={{
+                      backgroundColor: 'rgba(20,61,77,0.65)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                    }}
                   >
                     <h3 className="font-semibold mb-3">Join a Room</h3>
                     <div className="flex gap-2">
@@ -598,7 +613,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                         type="button"
                         onClick={() => joinRoom(joinCode)}
                         className="px-4 py-2 rounded-xl font-semibold"
-                        style={{ background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)', color: '#fff' }}
+                        style={{
+                          background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
+                          color: '#fff',
+                        }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -612,7 +630,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                   {/* Room info + invite */}
                   <div
                     className="rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-4 justify-between"
-                    style={{ backgroundColor: 'rgba(20,61,77,0.65)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    style={{
+                      backgroundColor: 'rgba(20,61,77,0.65)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                    }}
                   >
                     <div>
                       <div className="text-sm" style={{ color: COLORS.grayblue }}>
@@ -647,7 +668,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <section
                       className="rounded-2xl p-5 flex flex-col gap-4"
-                      style={{ backgroundColor: 'rgba(20,61,77,0.65)', border: '1px solid rgba(255,255,255,0.08)' }}
+                      style={{
+                        backgroundColor: 'rgba(20,61,77,0.65)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                      }}
                     >
                       <h3 className="font-semibold">Game Mode</h3>
                       <div className="flex gap-2">
@@ -689,7 +713,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                             : navigate('/inference')
                         }
                         className="mt-2 px-4 py-2 rounded-xl font-semibold"
-                        style={{ background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)', color: '#fff' }}
+                        style={{
+                          background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
+                          color: '#fff',
+                        }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -699,7 +726,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
                     <section
                       className="lg:col-span-2 rounded-2xl p-5"
-                      style={{ backgroundColor: 'rgba(20,61,77,0.65)', border: '1px solid rgba(255,255,255,0.08)' }}
+                      style={{
+                        backgroundColor: 'rgba(20,61,77,0.65)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                      }}
                     >
                       <header className="flex items-center justify-between mb-4">
                         <h3 className="text-lg sm:text-xl font-semibold">Lobby</h3>
@@ -711,7 +741,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                             backgroundColor: 'rgba(20, 61, 77, 0.35)',
                           }}
                         >
-                          {lobbyPlayers.length + 1} {lobbyPlayers.length + 1 === 1 ? 'player' : 'players'}
+                          {lobbyPlayers.length + 1}{' '}
+                          {lobbyPlayers.length + 1 === 1 ? 'player' : 'players'}
                         </span>
                       </header>
 
@@ -724,7 +755,11 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                         >
                           <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
                             {avatarUrl ? (
-                              <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                              <img
+                                src={avatarUrl}
+                                alt={username}
+                                className="w-full h-full object-cover"
+                              />
                             ) : (
                               <span className="text-sm font-bold">{username[0].toUpperCase()}</span>
                             )}
@@ -747,9 +782,15 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                           >
                             <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
                               {p.avatarUrl ? (
-                                <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                                <img
+                                  src={p.avatarUrl}
+                                  alt={p.name}
+                                  className="w-full h-full object-cover"
+                                />
                               ) : (
-                                <span className="text-sm font-bold">{p.name?.[0]?.toUpperCase() ?? 'P'}</span>
+                                <span className="text-sm font-bold">
+                                  {p.name?.[0]?.toUpperCase() ?? 'P'}
+                                </span>
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -799,7 +840,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                       aria-haspopup="listbox"
                       aria-expanded={modeOpen}
                     >
-                      <span className="inline-block rounded-full" style={{ width: 8, height: 8, backgroundColor: COLORS.teal }} />
+                      <span
+                        className="inline-block rounded-full"
+                        style={{ width: 8, height: 8, backgroundColor: COLORS.teal }}
+                      />
                       Classic Mode
                       <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
                         <path fill="currentColor" d="M7 10l5 5 5-5z" />
@@ -818,7 +862,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                         <button
                           type="button"
                           className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                          onMouseDown={(e) => e.preventDefault()}
+                          onMouseDown={e => e.preventDefault()}
                           onClick={() => navigate('/gamescreen')}
                         >
                           Classic Mode
@@ -826,7 +870,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                         <button
                           type="button"
                           className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                          onMouseDown={(e) => e.preventDefault()}
+                          onMouseDown={e => e.preventDefault()}
                           onClick={() => navigate('/inference')}
                         >
                           Inference Mode
@@ -932,8 +976,14 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                       type="text"
                       value={guess}
                       onChange={e => setGuess(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter' && guess.trim()) onSubmit(e as any); }}
-                      placeholder={concluded ? 'Round concluded' : '                          Enter your answer here'}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && guess.trim()) onSubmit(e as any);
+                      }}
+                      placeholder={
+                        concluded
+                          ? 'Round concluded'
+                          : '                          Enter your answer here'
+                      }
                       className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
                       disabled={disable}
                       autoFocus
@@ -941,10 +991,11 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                     <motion.button
                       type="submit"
                       disabled={disable || !guess.trim()}
-                      className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${disable || !guess.trim()
+                      className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                        disable || !guess.trim()
                           ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                           : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                        }`}
+                      }`}
                       whileHover={!disable && !!guess.trim() ? { scale: 1.02 } : {}}
                       whileTap={!disable && !!guess.trim() ? { scale: 0.98 } : {}}
                     >
@@ -963,7 +1014,9 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 <ul className="space-y-2 overflow-y-auto">
                   {guessHistory.map(g => (
                     <li key={g.guessNum} className="flex justify-between">
-                      <span>Attempt {g.guessNum}: {g.userGuess}</span>
+                      <span>
+                        Attempt {g.guessNum}: {g.userGuess}
+                      </span>
                       <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
                         {g.isCorrect ? 'Correct' : `Incorrect (${g.timeTakenSec}s)`}
                       </span>
@@ -1034,8 +1087,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                       backgroundColor: 'rgba(20, 61, 77, 0.35)',
                     }}
                   >
-                    {settingsPlayers.length}{' '}
-                    {settingsPlayers.length === 1 ? 'player' : 'players'}
+                    {settingsPlayers.length} {settingsPlayers.length === 1 ? 'player' : 'players'}
                   </span>
                 </header>
 
@@ -1048,13 +1100,22 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                     >
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
                         {p.avatarUrl ? (
-                          <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                          <img
+                            src={p.avatarUrl}
+                            alt={p.name}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
-                          <span className="text-sm font-bold">{p.name?.[0]?.toUpperCase() ?? 'P'}</span>
+                          <span className="text-sm font-bold">
+                            {p.name?.[0]?.toUpperCase() ?? 'P'}
+                          </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold truncate" style={{ color: p.id === 'self' ? COLORS.teal : undefined }}>
+                        <div
+                          className="font-semibold truncate"
+                          style={{ color: p.id === 'self' ? COLORS.teal : undefined }}
+                        >
                           {p.name || 'Player'}
                         </div>
                         <div className="text-xs" style={{ color: COLORS.grayblue }}>
@@ -1078,7 +1139,9 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm" style={{ color: COLORS.grayblue }}>0</span>
+                    <span className="text-sm" style={{ color: COLORS.grayblue }}>
+                      0
+                    </span>
                     <input
                       type="range"
                       min={0}
