@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { loginUser } from '../../api/api';
+import { useAuth } from '../../stores/auth';
 
 interface AuthStepLoginProps {
   onClose: () => void;
@@ -23,6 +24,8 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { setAuth } = useAuth();
+
   const inputCls =
     'w-full py-3.5 px-4 rounded-2xl bg-white/5 text-white/90 placeholder-white/45 ' +
     'border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,.06)] ' +
@@ -40,7 +43,8 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
 
     setLoading(true);
     try {
-      await loginUser({ email, password });
+      const response = await loginUser({ email, password });
+      setAuth(response.token, response.user);
       onLoginSuccess();
     } catch (err: any) {
       setError(err?.message || 'Login failed');

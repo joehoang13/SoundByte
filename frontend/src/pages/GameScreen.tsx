@@ -4,8 +4,6 @@ import { Howl, Howler } from 'howler';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../stores/GameSessionStore';
 import { motion, useReducedMotion, type Transition } from 'framer-motion';
-import discdb from '../../public/discdb.png';
-import needledb from '../../public/needledb.png';
 import { io, Socket } from 'socket.io-client';
 
 import { useAuth } from '../stores/auth';
@@ -91,6 +89,9 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   const { user } = useAuth();
   const username = user?.username ?? 'Player';
   const avatarUrl = user?.avatarUrl as string | undefined;
+  const discdb = '/discdb.png';
+  const needledb = '/needledb.png';
+
 
   // local players list (store may or may not have one)
   // @ts-ignore optional players in store

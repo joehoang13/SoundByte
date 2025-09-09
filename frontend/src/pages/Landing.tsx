@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import discdb from '../../public/discdb.png';
 import needledb from '../../public/needledb.png';
+import GameStepsModal from '../components/GameSteps/GameStepsModal';
 import Modal from './Modal';
 
 const Landing = () => {
@@ -110,13 +111,8 @@ const Landing = () => {
 
       {/* Full-screen auth overlay */}
       {showAuth && (
-        <Modal
+        <GameStepsModal
           onClose={() => setShowAuth(false)}
-          onAuthed={() => {
-            setShowAuth(false);
-            navigate('/gamescreen');
-          }}
-          initialTab="login" // or "signup" if you want to start there
         />
       )}
     </>
