@@ -4,7 +4,9 @@ import useGameStore from '../../stores/GameSessionStore';
 import type { SnippetSize } from '../../types/game';
 import Background from '../Background';
 
-{/* Unused component; kept for reference */}
+{
+  /* Unused component; kept for reference */
+}
 
 interface GamePrefStepProps {
   onClose: () => void;

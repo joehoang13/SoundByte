@@ -18,13 +18,11 @@ function read<T>(k: string): T | undefined {
 }
 
 export const useAuth = create<AuthState>(set => ({
-
   // Initial values when the app starts up
   token:
     typeof localStorage !== 'undefined' ? localStorage.getItem('sb_token') || undefined : undefined,
-  user: 
-    typeof localStorage !== 'undefined' ? read<AuthUser>('sb_user') : undefined,
-  
+  user: typeof localStorage !== 'undefined' ? read<AuthUser>('sb_user') : undefined,
+
   // Function to save login information
   setAuth: (token, user) => {
     try {

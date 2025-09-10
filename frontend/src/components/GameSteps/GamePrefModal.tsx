@@ -17,7 +17,9 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
   const setConfig = useGameStore(state => state.setConfig);
 
   // Current step in the modal
-  const [currentStep, setCurrentStep] = useState<'playMode' | 'gameMode' | 'difficulty'>('playMode');
+  const [currentStep, setCurrentStep] = useState<'playMode' | 'gameMode' | 'difficulty'>(
+    'playMode'
+  );
 
   // Form data
   const [playMode, setPlayMode] = useState<PlayMode | null>(null);
@@ -45,10 +47,9 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
   };
 
   const handleStartGame = () => {
-
     if (gameMode === 'inference') {
       onClose();
-      navigate('/inference')
+      navigate('/inference');
       return;
     }
 
@@ -66,7 +67,7 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
     } else {
       navigate('/inference');
     }
-  }
+  };
 
   return (
     <AnimatePresence>
@@ -83,7 +84,7 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 30 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Close Button */}
           <button
@@ -107,33 +108,35 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
 
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${playMode === 'solo'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            playMode === 'solo'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setPlayMode('solo');
                 }}
               >
-                <div className='font-bold'>Solo</div>
-                <div className='text-sm font-light'>Play by yourself and track your score</div>
+                <div className="font-bold">Solo</div>
+                <div className="text-sm font-light">Play by yourself and track your score</div>
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${playMode === 'multiplayer'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            playMode === 'multiplayer'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setPlayMode('multiplayer');
                 }}
               >
-                <div className='font-bold'>Multiplayer</div>
-                <div className='text-sm font-light'>Compete against friends in real-time</div>
+                <div className="font-bold">Multiplayer</div>
+                <div className="text-sm font-light">Compete against friends in real-time</div>
               </motion.button>
             </div>
           )}
@@ -150,33 +153,35 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
               <p className="text-sm sm:text-base text-center mb-6">Choose your game mode</p>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${gameMode === 'classic'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            gameMode === 'classic'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setGameMode('classic');
                 }}
               >
-                <div className='font-bold'>Classic</div>
-                <div className='text-sm font-light'>Identify tracks from snippets</div>
+                <div className="font-bold">Classic</div>
+                <div className="text-sm font-light">Identify tracks from snippets</div>
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${gameMode === 'inference'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            gameMode === 'inference'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setGameMode('inference');
                 }}
               >
-                <div className='font-bold'>Inference</div>
-                <div className='text-sm font-light'>Identify tracks from lyrics</div>
+                <div className="font-bold">Inference</div>
+                <div className="text-sm font-light">Identify tracks from lyrics</div>
               </motion.button>
             </div>
           )}
@@ -190,14 +195,16 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
               >
                 Game Difficulty
               </h2>
-              <p className="text-sm sm:text-base text-center mb-6">Select desired clip snippet length</p>
+              <p className="text-sm sm:text-base text-center mb-6">
+                Select desired clip snippet length
+              </p>
 
               <div className="space-y-3 mb-6">
                 <div className="grid gap-3 mb-6">
                   {[
-                    {label: "Easy", value: 10}, 
-                    {label: "Normal", value: 5},
-                    {label: "Hard", value: 3}
+                    { label: 'Easy', value: 10 },
+                    { label: 'Normal', value: 5 },
+                    { label: 'Hard', value: 3 },
                   ].map(len => (
                     <motion.button
                       key={len.value}
@@ -205,13 +212,14 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                              ${snippetLength === len.value
-                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                          : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                        }`}
+                              ${
+                                snippetLength === len.value
+                                  ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                                  : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                              }`}
                     >
-                      <div className='font-bold'>{len.label}</div>
-                      <div className='text-sm font-light'>{len.value} Seconds</div>
+                      <div className="font-bold">{len.label}</div>
+                      <div className="text-sm font-light">{len.value} Seconds</div>
                     </motion.button>
                   ))}
                 </div>
@@ -244,7 +252,6 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
         </motion.div>
       </motion.div>
     </AnimatePresence>
-
   );
 };
 

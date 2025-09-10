@@ -5,7 +5,7 @@ import discdb from '../../public/discdb.png';
 import needledb from '../../public/needledb.png';
 import AuthModal from '../components/Auth/AuthModal';
 import GamePrefModal from '../components/GameSteps/GamePrefModal';
-import { useAuth } from '../stores/auth'; 
+import { useAuth } from '../stores/auth';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -129,18 +129,11 @@ const Landing = () => {
 
       {/* Authentication Modal */}
       {showAuth && (
-        <AuthModal
-          onClose={() => setShowAuth(false)}
-          onAuthSuccess={handleAuthSuccess}
-        />
+        <AuthModal onClose={() => setShowAuth(false)} onAuthSuccess={handleAuthSuccess} />
       )}
 
       {/* Game Settings Modal */}
-      {showGamePrefs && (
-        <GamePrefModal
-          onClose={() => setShowGamePrefs(false)}
-        />
-      )}
+      {showGamePrefs && <GamePrefModal onClose={() => setShowGamePrefs(false)} />}
     </>
   );
 };

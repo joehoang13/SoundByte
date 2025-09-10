@@ -14,9 +14,7 @@ interface AuthStepSignUpProps {
   hideClose?: boolean;
 }
 
-const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
-  onSignUpSuccess,
-}) => {
+const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({ onSignUpSuccess }) => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

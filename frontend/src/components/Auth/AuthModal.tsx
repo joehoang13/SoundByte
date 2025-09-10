@@ -5,7 +5,7 @@ import AuthStepSignUp from './AuthStepSignUp';
 
 interface AuthModalProps {
   onClose: () => void;
-  onAuthSuccess: () => void; 
+  onAuthSuccess: () => void;
 }
 
 type Side = 'login' | 'signup' | null;
@@ -16,7 +16,7 @@ type Side = 'login' | 'signup' | null;
 const LEFT_VINYL_NUDGE = { marginLeft: 110, marginTop: 12 };
 const RIGHT_VINYL_NUDGE = { marginRight: 50, marginTop: 12 };
 
-const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess, }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
   const [hover, setHover] = useState<Side>(null);
 
   useEffect(() => {

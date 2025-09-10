@@ -14,9 +14,7 @@ interface AuthStepLoginProps {
   hideClose?: boolean;
 }
 
-const AuthStepLogin: React.FC<AuthStepLoginProps> = ({
-  onLoginSuccess,
-}) => {
+const AuthStepLogin: React.FC<AuthStepLoginProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
