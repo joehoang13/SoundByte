@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthStepLogin from './AuthStepLogin';
 import AuthStepSignUp from './AuthStepSignUp';
-import GamePrefStep from './GamePrefStep';
 
-interface GameStepsModalProps {
+interface AuthModalProps {
   onClose: () => void;
+  onAuthSuccess: () => void; 
 }
 
 type Side = 'login' | 'signup' | null;
@@ -17,9 +16,7 @@ type Side = 'login' | 'signup' | null;
 const LEFT_VINYL_NUDGE = { marginLeft: 110, marginTop: 12 };
 const RIGHT_VINYL_NUDGE = { marginRight: 50, marginTop: 12 };
 
-const GameStepsModal: React.FC<GameStepsModalProps> = ({ onClose }) => {
-  const navigate = useNavigate();
-  const [step, setStep] = useState<'auth' | 'gamepref'>('auth');
+const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess, }) => {
   const [hover, setHover] = useState<Side>(null);
 
   useEffect(() => {
@@ -40,25 +37,8 @@ const GameStepsModal: React.FC<GameStepsModalProps> = ({ onClose }) => {
   const handleSwitchToSignUp = () => setHover('signup');
   const handleSwitchToLogin = () => setHover('login');
 
-  const handleLoginSuccess = () => {
-    setStep('gamepref');
-  };
-
-  const handleSignUpSuccess = () => {
-    setStep('gamepref');
-  };
-
-  const handleStartGame = (snippetLength: number) => {
-    console.log('Start game with snippet length:', snippetLength);
-    navigate('/ready');
-  };
-
   const leftActive = hover === 'login';
   const rightActive = hover === 'signup';
-
-  if (step === 'gamepref') {
-    return <GamePrefStep onClose={onClose} onStartGame={handleStartGame} />;
-  }
 
   return (
     <AnimatePresence>
@@ -140,7 +120,7 @@ const GameStepsModal: React.FC<GameStepsModalProps> = ({ onClose }) => {
                   <AuthStepLogin
                     hideClose
                     onClose={onClose}
-                    onLoginSuccess={handleLoginSuccess}
+                    onLoginSuccess={onAuthSuccess}
                     onSwitchToSignUp={handleSwitchToSignUp}
                   />
                 </motion.div>
@@ -192,7 +172,7 @@ const GameStepsModal: React.FC<GameStepsModalProps> = ({ onClose }) => {
                   <AuthStepSignUp
                     hideClose
                     onClose={onClose}
-                    onSignUpSuccess={handleSignUpSuccess}
+                    onSignUpSuccess={onAuthSuccess}
                     onSwitchToLogin={handleSwitchToLogin}
                   />
                 </motion.div>
@@ -210,4 +190,4 @@ const GameStepsModal: React.FC<GameStepsModalProps> = ({ onClose }) => {
   );
 };
 
-export default GameStepsModal;
+export default AuthModal;

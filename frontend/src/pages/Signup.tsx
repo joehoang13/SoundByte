@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import AuthStepSignUp from '../components/GameSteps/AuthStepSignUp';
+import AuthStepSignUp from '../components/Auth/AuthStepSignUp';
 
 /** Adapter page for AuthStepSignUp expecting callbacks */
 export default function Signup() {

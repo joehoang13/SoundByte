@@ -15,9 +15,7 @@ interface AuthStepSignUpProps {
 }
 
 const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
-  onClose,
   onSignUpSuccess,
-  onSwitchToLogin,
 }) => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');

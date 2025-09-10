@@ -3,14 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import discdb from '../../public/discdb.png';
 import needledb from '../../public/needledb.png';
-import GameStepsModal from '../components/GameSteps/GameStepsModal';
-import Modal from './Modal';
+import AuthModal from '../components/Auth/AuthModal';
+import GamePrefModal from '../components/GameSteps/GamePrefModal';
+import { useAuth } from '../stores/auth'; 
 
 const Landing = () => {
   const navigate = useNavigate();
   const [showAuth, setShowAuth] = useState(false);
+  const [showGamePrefs, setShowGamePrefs] = useState(false);
 
-  const openAuth = () => setShowAuth(true);
+  const { user, token } = useAuth();
+  const isLoggedIn = !!(user && token);
+
+  const handlePlay = () => {
+    if (isLoggedIn) {
+      setShowGamePrefs(true);
+    } else {
+      setShowAuth(true);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    // After successful login/signup, close auth modal and show game settings
+    setShowAuth(false);
+    setShowGamePrefs(true);
+  };
+
   const showSettings = () => navigate('/ready');
   const showProfile = () => navigate('/profile');
 
@@ -65,7 +83,7 @@ const Landing = () => {
           <div className="grid grid-cols-1 gap-4 mt-6">
             <button
               className="w-48 px-4 py-2 bg-darkblue text-white rounded-xl font-montserrat hover:bg-darkestblue transition"
-              onClick={openAuth}
+              onClick={handlePlay}
             >
               Play
             </button>
@@ -109,8 +127,20 @@ const Landing = () => {
         </svg>
       </motion.button>
 
-      {/* Full-screen auth overlay */}
-      {showAuth && <GameStepsModal onClose={() => setShowAuth(false)} />}
+      {/* Authentication Modal */}
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onAuthSuccess={handleAuthSuccess}
+        />
+      )}
+
+      {/* Game Settings Modal */}
+      {showGamePrefs && (
+        <GamePrefModal
+          onClose={() => setShowGamePrefs(false)}
+        />
+      )}
     </>
   );
 };

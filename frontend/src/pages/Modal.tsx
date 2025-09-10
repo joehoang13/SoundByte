@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import AuthStepLogin from '../components/GameSteps/AuthStepLogin';
-import AuthStepSignUp from '../components/GameSteps/AuthStepSignUp';
+import AuthStepLogin from '../components/Auth/AuthStepLogin';
+import AuthStepSignUp from '../components/Auth/AuthStepSignUp';
 
 type Side = 'login' | 'signup' | null;
 
