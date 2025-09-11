@@ -189,7 +189,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   }, [username]);
 
   const createRoom = () => {
-    socketRef.current?.emit('createRoom', { name: username });
+    socketRef.current?.emit('chatMessage', { msg: "bob"});
   };
   const joinRoom = (code: string) => {
     if (!code.trim()) return;

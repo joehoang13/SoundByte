@@ -1,9 +1,12 @@
 // backend/server.js — normalized CORS + preflight + quick pings
 const express = require('express');
+const http = require('http');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const setupSocket = require('./sockets/index')
+
 require('dotenv').config();
 
 // Models (side-effect)
@@ -113,5 +116,7 @@ app.use('/api/snippets', snipRoutes);
 // 404
 app.use((req, res) => res.status(404).json({ error: 'Not Found' }));
 
+const server = http.createServer(app);
+setupSocket(server);
 const PORT = Number(process.env.PORT || 3001);
-app.listen(PORT, () => console.log(`Server on :${PORT} (CORS: ${ORIGINS.join(', ')})`));
+server.listen(PORT, () => console.log(`Server on :${PORT} (CORS: ${ORIGINS.join(', ')})`));
