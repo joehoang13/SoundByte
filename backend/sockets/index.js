@@ -1,6 +1,5 @@
 const { Server } = require('socket.io');
 
-
 function ensureHost(room, userId) {
   if (!room?.host || room.host.userId !== userId) {
     const err = new Error('Only host can perform this action');
@@ -263,10 +262,9 @@ function setupSocket(server) {
         console.log(`Socket disconnected: ${socket.id}`);
       }
     });
-  })
+  });
 
   return io; // optional if you want to use io elsewhere
 }
-
 
 module.exports = setupSocket;
