@@ -1,4 +1,4 @@
-// frontend/src/pages/InferenceScreen.tsx
+// src/screens/InferenceScreen.tsx
 import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -9,10 +9,9 @@ import { logout } from '../api/auth';
 
 type Prompt = {
   _id: string;
-  question: string;
-  lyrics: string;
+  question: string;      
   answer: string;
-  tags?: string[];
+  difficulty?: string;   
 };
 
 type GuessRow = {
@@ -41,12 +40,15 @@ const InferenceScreen: React.FC = () => {
   const avatarUrl = (user as any)?.avatarUrl as string | undefined;
 
   // @ts-ignore tolerate various store shapes
-  const players: Player[] = (useGameStore.getState?.().players as Player[] | undefined) ?? [];
+  const players: Player[] =
+    (useGameStore.getState?.().players as Player[] | undefined) ?? [];
 
+  // data state
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loadingPrompts, setLoadingPrompts] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // round state
   const [idx, setIdx] = useState(0);
   const [guess, setGuess] = useState('');
   const [attemptsLeft, setAttemptsLeft] = useState(3);
@@ -54,10 +56,12 @@ const InferenceScreen: React.FC = () => {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [concluded, setConcluded] = useState(false);
+
+  // UI state
   const [modeOpen, setModeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Volume
+  // volume (persisted)
   const [volume, setVolume] = useState<number>(() => {
     const saved = localStorage.getItem('sb_volume');
     const initial = saved ? Math.min(100, Math.max(0, Number(saved))) : 80;
@@ -69,7 +73,7 @@ const InferenceScreen: React.FC = () => {
     localStorage.setItem('sb_volume', String(volume));
   }, [volume]);
 
-  // Fetch prompts from API on mount (random 3)
+  // fetch prompts
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -91,7 +95,7 @@ const InferenceScreen: React.FC = () => {
           setConcluded(false);
           setGuess('');
         }
-      } catch (e) {
+      } catch (_e) {
         if (mounted) setLoadError('Failed to load prompts');
       } finally {
         if (mounted) setLoadingPrompts(false);
@@ -113,16 +117,21 @@ const InferenceScreen: React.FC = () => {
     if (!g || concluded) return;
 
     const correct = norm(g) === norm(current.answer);
-    setHistory(prev => [...prev, { guessNum: prev.length + 1, userGuess: g, isCorrect: correct }]);
+    setHistory((prev) => [
+      ...prev,
+      { guessNum: prev.length + 1, userGuess: g, isCorrect: correct },
+    ]);
     setGuess('');
 
     if (correct) {
-      setScore(s => s + 100);
-      setStreak(s => s + 1);
+      setScore((s) => s + 100);
+      setStreak((s) => s + 1);
       setConcluded(true);
     } else {
-      setAttemptsLeft(a => a - 1);
+      setAttemptsLeft((a) => a - 1);
+      // attemptsLeft here is stale inside the same tick; compute next value:
       if (attemptsLeft - 1 <= 0) setConcluded(true);
+      else setStreak(0); // optional: break streak on miss
     }
   };
 
@@ -131,7 +140,7 @@ const InferenceScreen: React.FC = () => {
       navigate('/endscreen');
       return;
     }
-    setIdx(i => i + 1);
+    setIdx((i) => i + 1);
     setAttemptsLeft(3);
     setHistory([]);
     setConcluded(false);
@@ -140,7 +149,9 @@ const InferenceScreen: React.FC = () => {
 
   const handleLogout = async () => {
     await logout().catch(() => {});
-    try { localStorage.removeItem('token'); } catch {}
+    try {
+      localStorage.removeItem('token');
+    } catch {}
     navigate('/welcome');
   };
 
@@ -174,14 +185,24 @@ const InferenceScreen: React.FC = () => {
               <div className="text-xl font-extrabold" style={{ color: '#E6F6FA' }}>
                 {username}
               </div>
-              <button type="button" className="text-xs font-semibold hover:underline" style={{ color: 'rgba(15,193,233,0.9)' }}>
+              <button
+                type="button"
+                className="text-xs font-semibold hover:underline"
+                style={{ color: 'rgba(15,193,233,0.9)' }}
+              >
                 Friends
               </button>
-              <button type="button" className="text-xs font-semibold hover:underline" style={{ color: 'rgba(15,193,233,0.9)' }}>
+              <button
+                type="button"
+                className="text-xs font-semibold hover:underline"
+                style={{ color: 'rgba(15,193,233,0.9)' }}
+              >
                 Stats
               </button>
             </div>
-            <div className="text-xs" style={{ color: COLORS.grayblue }}>online</div>
+            <div className="text-xs" style={{ color: COLORS.grayblue }}>
+              online
+            </div>
           </div>
         </div>
       )}
@@ -204,16 +225,27 @@ const InferenceScreen: React.FC = () => {
             aria-label="Open Settings"
             title="Settings"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
               <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor" />
-              <path d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z" fill="currentColor" />
+              <path
+                d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z"
+                fill="currentColor"
+              />
             </svg>
           </motion.button>
 
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
             <div className="flex-1 flex justify-center">
-              <div className="flex flex-col items-center rounded-xl w-40 px-6 py-4" style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}>
+              <div
+                className="flex flex-col items-center rounded-xl w-40 px-6 py-4"
+                style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
+              >
                 <span className="text-sm font-bold text-center">Score</span>
                 <span className="text-xl font-bold text-center">{score}</span>
               </div>
@@ -226,14 +258,21 @@ const InferenceScreen: React.FC = () => {
               <div className="mt-2 relative">
                 <button
                   type="button"
-                  onClick={() => setModeOpen(o => !o)}
+                  onClick={() => setModeOpen((o) => !o)}
                   onBlur={() => setTimeout(() => setModeOpen(false), 150)}
                   className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs sm:text-sm tracking-wide"
-                  style={{ borderColor: COLORS.teal, backgroundColor: 'rgba(20, 61, 77, 0.4)', color: COLORS.grayblue }}
+                  style={{
+                    borderColor: COLORS.teal,
+                    backgroundColor: 'rgba(20, 61, 77, 0.4)',
+                    color: COLORS.grayblue,
+                  }}
                   aria-haspopup="listbox"
                   aria-expanded={modeOpen}
                 >
-                  <span className="inline-block rounded-full" style={{ width: 8, height: 8, backgroundColor: COLORS.teal }} />
+                  <span
+                    className="inline-block rounded-full"
+                    style={{ width: 8, height: 8, backgroundColor: COLORS.teal }}
+                  />
                   Inference Mode
                   <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
                     <path fill="currentColor" d="M7 10l5 5 5-5z" />
@@ -241,13 +280,28 @@ const InferenceScreen: React.FC = () => {
                 </button>
 
                 {modeOpen && (
-                  <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-20"
-                       role="listbox"
-                       style={{ backgroundColor: COLORS.darkestblue, borderColor: 'rgba(255,255,255,0.08)' }}>
-                    <button type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-white/10" onMouseDown={e => e.preventDefault()} onClick={() => navigate('/gamescreen')}>
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-20"
+                    role="listbox"
+                    style={{
+                      backgroundColor: COLORS.darkestblue,
+                      borderColor: 'rgba(255,255,255,0.08)',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => navigate('/gamescreen')}
+                    >
                       Classic Mode
                     </button>
-                    <button type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-white/10" onMouseDown={e => e.preventDefault()} onClick={() => navigate('/inference')}>
+                    <button
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => navigate('/inference')}
+                    >
                       Inference Mode
                     </button>
                   </div>
@@ -256,7 +310,10 @@ const InferenceScreen: React.FC = () => {
             </div>
 
             <div className="flex-1 flex justify-center">
-              <div className="flex flex-col items-center rounded-xl w-40 px-6 py-4" style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}>
+              <div
+                className="flex flex-col items-center rounded-xl w-40 px-6 py-4"
+                style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
+              >
                 <span className="text-sm font-bold text-center">Streak</span>
                 <span className="text-xl font-bold text-center">{streak}</span>
               </div>
@@ -268,35 +325,57 @@ const InferenceScreen: React.FC = () => {
             {loadingPrompts && 'Loading questions…'}
             {loadError && `Error: ${loadError}`}
             {!loadingPrompts && !loadError && current && (
-              <>Round {idx + 1} / {totalRounds} • Attempts left: {attemptsLeft}</>
+              <>
+                Round {idx + 1} / {totalRounds} • Attempts left: {attemptsLeft}
+              </>
             )}
           </p>
 
-          {/* Prompt Card */}
+          {/* Prompt Card (now renders full question only) */}
           {current && (
-            <div className="w-full rounded-2xl px-5 py-6 mb-6 shadow-inner"
-                 style={{ background: `linear-gradient(180deg, rgba(15,193,233,0.08), rgba(20,61,77,0.35))`, border: `1px solid rgba(255,255,255,0.08)` }}>
-              <div className="mb-3 text-sm tracking-wide" style={{ color: COLORS.grayblue }}>Question</div>
-              <h3 className="text-xl sm:text-2xl font-semibold mb-5 leading-snug">{current.question}</h3>
-
-              <div className="mb-2 text-sm tracking-wide" style={{ color: COLORS.grayblue }}>Lyrics Excerpt</div>
-              <div className="rounded-xl p-4"
-                   style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(144,164,171,0.35)' }}>
-                <pre className="whitespace-pre-wrap font-mono text-sm sm:text-base" style={{ color: '#E9F1F5' }}>
-                  {current.lyrics}
-                </pre>
+            <div
+              className="w-full rounded-2xl px-5 py-6 mb-6 shadow-inner"
+              style={{
+                background: `linear-gradient(180deg, rgba(15,193,233,0.08), rgba(20,61,77,0.35))`,
+                border: `1px solid rgba(255,255,255,0.08)`,
+              }}
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <div className="text-sm tracking-wide" style={{ color: COLORS.grayblue }}>
+                  Question
+                </div>
+                {!!current.difficulty && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full border"
+                    style={{
+                      borderColor: COLORS.teal,
+                      color: COLORS.grayblue,
+                      backgroundColor: 'rgba(20, 61, 77, 0.35)',
+                    }}
+                    title="Difficulty"
+                  >
+                    {current.difficulty}
+                  </span>
+                )}
               </div>
+
+              <pre className="whitespace-pre-wrap text-base leading-snug" style={{ color: '#E9F1F5' }}>
+                {current.question}
+              </pre>
             </div>
           )}
 
           {/* Answer input */}
           <form onSubmit={submit} className="relative mb-6">
             <div className="relative bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-cyan-400/20 p-[2px] rounded-2xl">
-              <div className="flex rounded-2xl overflow-hidden backdrop-blur-sm" style={{ backgroundColor: 'rgba(20,61,77,0.9)' }}>
+              <div
+                className="flex rounded-2xl overflow-hidden backdrop-blur-sm"
+                style={{ backgroundColor: 'rgba(20,61,77,0.9)' }}
+              >
                 <input
                   type="text"
                   value={guess}
-                  onChange={e => setGuess(e.target.value)}
+                  onChange={(e) => setGuess(e.target.value)}
                   placeholder={concluded ? 'Round concluded' : 'Type your answer here…'}
                   className="flex-1 p-4 sm:p-5 text-sm sm:text-base bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
                   disabled={disableInput}
@@ -323,13 +402,17 @@ const InferenceScreen: React.FC = () => {
           {concluded && current && (
             <div className="flex flex-col items-center gap-3 mb-4">
               <p className="text-sm" style={{ color: COLORS.grayblue }}>
-                Correct answer: <span className="font-semibold text-white">{current.answer}</span>
+                Correct answer:{' '}
+                <span className="font-semibold text-white">{current.answer}</span>
               </p>
               <motion.button
                 type="button"
                 onClick={goNext}
                 className="px-5 py-2 rounded-xl font-semibold"
-                style={{ background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)', color: '#fff' }}
+                style={{
+                  background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
+                  color: '#fff',
+                }}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -339,12 +422,17 @@ const InferenceScreen: React.FC = () => {
           )}
 
           {/* Guess history */}
-          <div className="rounded-2xl p-4 max-h-48 flex-grow overflow-y-auto pr-2" style={{ backgroundColor: COLORS.darkestblue }}>
+          <div
+            className="rounded-2xl p-4 max-h-48 flex-grow overflow-y-auto pr-2"
+            style={{ backgroundColor: COLORS.darkestblue }}
+          >
             <h2 className="text-base sm:text-lg font-semibold mb-2">Your Guesses:</h2>
             <ul className="space-y-2 overflow-y-auto">
-              {history.map(g => (
+              {history.map((g) => (
                 <li key={g.guessNum} className="flex justify-between">
-                  <span>Attempt {g.guessNum}: {g.userGuess}</span>
+                  <span>
+                    Attempt {g.guessNum}: {g.userGuess}
+                  </span>
                   <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
                     {g.isCorrect ? 'Correct' : 'Incorrect'}
                   </span>
@@ -370,10 +458,16 @@ const InferenceScreen: React.FC = () => {
             initial={{ y: 20, scale: 0.98, opacity: 0 }}
             animate={{ y: 0, scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
-            <button type="button" onClick={() => setSettingsOpen(false)} aria-label="Close"
-                    className="absolute right-4 top-4 rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white text-xl">×</button>
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white text-xl"
+            >
+              ×
+            </button>
 
             <div className="mb-6">
               <h2 className="text-2xl sm:text-3xl font-bold">Game Settings</h2>
@@ -383,69 +477,136 @@ const InferenceScreen: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <section className="lg:col-span-2 rounded-2xl p-5"
-                       style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <section
+                className="lg:col-span-2 rounded-2xl p-5"
+                style={{
+                  backgroundColor: 'rgba(20, 61, 77, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
                 <header className="flex items-center justify-between mb-4">
                   <h3 className="text-lg sm:text-xl font-semibold">Players</h3>
-                  <span className="text-xs px-2 py-0.5 rounded-full border"
-                        style={{ borderColor: COLORS.teal, color: COLORS.grayblue, backgroundColor: 'rgba(20, 61, 77, 0.35)' }}>
-                    {players.length + (user ? 1 : 0)} {(players.length + (user ? 1 : 0)) === 1 ? 'player' : 'players'}
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full border"
+                    style={{
+                      borderColor: COLORS.teal,
+                      color: COLORS.grayblue,
+                      backgroundColor: 'rgba(20, 61, 77, 0.35)',
+                    }}
+                  >
+                    {players.length + (user ? 1 : 0)}{' '}
+                    {players.length + (user ? 1 : 0) === 1 ? 'player' : 'players'}
                   </span>
                 </header>
 
                 <ul className="grid grid-cols-1 gap-3">
                   {user && (
-                    <li className="w-full flex items-center gap-4 p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
+                    <li
+                      className="w-full flex items-center gap-4 p-4 rounded-xl"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+                    >
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
-                        {avatarUrl ? <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
-                                   : <span className="text-sm font-bold">{username[0].toUpperCase()}</span>}
+                        {avatarUrl ? (
+                          <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-sm font-bold">
+                            {username[0].toUpperCase()}
+                          </span>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold truncate" style={{ color: COLORS.teal }}>{username}</div>
-                        <div className="text-xs" style={{ color: COLORS.grayblue }}>You</div>
+                        <div className="font-semibold truncate" style={{ color: COLORS.teal }}>
+                          {username}
+                        </div>
+                        <div className="text-xs" style={{ color: COLORS.grayblue }}>
+                          You
+                        </div>
                       </div>
                     </li>
                   )}
-                  {players.map(p => (
-                    <li key={p.id} className="w-full flex items-center gap-4 p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
+                  {players.map((p) => (
+                    <li
+                      key={p.id}
+                      className="w-full flex items-center gap-4 p-4 rounded-xl"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+                    >
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
-                        {p.avatarUrl ? <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
-                                     : <span className="text-sm font-bold">{p.name?.[0]?.toUpperCase() ?? 'P'}</span>}
+                        {p.avatarUrl ? (
+                          <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-sm font-bold">
+                            {p.name?.[0]?.toUpperCase() ?? 'P'}
+                          </span>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold truncate">{p.name || 'Player'}</div>
-                        <div className="text-xs" style={{ color: COLORS.grayblue }}>Ready</div>
+                        <div className="text-xs" style={{ color: COLORS.grayblue }}>
+                          Ready
+                        </div>
                       </div>
                     </li>
                   ))}
                 </ul>
               </section>
 
-              <section className="rounded-2xl p-5 flex flex-col gap-6"
-                       style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <section
+                className="rounded-2xl p-5 flex flex-col gap-6"
+                style={{
+                  backgroundColor: 'rgba(20, 61, 77, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm" style={{ color: COLORS.grayblue }}>0</span>
-                    <input type="range" min={0} max={100} value={volume} onChange={e => setVolume(Number(e.target.value))}
-                           className="flex-1 accent-cyan-400" aria-label="Master volume" />
-                    <span className="text-sm w-10 text-right" style={{ color: COLORS.grayblue }}>{volume}</span>
+                    <span className="text-sm" style={{ color: COLORS.grayblue }}>
+                      0
+                    </span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={volume}
+                      onChange={(e) => setVolume(Number(e.target.value))}
+                      className="flex-1 accent-cyan-400"
+                      aria-label="Master volume"
+                    />
+                    <span className="text-sm w-10 text-right" style={{ color: COLORS.grayblue }}>
+                      {volume}
+                    </span>
                   </div>
-                  <p className="text-xs mt-2" style={{ color: COLORS.grayblue }}>Controls the game’s master volume.</p>
+                  <p className="text-xs mt-2" style={{ color: COLORS.grayblue }}>
+                    Controls the game’s master volume.
+                  </p>
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  <motion.button type="button" onClick={() => setSettingsOpen(false)}
-                                 className="w-full px-4 py-2 rounded-xl font-semibold"
-                                 style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
-                                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <motion.button
+                    type="button"
+                    onClick={() => setSettingsOpen(false)}
+                    className="w-full px-4 py-2 rounded-xl font-semibold"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
                     Back to Game
                   </motion.button>
 
-                  <motion.button type="button" onClick={async () => { await logout().catch(()=>{}); navigate('/welcome'); }}
-                                 className="w-full px-4 py-2 rounded-xl font-semibold"
-                                 style={{ background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)', color: '#fff' }}
-                                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <motion.button
+                    type="button"
+                    onClick={async () => {
+                      await logout().catch(() => {});
+                      navigate('/welcome');
+                    }}
+                    className="w-full px-4 py-2 rounded-xl font-semibold"
+                    style={{
+                      background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)',
+                      color: '#fff',
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
                     Log Out
                   </motion.button>
                 </div>
