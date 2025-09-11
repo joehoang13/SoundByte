@@ -9,9 +9,9 @@ import { logout } from '../api/auth';
 
 type Prompt = {
   _id: string;
-  question: string;      
+  question: string;
   answer: string;
-  difficulty?: string;   
+  difficulty?: string;
 };
 
 type GuessRow = {
@@ -30,7 +30,10 @@ const COLORS = {
 };
 
 function norm(x: string) {
-  return x.toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+  return x
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
 }
 
 const InferenceScreen: React.FC = () => {
@@ -40,8 +43,7 @@ const InferenceScreen: React.FC = () => {
   const avatarUrl = (user as any)?.avatarUrl as string | undefined;
 
   // @ts-ignore tolerate various store shapes
-  const players: Player[] =
-    (useGameStore.getState?.().players as Player[] | undefined) ?? [];
+  const players: Player[] = (useGameStore.getState?.().players as Player[] | undefined) ?? [];
 
   // data state
   const [prompts, setPrompts] = useState<Prompt[]>([]);
@@ -117,18 +119,15 @@ const InferenceScreen: React.FC = () => {
     if (!g || concluded) return;
 
     const correct = norm(g) === norm(current.answer);
-    setHistory((prev) => [
-      ...prev,
-      { guessNum: prev.length + 1, userGuess: g, isCorrect: correct },
-    ]);
+    setHistory(prev => [...prev, { guessNum: prev.length + 1, userGuess: g, isCorrect: correct }]);
     setGuess('');
 
     if (correct) {
-      setScore((s) => s + 100);
-      setStreak((s) => s + 1);
+      setScore(s => s + 100);
+      setStreak(s => s + 1);
       setConcluded(true);
     } else {
-      setAttemptsLeft((a) => a - 1);
+      setAttemptsLeft(a => a - 1);
       // attemptsLeft here is stale inside the same tick; compute next value:
       if (attemptsLeft - 1 <= 0) setConcluded(true);
       else setStreak(0); // optional: break streak on miss
@@ -140,7 +139,7 @@ const InferenceScreen: React.FC = () => {
       navigate('/endscreen');
       return;
     }
-    setIdx((i) => i + 1);
+    setIdx(i => i + 1);
     setAttemptsLeft(3);
     setHistory([]);
     setConcluded(false);
@@ -258,7 +257,7 @@ const InferenceScreen: React.FC = () => {
               <div className="mt-2 relative">
                 <button
                   type="button"
-                  onClick={() => setModeOpen((o) => !o)}
+                  onClick={() => setModeOpen(o => !o)}
                   onBlur={() => setTimeout(() => setModeOpen(false), 150)}
                   className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs sm:text-sm tracking-wide"
                   style={{
@@ -291,7 +290,7 @@ const InferenceScreen: React.FC = () => {
                     <button
                       type="button"
                       className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                      onMouseDown={(e) => e.preventDefault()}
+                      onMouseDown={e => e.preventDefault()}
                       onClick={() => navigate('/gamescreen')}
                     >
                       Classic Mode
@@ -299,7 +298,7 @@ const InferenceScreen: React.FC = () => {
                     <button
                       type="button"
                       className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                      onMouseDown={(e) => e.preventDefault()}
+                      onMouseDown={e => e.preventDefault()}
                       onClick={() => navigate('/inference')}
                     >
                       Inference Mode
@@ -359,7 +358,10 @@ const InferenceScreen: React.FC = () => {
                 )}
               </div>
 
-              <pre className="whitespace-pre-wrap text-base leading-snug" style={{ color: '#E9F1F5' }}>
+              <pre
+                className="whitespace-pre-wrap text-base leading-snug"
+                style={{ color: '#E9F1F5' }}
+              >
                 {current.question}
               </pre>
             </div>
@@ -375,7 +377,7 @@ const InferenceScreen: React.FC = () => {
                 <input
                   type="text"
                   value={guess}
-                  onChange={(e) => setGuess(e.target.value)}
+                  onChange={e => setGuess(e.target.value)}
                   placeholder={concluded ? 'Round concluded' : 'Type your answer here…'}
                   className="flex-1 p-4 sm:p-5 text-sm sm:text-base bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
                   disabled={disableInput}
@@ -402,8 +404,7 @@ const InferenceScreen: React.FC = () => {
           {concluded && current && (
             <div className="flex flex-col items-center gap-3 mb-4">
               <p className="text-sm" style={{ color: COLORS.grayblue }}>
-                Correct answer:{' '}
-                <span className="font-semibold text-white">{current.answer}</span>
+                Correct answer: <span className="font-semibold text-white">{current.answer}</span>
               </p>
               <motion.button
                 type="button"
@@ -428,7 +429,7 @@ const InferenceScreen: React.FC = () => {
           >
             <h2 className="text-base sm:text-lg font-semibold mb-2">Your Guesses:</h2>
             <ul className="space-y-2 overflow-y-auto">
-              {history.map((g) => (
+              {history.map(g => (
                 <li key={g.guessNum} className="flex justify-between">
                   <span>
                     Attempt {g.guessNum}: {g.userGuess}
@@ -458,7 +459,7 @@ const InferenceScreen: React.FC = () => {
             initial={{ y: 20, scale: 0.98, opacity: 0 }}
             animate={{ y: 0, scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <button
               type="button"
@@ -507,11 +508,13 @@ const InferenceScreen: React.FC = () => {
                     >
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
                         {avatarUrl ? (
-                          <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
+                          <img
+                            src={avatarUrl}
+                            alt={username}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
-                          <span className="text-sm font-bold">
-                            {username[0].toUpperCase()}
-                          </span>
+                          <span className="text-sm font-bold">{username[0].toUpperCase()}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -524,7 +527,7 @@ const InferenceScreen: React.FC = () => {
                       </div>
                     </li>
                   )}
-                  {players.map((p) => (
+                  {players.map(p => (
                     <li
                       key={p.id}
                       className="w-full flex items-center gap-4 p-4 rounded-xl"
@@ -532,7 +535,11 @@ const InferenceScreen: React.FC = () => {
                     >
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
                         {p.avatarUrl ? (
-                          <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                          <img
+                            src={p.avatarUrl}
+                            alt={p.name}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <span className="text-sm font-bold">
                             {p.name?.[0]?.toUpperCase() ?? 'P'}
@@ -568,7 +575,7 @@ const InferenceScreen: React.FC = () => {
                       min={0}
                       max={100}
                       value={volume}
-                      onChange={(e) => setVolume(Number(e.target.value))}
+                      onChange={e => setVolume(Number(e.target.value))}
                       className="flex-1 accent-cyan-400"
                       aria-label="Master volume"
                     />
