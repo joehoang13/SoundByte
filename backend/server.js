@@ -8,12 +8,12 @@ const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
 
-//Models 
+//Models
 require('./models/Users');
 require('./models/Snippet');
 require('./models/GameSession');
 require('./models/PlayerStats');
-require('./models/Questions'); 
+require('./models/Questions');
 const Room = require('./models/Room'); // <- new Rooms model
 
 // Rate limiter
@@ -48,10 +48,10 @@ const ENV_ORIGINS = (
   ''
 )
   .split(',')
-  .map((s) => s.trim())
+  .map(s => s.trim())
   .filter(Boolean);
 
-const normalize = (o) => (o || '').replace(/\/$/, '');
+const normalize = o => (o || '').replace(/\/$/, '');
 const ORIGINS = Array.from(new Set([...DEFAULT_ORIGINS, ...ENV_ORIGINS])).map(normalize);
 
 const corsOptions = {
@@ -96,7 +96,7 @@ if (!process.env.JWT_SECRET) {
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
-  .catch((err) => {
+  .catch(err => {
     console.error('MongoDB error:', err);
     process.exit(1);
   });
@@ -135,7 +135,7 @@ function ensureHost(room, userId) {
   }
 }
 
-io.on('connection', (socket) => {
+io.on('connection', socket => {
   console.log(`Socket connected: ${socket.id}`);
 
   // Client → createRoom
@@ -217,7 +217,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Client → requestRoom 
+  // Client → requestRoom
   socket.on('requestRoom', async (payload, cb) => {
     try {
       const { code } = payload || {};
@@ -339,7 +339,7 @@ io.on('connection', (socket) => {
   });
 
   // Guess relay (unchanged idea, scoped by { code, guess })
-  socket.on('guess', (payload) => {
+  socket.on('guess', payload => {
     try {
       const { code, guess } = payload || {};
       if (!code) return;
