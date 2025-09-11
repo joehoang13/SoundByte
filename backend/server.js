@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
-const setupSocket = require('./sockets/index')
+const setupSocket = require('./sockets/index');
 
 require('dotenv').config();
 
