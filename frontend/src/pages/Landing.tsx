@@ -1,27 +1,40 @@
+// src/pages/Landing.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-// ❌ old (public/) imports — leave commented
-// import discdb from '../../public/discdb.png';
-// import needledb from '../../public/needledb.png';
+
+// ✅ use assets (old public/ paths removed)
+// import discdb from '../../public/discdb.png'
+// import needledb from '../../public/needledb.png'
 import discdb from '../assets/discdb.png';
 import needledb from '../assets/needledb.png';
+
+// Auth modal (kept, but Play now opens GamePrefModal)
 import Modal from './Modal';
 
-const Landing = () => {
+// ⬇️ Game preferences modal
+// If your file name differs, adjust this path (e.g. GameSettingsModal.tsx)
+import GamePrefModal from '../components/GameSteps/GamePrefModal';
+
+const Landing: React.FC = () => {
   const navigate = useNavigate();
+
+  // Auth modal (kept for when you want it)
   const [showAuth, setShowAuth] = useState(false);
 
-  const openAuth = () => setShowAuth(true);
-  const showSettings = () => navigate('/ready');
-  const showProfile = () => navigate('/profile');
+  // Game preferences modal (new)
+  const [showPrefs, setShowPrefs] = useState(false);
+
+  // When either modal is open, dim/disable the background
+  const dim = showAuth || showPrefs;
 
   return (
     <>
-      {/* Landing content (dims when auth open) */}
+      {/* Landing content (dims when any modal is open) */}
       <div
-        className={`min-h-screen flex items-center justify-center transition-all duration-300
-        ${showAuth ? 'opacity-30 blur-[2px] pointer-events-none select-none' : ''}`}
+        className={`min-h-screen flex items-center justify-center transition-all duration-300 ${
+          dim ? 'opacity-30 blur-[2px] pointer-events-none select-none' : ''
+        }`}
       >
         <div className="flex flex-col items-center justify-center p-4 text-center">
           <div className="relative w-32 h-32 mb-4">
@@ -58,33 +71,47 @@ const Landing = () => {
               </motion.span>
             ))}
           </h1>
+
           <h2 className="text-xl sm:text-2xl md:text-3xl font-montserrat text-darkestblue">
             HEAR IT. NAME IT.
           </h2>
+
           <div className="grid grid-cols-1 gap-4 mt-6">
+            {/* Play now opens the Game Preferences modal */}
             <button
               className="w-48 px-4 py-2 bg-darkblue text-white rounded-xl font-montserrat hover:bg-darkestblue transition"
-              onClick={openAuth}
+              onClick={() => setShowPrefs(true)}
             >
               Play
             </button>
+
+            {/* Settings as before */}
             <button
               className="w-48 px-4 py-2 bg-darkblue text-white rounded-xl font-montserrat hover:bg-darkestblue transition"
-              onClick={showSettings}
+              onClick={() => navigate('/ready')}
             >
               Settings
             </button>
+
+            {/* Optional: expose Auth modal directly if you still want it here */}
+            {/* <button
+              className="w-48 px-4 py-2 bg-darkblue text-white rounded-xl font-montserrat hover:bg-darkestblue transition"
+              onClick={() => setShowAuth(true)}
+            >
+              Log in / Sign up
+            </button> */}
           </div>
         </div>
       </div>
 
       {/* Profile FAB */}
       <motion.button
-        className={`fixed bottom-10 right-10 w-14 h-14 bg-darkblue text-white rounded-full shadow-lg flex items-center justify-center hover:bg-darkestblue transition-all duration-300 z-40
-          ${showAuth ? 'opacity-0 pointer-events-none' : ''}`}
+        className={`fixed bottom-10 right-10 w-14 h-14 bg-darkblue text-white rounded-full shadow-lg flex items-center justify-center hover:bg-darkestblue transition-all duration-300 z-40 ${
+          dim ? 'opacity-0 pointer-events-none' : ''
+        }`}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        onClick={showProfile}
+        onClick={() => navigate('/profile')}
         aria-label="Open User Profile"
       >
         <svg
@@ -108,7 +135,10 @@ const Landing = () => {
         </svg>
       </motion.button>
 
-      {/* Full-screen auth overlay */}
+      {/* Game Preferences Modal */}
+      {showPrefs && <GamePrefModal onClose={() => setShowPrefs(false)} />}
+
+      {/* Auth Modal (kept) */}
       {showAuth && (
         <Modal
           onClose={() => setShowAuth(false)}
