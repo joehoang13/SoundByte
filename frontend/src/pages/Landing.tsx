@@ -1,40 +1,43 @@
-// src/pages/Landing.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
-// ✅ use assets (old public/ paths removed)
-// import discdb from '../../public/discdb.png'
-// import needledb from '../../public/needledb.png'
 import discdb from '../assets/discdb.png';
 import needledb from '../assets/needledb.png';
-
-// Auth modal (kept, but Play now opens GamePrefModal)
-import Modal from './Modal';
-
-// ⬇️ Game preferences modal
-// If your file name differs, adjust this path (e.g. GameSettingsModal.tsx)
+import AuthModal from '../components/Auth/AuthModal';
 import GamePrefModal from '../components/GameSteps/GamePrefModal';
+import { useAuth } from '../stores/auth';
 
-const Landing: React.FC = () => {
+const Landing = () => {
   const navigate = useNavigate();
-
-  // Auth modal (kept for when you want it)
   const [showAuth, setShowAuth] = useState(false);
+  const [showGamePrefs, setShowGamePrefs] = useState(false);
 
-  // Game preferences modal (new)
-  const [showPrefs, setShowPrefs] = useState(false);
+  const { user, token } = useAuth();
+  const isLoggedIn = !!(user && token);
 
-  // When either modal is open, dim/disable the background
-  const dim = showAuth || showPrefs;
+  const handlePlay = () => {
+    if (isLoggedIn) {
+      setShowGamePrefs(true);
+    } else {
+      setShowAuth(true);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    // After successful login/signup, close auth modal and show game settings
+    setShowAuth(false);
+    setShowGamePrefs(true);
+  };
+
+  const showSettings = () => navigate('/ready');
+  const showProfile = () => navigate('/profile');
 
   return (
     <>
-      {/* Landing content (dims when any modal is open) */}
+      {/* Landing content (dims when auth open) */}
       <div
-        className={`min-h-screen flex items-center justify-center transition-all duration-300 ${
-          dim ? 'opacity-30 blur-[2px] pointer-events-none select-none' : ''
-        }`}
+        className={`min-h-screen flex items-center justify-center transition-all duration-300
+        ${showAuth ? 'opacity-30 blur-[2px] pointer-events-none select-none' : ''}`}
       >
         <div className="flex flex-col items-center justify-center p-4 text-center">
           <div className="relative w-32 h-32 mb-4">
@@ -52,7 +55,10 @@ const Landing: React.FC = () => {
               src={needledb}
               alt="Needle"
               className="absolute w-20 h-20 z-10 select-none pointer-events-none"
-              style={{ top: '-5%', right: '12%' }}
+              style={{
+                top: '-5%',
+                right: '12%',
+              }}
               initial={{ y: 0 }}
               animate={{ y: [0, -1, 0] }}
               transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
@@ -71,47 +77,33 @@ const Landing: React.FC = () => {
               </motion.span>
             ))}
           </h1>
-
           <h2 className="text-xl sm:text-2xl md:text-3xl font-montserrat text-darkestblue">
             HEAR IT. NAME IT.
           </h2>
-
           <div className="grid grid-cols-1 gap-4 mt-6">
-            {/* Play now opens the Game Preferences modal */}
             <button
               className="w-48 px-4 py-2 bg-darkblue text-white rounded-xl font-montserrat hover:bg-darkestblue transition"
-              onClick={() => setShowPrefs(true)}
+              onClick={handlePlay}
             >
               Play
             </button>
-
-            {/* Settings as before */}
             <button
               className="w-48 px-4 py-2 bg-darkblue text-white rounded-xl font-montserrat hover:bg-darkestblue transition"
-              onClick={() => navigate('/ready')}
+              onClick={showSettings}
             >
               Settings
             </button>
-
-            {/* Optional: expose Auth modal directly if you still want it here */}
-            {/* <button
-              className="w-48 px-4 py-2 bg-darkblue text-white rounded-xl font-montserrat hover:bg-darkestblue transition"
-              onClick={() => setShowAuth(true)}
-            >
-              Log in / Sign up
-            </button> */}
           </div>
         </div>
       </div>
 
       {/* Profile FAB */}
       <motion.button
-        className={`fixed bottom-10 right-10 w-14 h-14 bg-darkblue text-white rounded-full shadow-lg flex items-center justify-center hover:bg-darkestblue transition-all duration-300 z-40 ${
-          dim ? 'opacity-0 pointer-events-none' : ''
-        }`}
+        className={`fixed bottom-10 right-10 w-14 h-14 bg-darkblue text-white rounded-full shadow-lg flex items-center justify-center hover:bg-darkestblue transition-all duration-300 z-40
+          ${showAuth ? 'opacity-0 pointer-events-none' : ''}`}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => navigate('/profile')}
+        onClick={showProfile}
         aria-label="Open User Profile"
       >
         <svg
@@ -135,20 +127,13 @@ const Landing: React.FC = () => {
         </svg>
       </motion.button>
 
-      {/* Game Preferences Modal */}
-      {showPrefs && <GamePrefModal onClose={() => setShowPrefs(false)} />}
-
-      {/* Auth Modal (kept) */}
+      {/* Authentication Modal */}
       {showAuth && (
-        <Modal
-          onClose={() => setShowAuth(false)}
-          onAuthed={() => {
-            setShowAuth(false);
-            navigate('/gamescreen');
-          }}
-          initialTab="login"
-        />
+        <AuthModal onClose={() => setShowAuth(false)} onAuthSuccess={handleAuthSuccess} />
       )}
+
+      {/* Game Settings Modal */}
+      {showGamePrefs && <GamePrefModal onClose={() => setShowGamePrefs(false)} />}
     </>
   );
 };

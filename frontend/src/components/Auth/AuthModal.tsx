@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AuthStepLogin from './AuthStepLogin';
 import AuthStepSignUp from './AuthStepSignUp';
 
+// ✅ Correct path from src/components/Auth/AuthModal.tsx → src/assets/vinyl.png
+import vinyl from '../../assets/vinyl.png';
+
 interface AuthModalProps {
   onClose: () => void;
   onAuthSuccess: () => void;
@@ -10,9 +13,6 @@ interface AuthModalProps {
 
 type Side = 'login' | 'signup' | null;
 
-/**
- * Vinyl positioning constants
- */
 const LEFT_VINYL_NUDGE = { marginLeft: 110, marginTop: 12 };
 const RIGHT_VINYL_NUDGE = { marginRight: 50, marginTop: 12 };
 
@@ -50,7 +50,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        {/* Modal Shell */}
         <motion.div
           className="relative w-full max-w-7xl h-[85vh] max-h-[750px] min-h-[550px]
                      bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10
@@ -60,7 +59,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-          {/* Close Button */}
           <button
             onClick={onClose}
             aria-label="Close"
@@ -70,12 +68,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
             ×
           </button>
 
-          {/* Split Grid */}
           <div className="relative bg-darkblue/85 mx-auto grid h-full w-full grid-cols-2">
-            {/* Divider Line (desktop only) */}
             <div className="pointer-events-none absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-white/15 md:block" />
 
-            {/* LEFT SIDE - Login */}
+            {/* LEFT (Login) */}
             <motion.section
               className="relative h-full"
               onMouseEnter={() => setHover('login')}
@@ -84,7 +80,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
               animate={{ opacity: leftActive ? 1 : hover === 'signup' ? 0.35 : 0.9 }}
               transition={{ duration: 0.25 }}
             >
-              {/* Label Layer - Shows when NOT active */}
+              {/* Label layer */}
               <motion.div
                 className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
                 initial={false}
@@ -101,15 +97,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
                     }}
                   >
                     <img
-                      src="/vinyl.png"
-                      alt="Vinyl"
+                      src={vinyl}
+                      alt=""
+                      role="presentation"
                       className="mt-3 w-14 h-14 object-contain opacity-90 -scale-x-100"
                     />
                   </div>
                 </div>
               </motion.div>
 
-              {/* Form Layer - Shows when active */}
+              {/* Form layer */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <motion.div
                   className="relative w-full max-w-md"
@@ -127,7 +124,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
               </div>
             </motion.section>
 
-            {/* RIGHT SIDE - Signup */}
+            {/* RIGHT (Signup) */}
             <motion.section
               className="relative h-full"
               onMouseEnter={() => setHover('signup')}
@@ -136,7 +133,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
               animate={{ opacity: rightActive ? 1 : hover === 'login' ? 0.35 : 0.9 }}
               transition={{ duration: 0.25 }}
             >
-              {/* Label Layer - Shows when NOT active */}
+              {/* Label layer */}
               <motion.div
                 className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
                 initial={false}
@@ -153,15 +150,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
                     }}
                   >
                     <img
-                      src="/vinyl.png"
-                      alt="Vinyl"
+                      src={vinyl}
+                      alt=""
+                      role="presentation"
                       className="mt-3 w-14 h-14 object-contain opacity-90"
                     />
                   </div>
                 </div>
               </motion.div>
 
-              {/* Form Layer - Shows when active */}
+              {/* Form layer */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <motion.div
                   className="relative w-full max-w-md"
@@ -181,7 +179,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
           </div>
         </motion.div>
 
-        {/* Footer Note */}
         <div className="pointer-events-none absolute bottom-3 left-0 right-0 text-center text-xs text-white/60">
           By continuing you agree to our Terms & Privacy.
         </div>
