@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AuthStepLogin from '../components/Auth/AuthStepLogin';
 import AuthStepSignUp from '../components/Auth/AuthStepSignUp';
 
+import vinyl from '../assets/vinyl.png';
+
 type Side = 'login' | 'signup' | null;
 
 interface ModalProps {
@@ -11,10 +13,6 @@ interface ModalProps {
   initialTab?: 'login' | 'signup';
 }
 
-/**
- * Tweak these freely to reposition the vinyls under each label.
- * Left vinyl remains mirrored for visual symmetry.
- */
 const LEFT_VINYL_NUDGE = { marginLeft: 110, marginTop: 12 };
 const RIGHT_VINYL_NUDGE = { marginRight: 50, marginTop: 12 };
 
@@ -99,8 +97,9 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
                       marginTop: LEFT_VINYL_NUDGE.marginTop,
                     }}
                   >
+                    {/* ❌ was: src="/vinyl.png" */}
                     <img
-                      src="/vinyl.png"
+                      src={vinyl}
                       alt="Vinyl"
                       className="mt-3 w-14 h-14 object-contain opacity-90 -scale-x-100"
                     />
@@ -154,8 +153,9 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
                       marginTop: RIGHT_VINYL_NUDGE.marginTop,
                     }}
                   >
+                    {/* ❌ was: src="/vinyl.png" */}
                     <img
-                      src="/vinyl.png"
+                      src={vinyl}
                       alt="Vinyl"
                       className="mt-3 w-14 h-14 object-contain opacity-90"
                     />

@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 
 const PlayerSchema = new mongoose.Schema(
   {
-    userId:  { type: String, required: true, trim: true },
-    username:{ type: String, required: true, trim: true },
-    socketId:{ type: String, trim: true },            // optional (useful for presence)
-    isHost:  { type: Boolean, default: false },
-    joinedAt:{ type: Date, default: Date.now },
+    userId: { type: String, required: true, trim: true },
+    username: { type: String, required: true, trim: true },
+    socketId: { type: String, trim: true }, // optional (useful for presence)
+    isHost: { type: Boolean, default: false },
+    joinedAt: { type: Date, default: Date.now },
   },
   { _id: false }
 );
@@ -38,7 +38,7 @@ const RoomSchema = new mongoose.Schema(
 
     // Redundant host reference for quick reads
     host: {
-      userId:   { type: String, required: true, trim: true },
+      userId: { type: String, required: true, trim: true },
       username: { type: String, required: true, trim: true },
     },
 
@@ -48,16 +48,15 @@ const RoomSchema = new mongoose.Schema(
     // Room options
     settings: {
       maxPlayers: { type: Number, default: 8, min: 1, max: 32 },
-      isPrivate:  { type: Boolean, default: false },
-      passcode:   { type: String, trim: true }, 
+      isPrivate: { type: Boolean, default: false },
+      passcode: { type: String, trim: true },
     },
 
     currentRound: { type: Number, default: 0 },
-    metadata:     { type: mongoose.Schema.Types.Mixed },
+    metadata: { type: mongoose.Schema.Types.Mixed },
   },
   { collection: 'rooms', timestamps: true }
 );
-
 
 RoomSchema.index({ code: 1 }, { unique: true });
 RoomSchema.index({ status: 1, updatedAt: -1 });
@@ -66,9 +65,8 @@ RoomSchema.virtual('playerCount').get(function () {
   return (this.players || []).length;
 });
 
-
 function randomCode(len = 6) {
-  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; 
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   let out = '';
   for (let i = 0; i < len; i++) out += alphabet[(Math.random() * alphabet.length) | 0];
   return out;
@@ -79,18 +77,18 @@ RoomSchema.methods.isFull = function () {
 };
 
 RoomSchema.methods.hasPlayer = function (userId) {
-  return this.players.some((p) => p.userId === userId);
+  return this.players.some(p => p.userId === userId);
 };
 
 RoomSchema.methods.addPlayer = function ({ userId, username, socketId }) {
   if (this.isFull()) throw new Error('Room is full');
 
   // Rejoin path: update existing player’s socket/username
-  const idx = this.players.findIndex((p) => p.userId === userId);
+  const idx = this.players.findIndex(p => p.userId === userId);
   if (idx !== -1) {
     const existing = this.players[idx];
     this.players[idx] = {
-      ...existing.toObject?.() ?? existing,
+      ...(existing.toObject?.() ?? existing),
       username,
       socketId,
     };
@@ -103,7 +101,7 @@ RoomSchema.methods.addPlayer = function ({ userId, username, socketId }) {
 
 RoomSchema.methods.removePlayer = function (userId) {
   const before = this.playerCount;
-  this.players = this.players.filter((p) => p.userId !== userId);
+  this.players = this.players.filter(p => p.userId !== userId);
 
   // If host left (and still in lobby), promote first remaining player
   if (this.status === 'lobby' && this.players.length > 0 && this.host.userId === userId) {
@@ -121,7 +119,7 @@ RoomSchema.methods.toLobbySummary = function () {
     host: this.host,
     playerCount: this.playerCount,
     maxPlayers: this.settings?.maxPlayers ?? 8,
-    players: this.players.map((p) => ({
+    players: this.players.map(p => ({
       userId: p.userId,
       username: p.username,
       isHost: !!p.isHost,
