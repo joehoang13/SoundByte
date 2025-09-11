@@ -1,4 +1,7 @@
 const { Server } = require('socket.io');
+const Room = require('../models/Room');
+const socketState = new Map();
+
 
 function ensureHost(room, userId) {
   if (!room?.host || room.host.userId !== userId) {
@@ -33,20 +36,20 @@ function setupSocket(server) {
 
     socket.on('createRoom', async (payload, cb) => {
       try {
-        const { userId, username, mode, settings } = payload || {};
-        if (!userId || !username) throw new Error('Missing userId/username');
+        const { hostId, hostSocketId, mode, settings } = payload || {};
+        if (!hostId) throw new Error('Missing userId/username');
 
         const room = await Room.createRoom({
-          hostUserId: userId,
-          hostUsername: username,
+          hostId: hostId,
+          hostSocketId: hostSocketId,
           mode,
           settings,
         });
-
+        
         socket.join(room.code);
-        socketState.set(socket.id, { code: room.code, userId });
+        socketState.set(socket.id, { code: room.code, hostId });
 
-        const summary = room.toLobbySummary();
+        const summary = await room.toLobbySummary();
         io.to(room.code).emit('room:update', summary);
         cb?.({ ok: true, room: summary });
       } catch (err) {
@@ -56,17 +59,15 @@ function setupSocket(server) {
       }
     });
 
-    // Client → joinRoom
     socket.on('joinRoom', async (payload, cb) => {
       try {
-        const { code, userId, username, passcode } = payload || {};
-        if (!code || !userId || !username) throw new Error('Missing code/userId/username');
+        const { code, userId, userSocketId, passcode } = payload || {};
+        if (!code || !userId) throw new Error('Missing code/userId');
 
         const room = await Room.joinByCode({
           code,
           userId,
-          username,
-          socketId: socket.id,
+          userSocketId: userSocketId,
           passcode,
         });
 

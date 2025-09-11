@@ -186,11 +186,11 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   }, [username]);
 
   const createRoom = () => {
-    socketRef.current?.emit('chatMessage', { msg: 'bob' });
+    socketRef.current?.emit('createRoom', {hostId: user?.id, hostSocketId: socketRef.current.id});
   };
   const joinRoom = (code: string) => {
     if (!code.trim()) return;
-    socketRef.current?.emit('joinRoom', { roomId: code.trim(), name: username });
+    socketRef.current?.emit('joinRoom', { code: code.trim(), userId: user?.id, userSocketId: socketRef.current.id });
   };
   const leaveRoom = () => {
     socketRef.current?.emit('leaveRoom', { roomId });
