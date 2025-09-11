@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { registerUser } from '../../api/api';
+import { useAuth } from '../../stores/auth';
 
 interface AuthStepSignUpProps {
   onClose: () => void;
@@ -13,17 +14,15 @@ interface AuthStepSignUpProps {
   hideClose?: boolean;
 }
 
-const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
-  onClose,
-  onSignUpSuccess,
-  onSwitchToLogin,
-}) => {
+const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({ onSignUpSuccess }) => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const { setAuth } = useAuth();
 
   const inputCls =
     'w-full py-3.5 px-4 rounded-2xl bg-white/5 text-white/90 placeholder-white/45 ' +
@@ -54,7 +53,8 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({
 
     setBusy(true);
     try {
-      await registerUser({ email, username: username || undefined, password });
+      const response = await registerUser({ email, username: username || undefined, password });
+      setAuth(response.token, response.user);
       onSignUpSuccess();
       setEmail('');
       setUsername('');

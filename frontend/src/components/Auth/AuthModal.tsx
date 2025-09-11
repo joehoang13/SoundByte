@@ -1,25 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import AuthStepLogin from '../components/GameSteps/AuthStepLogin';
-import AuthStepSignUp from '../components/GameSteps/AuthStepSignUp';
+import AuthStepLogin from './AuthStepLogin';
+import AuthStepSignUp from './AuthStepSignUp';
+
+// ✅ Correct path from src/components/Auth/AuthModal.tsx → src/assets/vinyl.png
+import vinyl from '../../assets/vinyl.png';
+
+interface AuthModalProps {
+  onClose: () => void;
+  onAuthSuccess: () => void;
+}
 
 type Side = 'login' | 'signup' | null;
 
-interface ModalProps {
-  onClose: () => void;
-  onAuthed?: () => void;
-  initialTab?: 'login' | 'signup';
-}
-
-/**
- * Tweak these freely to reposition the vinyls under each label.
- * Left vinyl remains mirrored for visual symmetry.
- */
 const LEFT_VINYL_NUDGE = { marginLeft: 110, marginTop: 12 };
 const RIGHT_VINYL_NUDGE = { marginRight: 50, marginTop: 12 };
 
-const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
-  const [hover, setHover] = useState<Side>(initialTab ?? null);
+const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
+  const [hover, setHover] = useState<Side>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -36,6 +34,9 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
     };
   }, [onClose]);
 
+  const handleSwitchToSignUp = () => setHover('signup');
+  const handleSwitchToLogin = () => setHover('login');
+
   const leftActive = hover === 'login';
   const rightActive = hover === 'signup';
 
@@ -49,7 +50,6 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        {/* Modal Shell */}
         <motion.div
           className="relative w-full max-w-7xl h-[85vh] max-h-[750px] min-h-[550px]
                      bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10
@@ -59,7 +59,6 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-          {/* Close Button (inside modal, top-right) */}
           <button
             onClick={onClose}
             aria-label="Close"
@@ -69,9 +68,7 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
             ×
           </button>
 
-          {/* Split Grid */}
           <div className="relative bg-darkblue/85 mx-auto grid h-full w-full grid-cols-2">
-            {/* Divider (desktop) */}
             <div className="pointer-events-none absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-white/15 md:block" />
 
             {/* LEFT (Login) */}
@@ -100,8 +97,9 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
                     }}
                   >
                     <img
-                      src="/vinyl.png"
-                      alt="Vinyl"
+                      src={vinyl}
+                      alt=""
+                      role="presentation"
                       className="mt-3 w-14 h-14 object-contain opacity-90 -scale-x-100"
                     />
                   </div>
@@ -119,11 +117,8 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
                   <AuthStepLogin
                     hideClose
                     onClose={onClose}
-                    onLoginSuccess={() => {
-                      onAuthed?.();
-                      onClose();
-                    }}
-                    onSwitchToSignUp={() => setHover('signup')}
+                    onLoginSuccess={onAuthSuccess}
+                    onSwitchToSignUp={handleSwitchToSignUp}
                   />
                 </motion.div>
               </div>
@@ -155,8 +150,9 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
                     }}
                   >
                     <img
-                      src="/vinyl.png"
-                      alt="Vinyl"
+                      src={vinyl}
+                      alt=""
+                      role="presentation"
                       className="mt-3 w-14 h-14 object-contain opacity-90"
                     />
                   </div>
@@ -174,11 +170,8 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
                   <AuthStepSignUp
                     hideClose
                     onClose={onClose}
-                    onSignUpSuccess={() => {
-                      onAuthed?.();
-                      onClose();
-                    }}
-                    onSwitchToLogin={() => setHover('login')}
+                    onSignUpSuccess={onAuthSuccess}
+                    onSwitchToLogin={handleSwitchToLogin}
                   />
                 </motion.div>
               </div>
@@ -186,7 +179,6 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
           </div>
         </motion.div>
 
-        {/* Footer Note */}
         <div className="pointer-events-none absolute bottom-3 left-0 right-0 text-center text-xs text-white/60">
           By continuing you agree to our Terms & Privacy.
         </div>
@@ -195,4 +187,4 @@ const Modal: React.FC<ModalProps> = ({ onClose, onAuthed, initialTab }) => {
   );
 };
 
-export default Modal;
+export default AuthModal;

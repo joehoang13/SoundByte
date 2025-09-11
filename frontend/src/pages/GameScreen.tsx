@@ -1,24 +1,20 @@
-// src/pages/GameScreen.tsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Howl, Howler } from 'howler';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../stores/GameSessionStore';
 import { motion, useReducedMotion, type Transition } from 'framer-motion';
-import discdb from '../../public/discdb.png';
-import needledb from '../../public/needledb.png';
 import { io, Socket } from 'socket.io-client';
 
 import { useAuth } from '../stores/auth';
 import { logout } from '../api/auth';
 
-/**
- * GameScreen — Classic mode + Party (Socket.IO)
- * - Solo / Group switch (fixed top-center, outside the card)
- * - Group lobby: create/join room, invite link, show players, choose game mode
- * - Username badge (top-left) kept
- * - No autoplay: click the disc to start/pause/replay
- * - Settings modal (players, volume, back, logout)
- */
+// ❌ old public paths (keep for reference)
+// const discdb = '/discdb.png';
+// const needledb = '/needledb.png';
+
+// ✅ import from src/assets (Vite will bundle/hash)
+import discdb from '../assets/discdb.png';
+import needledb from '../assets/needledb.png';
 
 function useHowl(url?: string, useWebAudio = true) {
   const ref = useRef<Howl | null>(null);
@@ -90,7 +86,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
   const { user } = useAuth();
   const username = user?.username ?? 'Player';
-  const avatarUrl = user?.avatarUrl as string | undefined;
+  // const avatarUrl = user?.avatarUrl as string | undefined; Add once implemented
+  const avatarUrl = undefined;
 
   // local players list (store may or may not have one)
   // @ts-ignore optional players in store

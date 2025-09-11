@@ -1,4 +1,4 @@
-// backend/server.js — normalized CORS + preflight + quick pings
+// backend/server.js — Express + Socket.IO (rooms + lobby sync)
 const express = require('express');
 const http = require('http');
 const mongoose = require('mongoose');
@@ -9,17 +9,21 @@ const setupSocket = require('./sockets/index');
 
 require('dotenv').config();
 
-// Models (side-effect)
+//Models
 require('./models/Users');
 require('./models/Snippet');
 require('./models/GameSession');
 require('./models/PlayerStats');
+require('./models/Questions');
+const Room = require('./models/Room'); // <- new Rooms model
 
 // Rate limiter
 const { authLimiter } = require('./middleware/rateLimit');
 
+// App
 const app = express();
 
+// Logging
 app.use((req, res, next) => {
   const t0 = Date.now();
   res.on('finish', () => {
@@ -29,8 +33,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── CORS (single, normalized) ──────────────────────────────────────────────
-// Accept multiple env names, allow common dev ports by default, and never 500 on CORS.
+// CORS
 const DEFAULT_ORIGINS = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
@@ -53,70 +56,70 @@ const ORIGINS = Array.from(new Set([...DEFAULT_ORIGINS, ...ENV_ORIGINS])).map(no
 
 const corsOptions = {
   origin(origin, cb) {
-    if (!origin) return cb(null, true); // non-browser / same-origin
+    if (!origin) return cb(null, true); // allow curl/postman
     const ok = ORIGINS.includes(normalize(origin));
-
-    // In dev, be permissive to avoid local 500s if origin isn't listed yet
     if (!ok && process.env.NODE_ENV !== 'production') {
       console.warn('CORS (dev allow):', origin);
       return cb(null, true);
     }
-
     if (ok) return cb(null, true);
-
-    // Do NOT throw an error here (causes 500). Deny politely.
     console.warn('CORS blocked:', origin);
     return cb(null, false);
   },
   credentials: true,
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'], // allow JWT header
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // reply to preflight
+app.options('*', cors(corsOptions));
 
-// ── Middleware ─────────────────────────────────────────────────────────────
+/* ----------------------------- Middleware ----------------------------- */
 app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
 app.use(helmet());
 
-// Health + ping
+/* --------------------------- Health Endpoints -------------------------- */
 app.get('/health', (_req, res) => res.json({ ok: true }));
 app.get('/api/ping', (_req, res) => res.json({ ok: true, ts: Date.now() }));
 app.get('/api/gs/ping', (_req, res) => res.json({ ok: true, scope: 'gs' }));
 
-// ── DB + secrets ───────────────────────────────────────────────────────────
+/* -------------------------- DB & Secret Checks ------------------------- */
 if (!process.env.MONGODB_URI) {
   console.error('Missing MONGODB_URI in environment');
   process.exit(1);
 }
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB error:', err));
-
 if (!process.env.JWT_SECRET) {
   console.error('Missing JWT_SECRET in environment');
   process.exit(1);
 }
 
-// Routers
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => {
+    console.error('MongoDB error:', err);
+    process.exit(1);
+  });
+
+/* -------------------------------- Routes ------------------------------- */
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const createGsRouter = require('./routes/gs');
 const snipRoutes = require('./routes/snip');
 
-// Mount
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/gs', createGsRouter()); // IMPORTANT: invoke factory
+app.use('/api/gs', createGsRouter());
 app.use('/api/snip', snipRoutes);
 app.use('/api/snippets', snipRoutes);
 
-// 404
+// 404 (keep last)
 app.use((req, res) => res.status(404).json({ error: 'Not Found' }));
 
 const server = http.createServer(app);
 setupSocket(server);
+/* ------------------------------- Startup ------------------------------ */
 const PORT = Number(process.env.PORT || 3001);
-server.listen(PORT, () => console.log(`Server on :${PORT} (CORS: ${ORIGINS.join(', ')})`));
+server.listen(PORT, () => {
+  console.log(`Server on :${PORT} (CORS: ${ORIGINS.join(', ')})`);
+});

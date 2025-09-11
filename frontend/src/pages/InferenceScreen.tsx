@@ -1,3 +1,4 @@
+// src/screens/InferenceScreen.tsx
 import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -6,17 +7,11 @@ import useGameStore from '../stores/GameSessionStore';
 import { useAuth } from '../stores/auth';
 import { logout } from '../api/auth';
 
-/**
- * InferenceScreen — Inference mode (question + lyrics)
- * - Username badge (top-left, outside the card) with Friends/Stats quick links
- * - In-screen Settings modal (Players incl. You, Volume, Back, Log Out)
- */
-
 type Prompt = {
-  id: string;
+  _id: string;
   question: string;
-  lyrics: string;
   answer: string;
+  difficulty?: string;
 };
 
 type GuessRow = {
@@ -25,11 +20,7 @@ type GuessRow = {
   isCorrect: boolean;
 };
 
-type Player = {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-};
+type Player = { id: string; name: string; avatarUrl?: string };
 
 const COLORS = {
   grayblue: '#90A4AB',
@@ -37,27 +28,6 @@ const COLORS = {
   teal: '#0FC1E9',
   darkestblue: '#143D4D',
 };
-
-const SAMPLE_PROMPTS: Prompt[] = [
-  {
-    id: 'p1',
-    question: 'Which National Anthem opens with these lines?',
-    lyrics: `"O say can you see, by the dawn’s early light,"`,
-    answer: 'Star Spangled Banner',
-  },
-  {
-    id: 'p2',
-    question: 'Name the artist who sings this hook:',
-    lyrics: `"Cause baby you’re a firework\nCome on, show ’em what you’re worth"`,
-    answer: 'Katy Perry',
-  },
-  {
-    id: 'p3',
-    question: 'What song is this chorus from?',
-    lyrics: `"Hello from the other side\nI must’ve called a thousand times"`,
-    answer: 'Hello',
-  },
-];
 
 function norm(x: string) {
   return x
@@ -68,17 +38,19 @@ function norm(x: string) {
 
 const InferenceScreen: React.FC = () => {
   const navigate = useNavigate();
-
-  // Auth user (for username badge + "You" in players list)
   const { user } = useAuth();
   const username = user?.username ?? 'Player';
-  const avatarUrl = user?.avatarUrl as string | undefined;
+  const avatarUrl = (user as any)?.avatarUrl as string | undefined;
 
-  // Players sourced from store if present; falls back gracefully
   // @ts-ignore tolerate various store shapes
   const players: Player[] = (useGameStore.getState?.().players as Player[] | undefined) ?? [];
 
-  const prompts = useMemo(() => SAMPLE_PROMPTS, []);
+  // data state
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [loadingPrompts, setLoadingPrompts] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  // round state
   const [idx, setIdx] = useState(0);
   const [guess, setGuess] = useState('');
   const [attemptsLeft, setAttemptsLeft] = useState(3);
@@ -86,12 +58,12 @@ const InferenceScreen: React.FC = () => {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [concluded, setConcluded] = useState(false);
-  const [modeOpen, setModeOpen] = useState(false);
 
-  // Settings modal state
+  // UI state
+  const [modeOpen, setModeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Volume (0–100), persists + controls Howler master volume
+  // volume (persisted)
   const [volume, setVolume] = useState<number>(() => {
     const saved = localStorage.getItem('sb_volume');
     const initial = saved ? Math.min(100, Math.max(0, Number(saved))) : 80;
@@ -103,11 +75,46 @@ const InferenceScreen: React.FC = () => {
     localStorage.setItem('sb_volume', String(volume));
   }, [volume]);
 
+  // fetch prompts
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadingPrompts(true);
+        setLoadError(null);
+        const res = await fetch('/api/inference/random?limit=3', {
+          credentials: 'include',
+        });
+        const json = await res.json();
+        if (!mounted) return;
+        if (!json?.ok) {
+          setLoadError(json?.error || 'Failed to load prompts');
+        } else {
+          setPrompts(json.items as Prompt[]);
+          setIdx(0);
+          setAttemptsLeft(3);
+          setHistory([]);
+          setConcluded(false);
+          setGuess('');
+        }
+      } catch (_e) {
+        if (mounted) setLoadError('Failed to load prompts');
+      } finally {
+        if (mounted) setLoadingPrompts(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const current = prompts[idx];
   const totalRounds = prompts.length;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!current) return;
+
     const g = guess.trim();
     if (!g || concluded) return;
 
@@ -121,7 +128,9 @@ const InferenceScreen: React.FC = () => {
       setConcluded(true);
     } else {
       setAttemptsLeft(a => a - 1);
+      // attemptsLeft here is stale inside the same tick; compute next value:
       if (attemptsLeft - 1 <= 0) setConcluded(true);
+      else setStreak(0); // optional: break streak on miss
     }
   };
 
@@ -145,11 +154,11 @@ const InferenceScreen: React.FC = () => {
     navigate('/welcome');
   };
 
-  const disableInput = concluded || attemptsLeft <= 0;
+  const disableInput = concluded || attemptsLeft <= 0 || !current;
 
   return (
     <>
-      {/* USERNAME BADGE — fixed, outside the card */}
+      {/* Username badge */}
       {user && (
         <div
           className="fixed top-6 left-6 z-[60] flex items-center gap-4 rounded-2xl px-5 py-4"
@@ -171,7 +180,6 @@ const InferenceScreen: React.FC = () => {
           </div>
 
           <div className="leading-tight">
-            {/* Username + small links on the same row */}
             <div className="flex items-baseline gap-3 flex-wrap">
               <div className="text-xl font-extrabold" style={{ color: '#E6F6FA' }}>
                 {username}
@@ -180,7 +188,6 @@ const InferenceScreen: React.FC = () => {
                 type="button"
                 className="text-xs font-semibold hover:underline"
                 style={{ color: 'rgba(15,193,233,0.9)' }}
-                // onClick={() => navigate('/friends')}
               >
                 Friends
               </button>
@@ -188,7 +195,6 @@ const InferenceScreen: React.FC = () => {
                 type="button"
                 className="text-xs font-semibold hover:underline"
                 style={{ color: 'rgba(15,193,233,0.9)' }}
-                // onClick={() => navigate('/stats')}
               >
                 Stats
               </button>
@@ -208,7 +214,7 @@ const InferenceScreen: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
         >
-          {/* Settings (now opens in-screen modal) */}
+          {/* Settings button */}
           <motion.button
             type="button"
             className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
@@ -247,7 +253,7 @@ const InferenceScreen: React.FC = () => {
             <div className="flex-1 flex flex-col items-center justify-center relative">
               <h1 className="text-2xl font-bold text-center">Inference</h1>
 
-              {/* Gamemode pill w/ dropdown */}
+              {/* Mode pill */}
               <div className="mt-2 relative">
                 <button
                   type="button"
@@ -313,44 +319,53 @@ const InferenceScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Round progress */}
+          {/* Progress */}
           <p className="text-center mb-6" style={{ color: COLORS.grayblue }}>
-            Round {idx + 1} / {totalRounds} • Attempts left: {attemptsLeft}
+            {loadingPrompts && 'Loading questions…'}
+            {loadError && `Error: ${loadError}`}
+            {!loadingPrompts && !loadError && current && (
+              <>
+                Round {idx + 1} / {totalRounds} • Attempts left: {attemptsLeft}
+              </>
+            )}
           </p>
 
-          {/* Prompt Card */}
-          <div
-            className="w-full rounded-2xl px-5 py-6 mb-6 shadow-inner"
-            style={{
-              background: `linear-gradient(180deg, rgba(15,193,233,0.08), rgba(20,61,77,0.35))`,
-              border: `1px solid rgba(255,255,255,0.08)`,
-            }}
-          >
-            <div className="mb-3 text-sm tracking-wide" style={{ color: COLORS.grayblue }}>
-              Question
-            </div>
-            <h3 className="text-xl sm:text-2xl font-semibold mb-5 leading-snug">
-              {current.question}
-            </h3>
-
-            <div className="mb-2 text-sm tracking-wide" style={{ color: COLORS.grayblue }}>
-              Lyrics Excerpt
-            </div>
+          {/* Prompt Card (now renders full question only) */}
+          {current && (
             <div
-              className="rounded-xl p-4"
+              className="w-full rounded-2xl px-5 py-6 mb-6 shadow-inner"
               style={{
-                backgroundColor: 'rgba(255,255,255,0.04)',
-                border: '1px dashed rgba(144,164,171,0.35)',
+                background: `linear-gradient(180deg, rgba(15,193,233,0.08), rgba(20,61,77,0.35))`,
+                border: `1px solid rgba(255,255,255,0.08)`,
               }}
             >
+              <div className="mb-3 flex items-center justify-between">
+                <div className="text-sm tracking-wide" style={{ color: COLORS.grayblue }}>
+                  Question
+                </div>
+                {!!current.difficulty && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full border"
+                    style={{
+                      borderColor: COLORS.teal,
+                      color: COLORS.grayblue,
+                      backgroundColor: 'rgba(20, 61, 77, 0.35)',
+                    }}
+                    title="Difficulty"
+                  >
+                    {current.difficulty}
+                  </span>
+                )}
+              </div>
+
               <pre
-                className="whitespace-pre-wrap font-mono text-sm sm:text-base"
+                className="whitespace-pre-wrap text-base leading-snug"
                 style={{ color: '#E9F1F5' }}
               >
-                {current.lyrics}
+                {current.question}
               </pre>
             </div>
-          </div>
+          )}
 
           {/* Answer input */}
           <form onSubmit={submit} className="relative mb-6">
@@ -368,7 +383,6 @@ const InferenceScreen: React.FC = () => {
                   disabled={disableInput}
                   autoFocus
                 />
-
                 <motion.button
                   type="submit"
                   disabled={disableInput || !guess.trim()}
@@ -386,8 +400,8 @@ const InferenceScreen: React.FC = () => {
             </div>
           </form>
 
-          {/* Actions when concluded */}
-          {concluded && (
+          {/* Concluded actions */}
+          {concluded && current && (
             <div className="flex flex-col items-center gap-3 mb-4">
               <p className="text-sm" style={{ color: COLORS.grayblue }}>
                 Correct answer: <span className="font-semibold text-white">{current.answer}</span>
@@ -447,7 +461,6 @@ const InferenceScreen: React.FC = () => {
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Close X */}
             <button
               type="button"
               onClick={() => setSettingsOpen(false)}
@@ -457,7 +470,6 @@ const InferenceScreen: React.FC = () => {
               ×
             </button>
 
-            {/* Header */}
             <div className="mb-6">
               <h2 className="text-2xl sm:text-3xl font-bold">Game Settings</h2>
               <p className="text-sm mt-1" style={{ color: COLORS.grayblue }}>
@@ -465,9 +477,7 @@ const InferenceScreen: React.FC = () => {
               </p>
             </div>
 
-            {/* Content grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Players (includes YOU at the top if logged in) */}
               <section
                 className="lg:col-span-2 rounded-2xl p-5"
                 style={{
@@ -493,7 +503,6 @@ const InferenceScreen: React.FC = () => {
                 <ul className="grid grid-cols-1 gap-3">
                   {user && (
                     <li
-                      key="self"
                       className="w-full flex items-center gap-4 p-4 rounded-xl"
                       style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
                     >
@@ -518,7 +527,6 @@ const InferenceScreen: React.FC = () => {
                       </div>
                     </li>
                   )}
-
                   {players.map(p => (
                     <li
                       key={p.id}
@@ -549,7 +557,6 @@ const InferenceScreen: React.FC = () => {
                 </ul>
               </section>
 
-              {/* Controls */}
               <section
                 className="rounded-2xl p-5 flex flex-col gap-6"
                 style={{
@@ -557,7 +564,6 @@ const InferenceScreen: React.FC = () => {
                   border: '1px solid rgba(255,255,255,0.08)',
                 }}
               >
-                {/* Volume */}
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
                   <div className="flex items-center gap-3">
@@ -582,7 +588,6 @@ const InferenceScreen: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Back / Logout */}
                 <div className="flex flex-col gap-3">
                   <motion.button
                     type="button"
@@ -597,7 +602,10 @@ const InferenceScreen: React.FC = () => {
 
                   <motion.button
                     type="button"
-                    onClick={handleLogout}
+                    onClick={async () => {
+                      await logout().catch(() => {});
+                      navigate('/welcome');
+                    }}
                     className="w-full px-4 py-2 rounded-xl font-semibold"
                     style={{
                       background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)',
