@@ -3,6 +3,8 @@
 const mongoose = require('mongoose');
 const GameSession = require('../models/GameSession');
 const Snippet = require('../models/Snippet');
+const User = require('../models/Users');
+
 
 // ---------- helpers ----------
 const now = () => new Date();
@@ -113,8 +115,8 @@ exports.startGame = async function startGame(req, res) {
     const session = await GameSession.create({
       userId,
       mode: 'classic',
-      difficulty, // still stored
-      snippetSize, // still stored — frontend uses it
+      difficulty,       // still stored
+      snippetSize,      // still stored — frontend uses it
       rounds: take,
       answers,
       currentRound: 0,
@@ -137,6 +139,7 @@ exports.startGame = async function startGame(req, res) {
     return res.status(500).json({ error: 'Failed to start game' });
   }
 };
+
 
 // POST /api/gs/game/:sessionId/round/started
 exports.setRoundStarted = async function setRoundStarted(req, res) {
@@ -324,6 +327,27 @@ exports.finishGame = async function finishGame(req, res) {
     session.status = 'completed';
     await session.save();
 
+    // 🧠 Update user stats
+    if (session.userId) {
+      const user = await User.findById(session.userId);
+
+      if (user) {
+        // Update total games played
+        user.totalGamesPlayed = (user.totalGamesPlayed || 0) + 1;
+
+        // Update highest score
+        if (!user.highestScore || session.score > user.highestScore) {
+          user.highestScore = session.score;
+        }
+
+        // Count correct answers from this session
+        const correctCount = session.answers.filter(a => a.correct).length;
+        user.totalSnippetsGuessed = (user.totalSnippetsGuessed || 0) + correctCount;
+
+        await user.save();
+      }
+    }
+
     return res.json({
       score: session.score,
       streak: session.streak,
@@ -336,6 +360,7 @@ exports.finishGame = async function finishGame(req, res) {
     return res.status(500).json({ error: 'Failed to finish game' });
   }
 };
+
 
 // GET /api/gs/inventory
 exports.inventory = async function inventory(req, res) {

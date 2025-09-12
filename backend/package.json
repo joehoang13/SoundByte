@@ -12,7 +12,9 @@
     "test": "jest --config ./jest.config.ts --runInBand",
     "test:watch": "jest --config ./jest.config.ts --watch",
     "seed": "ts-node ./scripts/seedSnippets.ts",
-    "clean:snippetSize": "node scripts/removeSnippetSize.js"
+    "clean:snippetSize": "node scripts/removeSnippetSize.js",
+    "update:userStats": "node scripts/updateUserStatsFields.js"
+
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
