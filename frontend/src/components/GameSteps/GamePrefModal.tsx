@@ -119,9 +119,9 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
         state: {
           fromModal: true,
           modalStep: 'createOrJoin',
-          playMode, 
+          playMode,
           role: createOrJoin,
-          createOrJoin,  
+          createOrJoin,
           gameMode,
           snippetLength: createOrJoin === 'create' ? snippetLength : undefined,
         },
@@ -168,10 +168,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
 
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${playMode === 'solo'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            playMode === 'solo'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -183,10 +184,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${playMode === 'multiplayer'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            playMode === 'multiplayer'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -208,7 +210,9 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
               >
                 Multiplayer Setup
               </h2>
-              <p className="text-sm sm:text-base text-center mb-6">Host a new game or join an existing one</p>
+              <p className="text-sm sm:text-base text-center mb-6">
+                Host a new game or join an existing one
+              </p>
 
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
@@ -253,10 +257,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
               <p className="text-sm sm:text-base text-center mb-6">Choose your game mode</p>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${gameMode === 'classic'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            gameMode === 'classic'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -268,10 +273,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${gameMode === 'inference'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            gameMode === 'inference'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -310,10 +316,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                              ${snippetLength === len.value
-                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                          : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                        }`}
+                              ${
+                                snippetLength === len.value
+                                  ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                                  : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                              }`}
                     >
                       <div className="font-bold">{len.label}</div>
                       <div className="text-sm font-light">{len.value} Seconds</div>
@@ -326,7 +333,9 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
 
           {/* Navigation Buttons */}
           <div className="flex gap-3 mt-6">
-            {(currentStep === 'gameMode' || currentStep === 'createOrJoin' || currentStep === 'difficulty') && (
+            {(currentStep === 'gameMode' ||
+              currentStep === 'createOrJoin' ||
+              currentStep === 'difficulty') && (
               <motion.button
                 className="px-6 py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/20 transition-colors"
                 whileHover={{ scale: 1.02 }}

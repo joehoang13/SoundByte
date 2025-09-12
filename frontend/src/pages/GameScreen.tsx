@@ -131,13 +131,13 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
   const snippetSeconds = useMemo(() => snippetSize ?? 5, [snippetSize]);
 
-
   // ───────────────────── Socket.IO / Group Lobby ─────────────────────
   const [socketStatus, setSocketStatus] = useState<'disconnected' | 'connecting' | 'connected'>(
     'disconnected'
   );
 
-  {/* 
+  {
+    /* 
   const socketRef = useRef<Socket | null>(null);
   const [partyMode, setPartyMode] = useState<PartyMode>('solo');
   const [roomId, setRoomId] = useState<string>('DEMO123'); 
@@ -223,7 +223,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partyMode]);
-  */}
+  */
+  }
 
   // ─────────────────────────── Core game ────────────────────────────
 
@@ -580,8 +581,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
               </header>
               */}
 
-              {/* Create / Join */}
-              {/*}
+          {/* Create / Join */}
+          {/*}
               {!roomId ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div
@@ -640,9 +641,9 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 </div>
               ) : (
                */}
-                <>
-                  {/* Room info + invite */}
-                  {/*}
+          <>
+            {/* Room info + invite */}
+            {/*}
                   <div
                     className="rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-4 justify-between"
                     style={{
@@ -680,8 +681,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                   </div>
                   */}
 
-                  {/* Game mode & players */}
-                  {/*
+            {/* Game mode & players */}
+            {/*
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <section
                       className="rounded-2xl p-5 flex flex-col gap-4"
@@ -765,8 +766,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
                       <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       */}
-                        {/* you */}
-                        {/*
+            {/* you */}
+            {/*
                         <li
                           key="self"
                           className="flex items-center gap-3 p-3 rounded-xl"
@@ -1049,9 +1050,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 )}
               </div>
             </>
-          {/*}
+            {/*}
           )}
-          */}</>
+          */}
+          </>
         </motion.div>
       </div>
 
