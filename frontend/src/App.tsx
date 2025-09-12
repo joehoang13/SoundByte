@@ -5,6 +5,7 @@ import GameScreen from './pages/GameScreen';
 import InferenceScreen from './pages/InferenceScreen';
 import EndScreen from './pages/EndScreen';
 import ReadyScreen from './pages/ReadyScreen';
+import GroupLobby from './pages/GroupLobby';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Background from './components/Background';
@@ -37,6 +38,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <ReadyScreen />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/grouplobby"
+            element={
+              <RequireAuth>
+                <GroupLobby />
               </RequireAuth>
             }
           />

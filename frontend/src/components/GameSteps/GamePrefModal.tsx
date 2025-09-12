@@ -4,21 +4,24 @@ import { useNavigate } from 'react-router-dom';
 import useGameStore from '../../stores/GameSessionStore';
 import Background from '../Background';
 import type { SnippetSize } from '../../types/game';
+import { create } from 'zustand';
 
 interface GamePrefModalProps {
   onClose: () => void;
 
   // props to prefill data / start at a specific step
-  initialStep?: 'playMode' | 'gameMode' | 'difficulty';
+  initialStep?: 'playMode' | 'createOrJoin' | 'gameMode' | 'difficulty';
   initialValues?: {
     playMode?: string;
     gameMode?: string;
+    createOrJoin?: string;
     snippetLength?: number;
   };
 }
 
 type PlayMode = 'solo' | 'multiplayer';
 type GameMode = 'classic' | 'inference';
+type CreateOrJoin = 'create' | 'join';
 
 const GamePrefModal: React.FC<GamePrefModalProps> = ({
   onClose,
@@ -38,13 +41,30 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
   const [gameMode, setGameMode] = useState<GameMode | null>(
     (initialValues.gameMode as GameMode) || null
   );
+  const [createOrJoin, setCreateOrJoin] = useState<CreateOrJoin | null>(
+    (initialValues.createOrJoin as CreateOrJoin) || null
+  );
   const [snippetLength, setSnippetLength] = useState<number | null>(
     initialValues.snippetLength || null
   );
 
   const handleNext = () => {
     if (currentStep === 'playMode' && playMode) {
-      setCurrentStep('gameMode');
+      // If solo, skip host/join and go to game mode
+      if (playMode === 'solo') {
+        setCurrentStep('gameMode');
+      } else {
+        // If multiplayer, go to host/join step
+        setCurrentStep('createOrJoin');
+      }
+    } else if (currentStep === 'createOrJoin' && createOrJoin) {
+      if (createOrJoin === 'join') {
+        // If joining, skip settings and go to group lobby
+        handleStartGame();
+      } else {
+        // If hosting, let them set game mode
+        setCurrentStep('gameMode');
+      }
     } else if (currentStep === 'gameMode' && gameMode) {
       if (gameMode === 'inference') {
         handleStartGame();
@@ -56,6 +76,13 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
 
   const handleBack = () => {
     if (currentStep === 'gameMode') {
+      // Go back to host/join if multiplayer, or playMode if solo
+      if (playMode === 'multiplayer') {
+        setCurrentStep('createOrJoin');
+      } else {
+        setCurrentStep('playMode');
+      }
+    } else if (currentStep === 'createOrJoin') {
       setCurrentStep('playMode');
     } else if (currentStep === 'difficulty') {
       setCurrentStep('gameMode');
@@ -69,12 +96,9 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
       return;
     }
 
-    if (!playMode || !gameMode || !snippetLength) {
-      alert('Please complete before starting.');
-      return;
+    if (snippetLength) {
+      setConfig({ snippetSize: snippetLength as SnippetSize });
     }
-
-    setConfig({ snippetSize: snippetLength as SnippetSize });
 
     onClose();
 
@@ -90,7 +114,18 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
         },
       });
     } else if (playMode === 'multiplayer') {
-      navigate('/gamescreen');
+      // pass data to lobby via state
+      navigate('/grouplobby', {
+        state: {
+          fromModal: true,
+          modalStep: 'createOrJoin',
+          playMode, 
+          role: createOrJoin,
+          createOrJoin,  
+          gameMode,
+          snippetLength: createOrJoin === 'create' ? snippetLength : undefined,
+        },
+      });
     }
   };
 
@@ -133,11 +168,10 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
 
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${
-                            playMode === 'solo'
-                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                          }`}
+                          ${playMode === 'solo'
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -149,11 +183,10 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${
-                            playMode === 'multiplayer'
-                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                          }`}
+                          ${playMode === 'multiplayer'
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -162,6 +195,48 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
               >
                 <div className="font-bold">Multiplayer</div>
                 <div className="text-sm font-light">Compete against friends in real-time</div>
+              </motion.button>
+            </div>
+          )}
+
+          {/*Create or Join Game Step */}
+          {currentStep === 'createOrJoin' && (
+            <div className="space-y-4">
+              <h2
+                className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-center text-cyan-400"
+                style={{ textShadow: '0 0 20px rgba(34, 211, 238, 0.5)' }}
+              >
+                Multiplayer Setup
+              </h2>
+              <p className="text-sm sm:text-base text-center mb-6">Host a new game or join an existing one</p>
+
+              <motion.button
+                className={`w-full py-3 font-bold rounded-xl transition-all duration-300
+                          ${
+                            createOrJoin === 'create'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setCreateOrJoin('create')}
+              >
+                <div className="font-bold">Host a Game</div>
+                <div className="text-sm font-light">Create a room and invite friends</div>
+              </motion.button>
+              <motion.button
+                className={`w-full py-3 font-bold rounded-xl transition-all duration-300
+                          ${
+                            createOrJoin === 'join'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setCreateOrJoin('join')}
+              >
+                <div className="font-bold">Join a Game</div>
+                <div className="text-sm font-light">Enter a room code to join friends</div>
               </motion.button>
             </div>
           )}
@@ -178,11 +253,10 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
               <p className="text-sm sm:text-base text-center mb-6">Choose your game mode</p>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${
-                            gameMode === 'classic'
-                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                          }`}
+                          ${gameMode === 'classic'
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -194,11 +268,10 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${
-                            gameMode === 'inference'
-                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                          }`}
+                          ${gameMode === 'inference'
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -237,11 +310,10 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                              ${
-                                snippetLength === len.value
-                                  ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                                  : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                              }`}
+                              ${snippetLength === len.value
+                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                          : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                        }`}
                     >
                       <div className="font-bold">{len.label}</div>
                       <div className="text-sm font-light">{len.value} Seconds</div>
@@ -254,7 +326,7 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({
 
           {/* Navigation Buttons */}
           <div className="flex gap-3 mt-6">
-            {(currentStep === 'gameMode' || currentStep === 'difficulty') && (
+            {(currentStep === 'gameMode' || currentStep === 'createOrJoin' || currentStep === 'difficulty') && (
               <motion.button
                 className="px-6 py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/20 transition-colors"
                 whileHover={{ scale: 1.02 }}
