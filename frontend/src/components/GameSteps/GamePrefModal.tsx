@@ -20,9 +20,10 @@ interface GamePrefModalProps {
 type PlayMode = 'solo' | 'multiplayer';
 type GameMode = 'classic' | 'inference';
 
-const GamePrefModal: React.FC<GamePrefModalProps> = ({ onClose, 
+const GamePrefModal: React.FC<GamePrefModalProps> = ({
+  onClose,
   initialStep = 'playMode',
-  initialValues = {}
+  initialValues = {},
 }) => {
   const navigate = useNavigate();
   const setConfig = useGameStore(state => state.setConfig);
@@ -78,7 +79,6 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({ onClose,
     onClose();
 
     if (playMode === 'solo') {
-
       // pass data to ready screen via state in case user hits back
       navigate('/ready', {
         state: {
@@ -86,8 +86,8 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({ onClose,
           modalStep: 'difficulty',
           playMode,
           gameMode,
-          snippetLength
-        }
+          snippetLength,
+        },
       });
     } else if (playMode === 'multiplayer') {
       navigate('/gamescreen');
@@ -133,10 +133,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({ onClose,
 
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${playMode === 'solo'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            playMode === 'solo'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -148,10 +149,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({ onClose,
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${playMode === 'multiplayer'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            playMode === 'multiplayer'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -176,10 +178,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({ onClose,
               <p className="text-sm sm:text-base text-center mb-6">Choose your game mode</p>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${gameMode === 'classic'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            gameMode === 'classic'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -191,10 +194,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({ onClose,
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${gameMode === 'inference'
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                  }`}
+                          ${
+                            gameMode === 'inference'
+                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                          }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -233,10 +237,11 @@ const GamePrefModal: React.FC<GamePrefModalProps> = ({ onClose,
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                              ${snippetLength === len.value
-                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                          : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                        }`}
+                              ${
+                                snippetLength === len.value
+                                  ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                                  : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                              }`}
                     >
                       <div className="font-bold">{len.label}</div>
                       <div className="text-sm font-light">{len.value} Seconds</div>

@@ -169,10 +169,11 @@ const ReadyScreen = () => {
             <motion.button
               onClick={handleStartGame}
               disabled={isStarting}
-              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${isStarting
+              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${
+                isStarting
                   ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
                   : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
-                }`}
+              }`}
               whileHover={!isStarting ? { scale: 1.02 } : {}}
               whileTap={!isStarting ? { scale: 0.98 } : {}}
             >
@@ -210,13 +211,15 @@ const ReadyScreen = () => {
 
       {/* Show Game Preferences Modal w/ data */}
       {showGamePrefs && (
-        <GamePrefModal 
+        <GamePrefModal
           onClose={handleGamePrefsClose}
-          initialStep={(modalState?.modalStep as 'playMode' | 'gameMode' | 'difficulty') || 'playMode'}
+          initialStep={
+            (modalState?.modalStep as 'playMode' | 'gameMode' | 'difficulty') || 'playMode'
+          }
           initialValues={{
             playMode: modalState?.playMode,
             gameMode: modalState?.gameMode,
-            snippetLength: modalState?.snippetLength
+            snippetLength: modalState?.snippetLength,
           }}
         />
       )}
