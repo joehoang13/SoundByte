@@ -1,19 +1,32 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useGameStore from '../stores/GameSessionStore';
 import ReadyScreenTips from '../components/ReadyScreenTips';
 import { useAuth } from '../stores/auth';
+import GamePrefModal from '../components/GameSteps/GamePrefModal';
 
 const ReadyScreen = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isStarting, setIsStarting] = useState(false);
+  const [showGamePrefs, setShowGamePrefs] = useState(false);
   const gameMode = useGameStore(state => state.mode);
   const snippetLength = useGameStore(state => state.snippetSize);
   const { user, token } = useAuth();
   const [countdown, setCountdown] = useState(3);
+  const [animationKey, setAnimationKey] = useState(0);
 
   const isAuthenticated = !!(user && token);
+
+  // Check for state passed from previous page in case user hits back
+  const modalState = location.state as {
+    fromModal?: boolean;
+    modalStep?: string;
+    playMode?: string;
+    gameMode?: string;
+    snippetLength?: number;
+  } | null;
 
   const handleStartGame = () => {
     if (!isAuthenticated) {
@@ -25,7 +38,18 @@ const ReadyScreen = () => {
     setCountdown(3);
   };
 
+  // if user hits back from ready screen, return to game prefs if they came from there w/ data
   const handleBackToMenu = () => {
+    if (modalState?.fromModal) {
+      setShowGamePrefs(true);
+    } else {
+      navigate('/');
+    }
+  };
+
+  const handleGamePrefsClose = () => {
+    setShowGamePrefs(false);
+    setAnimationKey(prev => prev + 1);
     navigate('/');
   };
 
@@ -50,6 +74,7 @@ const ReadyScreen = () => {
     <>
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <motion.div
+          key={animationKey}
           className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[600px] min-h-[500px] shadow-lg text-white p-8 sm:p-12"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -144,11 +169,10 @@ const ReadyScreen = () => {
             <motion.button
               onClick={handleStartGame}
               disabled={isStarting}
-              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${
-                isStarting
+              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${isStarting
                   ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
                   : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
-              }`}
+                }`}
               whileHover={!isStarting ? { scale: 1.02 } : {}}
               whileTap={!isStarting ? { scale: 0.98 } : {}}
             >
@@ -183,6 +207,19 @@ const ReadyScreen = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Show Game Preferences Modal w/ data */}
+      {showGamePrefs && (
+        <GamePrefModal 
+          onClose={handleGamePrefsClose}
+          initialStep={(modalState?.modalStep as 'playMode' | 'gameMode' | 'difficulty') || 'playMode'}
+          initialValues={{
+            playMode: modalState?.playMode,
+            gameMode: modalState?.gameMode,
+            snippetLength: modalState?.snippetLength
+          }}
+        />
+      )}
     </>
   );
 };

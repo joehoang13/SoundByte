@@ -5,26 +5,41 @@ import useGameStore from '../../stores/GameSessionStore';
 import Background from '../Background';
 import type { SnippetSize } from '../../types/game';
 
-interface GameSettingsModalProps {
+interface GamePrefModalProps {
   onClose: () => void;
+
+  // props to prefill data / start at a specific step
+  initialStep?: 'playMode' | 'gameMode' | 'difficulty';
+  initialValues?: {
+    playMode?: string;
+    gameMode?: string;
+    snippetLength?: number;
+  };
 }
 
 type PlayMode = 'solo' | 'multiplayer';
 type GameMode = 'classic' | 'inference';
 
-const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
+const GamePrefModal: React.FC<GamePrefModalProps> = ({ onClose, 
+  initialStep = 'playMode',
+  initialValues = {}
+}) => {
   const navigate = useNavigate();
   const setConfig = useGameStore(state => state.setConfig);
 
   // Current step in the modal
-  const [currentStep, setCurrentStep] = useState<'playMode' | 'gameMode' | 'difficulty'>(
-    'playMode'
-  );
+  const [currentStep, setCurrentStep] = useState(initialStep);
 
-  // Form data
-  const [playMode, setPlayMode] = useState<PlayMode | null>(null);
-  const [gameMode, setGameMode] = useState<GameMode | null>(null);
-  const [snippetLength, setSnippetLength] = useState<number | null>(null);
+  // Form data - if data exists from props, use it to prefill
+  const [playMode, setPlayMode] = useState<PlayMode | null>(
+    (initialValues.playMode as PlayMode) || null
+  );
+  const [gameMode, setGameMode] = useState<GameMode | null>(
+    (initialValues.gameMode as GameMode) || null
+  );
+  const [snippetLength, setSnippetLength] = useState<number | null>(
+    initialValues.snippetLength || null
+  );
 
   const handleNext = () => {
     if (currentStep === 'playMode' && playMode) {
@@ -62,10 +77,20 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
 
     onClose();
 
-    if (gameMode === 'classic') {
-      navigate('/ready');
-    } else {
-      navigate('/inference');
+    if (playMode === 'solo') {
+
+      // pass data to ready screen via state in case user hits back
+      navigate('/ready', {
+        state: {
+          fromModal: true,
+          modalStep: 'difficulty',
+          playMode,
+          gameMode,
+          snippetLength
+        }
+      });
+    } else if (playMode === 'multiplayer') {
+      navigate('/gamescreen');
     }
   };
 
@@ -108,11 +133,10 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
 
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${
-                            playMode === 'solo'
-                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                          }`}
+                          ${playMode === 'solo'
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -124,11 +148,10 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${
-                            playMode === 'multiplayer'
-                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                          }`}
+                          ${playMode === 'multiplayer'
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -153,11 +176,10 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
               <p className="text-sm sm:text-base text-center mb-6">Choose your game mode</p>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${
-                            gameMode === 'classic'
-                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                          }`}
+                          ${gameMode === 'classic'
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -169,11 +191,10 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
               </motion.button>
               <motion.button
                 className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                          ${
-                            gameMode === 'inference'
-                              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                              : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                          }`}
+                          ${gameMode === 'inference'
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                  }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -212,11 +233,10 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`w-full py-3 font-bold rounded-xl transition-all duration-300
-                              ${
-                                snippetLength === len.value
-                                  ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                                  : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
-                              }`}
+                              ${snippetLength === len.value
+                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                          : 'bg-darkblue/60 text-gray-300 hover:bg-darkblue/80'
+                        }`}
                     >
                       <div className="font-bold">{len.label}</div>
                       <div className="text-sm font-light">{len.value} Seconds</div>
@@ -255,4 +275,4 @@ const GameSettingsModal: React.FC<GameSettingsModalProps> = ({ onClose }) => {
   );
 };
 
-export default GameSettingsModal;
+export default GamePrefModal;
