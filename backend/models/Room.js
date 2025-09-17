@@ -31,7 +31,6 @@ const RoomSchema = new mongoose.Schema(
       },
     ],
 
-
     settings: {
       maxPlayers: { type: Number, default: 8, min: 1, max: 32 },
       isPrivate: { type: Boolean, default: false },
@@ -50,8 +49,9 @@ RoomSchema.virtual('playerCount').get(function () {
 
 function randomCode(len = 6) {
   const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-  return Array.from({ length: len }, () =>
-    alphabet[Math.floor(Math.random() * alphabet.length)]
+  return Array.from(
+    { length: len },
+    () => alphabet[Math.floor(Math.random() * alphabet.length)]
   ).join('');
 }
 
@@ -125,7 +125,13 @@ RoomSchema.statics.generateUniqueCode = async function (len = 6, maxAttempts = 5
   return this.generateUniqueCode(len + 1, maxAttempts);
 };
 
-RoomSchema.statics.createRoom = async function ({ hostId, hostSocketId, mode = 'Classic', settings = {}, code }) {
+RoomSchema.statics.createRoom = async function ({
+  hostId,
+  hostSocketId,
+  mode = 'Classic',
+  settings = {},
+  code,
+}) {
   const Room = this;
 
   const existing = await Room.findOne({

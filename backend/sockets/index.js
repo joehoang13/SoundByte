@@ -2,7 +2,6 @@ const { Server } = require('socket.io');
 const Room = require('../models/Room');
 const socketState = new Map();
 
-
 function ensureHost(room, userId) {
   if (!room?.host || room.host.userId !== userId) {
     const err = new Error('Only host can perform this action');
@@ -45,7 +44,7 @@ function setupSocket(server) {
           mode,
           settings,
         });
-        
+
         socket.join(room.code);
         socketState.set(socket.id, { code: room.code, hostId });
 
