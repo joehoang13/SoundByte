@@ -1,3 +1,5 @@
+// commented out Group Lobby code with {/* ... */} so it can be used for reference
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Howl, Howler } from 'howler';
 import { useNavigate } from 'react-router-dom';
@@ -131,15 +133,24 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   const snippetSeconds = useMemo(() => snippetSize ?? 5, [snippetSize]);
 
   // ───────────────────── Socket.IO / Group Lobby ─────────────────────
-  const socketRef = useRef<Socket | null>(null);
-  const [partyMode, setPartyMode] = useState<PartyMode>('solo');
-  const [roomId, setRoomId] = useState<string>('');
-  const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([]);
-  const [joinCode, setJoinCode] = useState('');
-  const [groupGameMode, setGroupGameMode] = useState<GroupGameMode>('classic');
   const [socketStatus, setSocketStatus] = useState<'disconnected' | 'connecting' | 'connected'>(
     'disconnected'
   );
+
+  {
+    /* 
+  const socketRef = useRef<Socket | null>(null);
+  const [partyMode, setPartyMode] = useState<PartyMode>('solo');
+  const [roomId, setRoomId] = useState<string>('DEMO123'); 
+  const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([
+        // MOCK DATA FOR TESTING
+        { id: '1', name: 'Alex', avatarUrl: undefined },
+        { id: '2', name: 'Sam', avatarUrl: undefined },
+        { id: '3', name: 'Jordan', avatarUrl: undefined },
+    ]);
+  const [joinCode, setJoinCode] = useState('');
+  const [groupGameMode, setGroupGameMode] = useState<GroupGameMode>('classic');
+  
 
   // connect socket once
   useEffect(() => {
@@ -217,6 +228,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partyMode]);
+  */
+  }
 
   // ─────────────────────────── Core game ────────────────────────────
 
@@ -446,7 +459,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   // merged list for Settings modal (self + others)
   const settingsPlayers: Player[] = [
     ...(user ? [{ id: 'self', name: username, avatarUrl }] : []),
-    ...(roomId ? lobbyPlayers : storePlayers),
+    // ...(roomId ? lobbyPlayers : storePlayers),
   ];
 
   return (
@@ -509,6 +522,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
             backdropFilter: 'blur(6px)',
           }}
         >
+          {/*
           {(['solo', 'group'] as PartyMode[]).map(mode => (
             <button
               key={mode}
@@ -523,6 +537,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
               {mode === 'solo' ? 'Solo' : 'Group'}
             </button>
           ))}
+          */}
         </div>
       </div>
 
@@ -559,6 +574,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
           </motion.button>
 
           {/* ───────────── Main area: Solo OR Group ───────────── */}
+          {/*
           {partyMode === 'group' ? (
             // GROUP LOBBY
             <div className="flex flex-col gap-6">
@@ -568,8 +584,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                   Invite friends or join a room. Choose a game mode and start together.
                 </p>
               </header>
+              */}
 
-              {/* Create / Join */}
+          {/* Create / Join */}
+          {/*}
               {!roomId ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div
@@ -627,8 +645,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                   </div>
                 </div>
               ) : (
-                <>
-                  {/* Room info + invite */}
+               */}
+          <>
+            {/* Room info + invite */}
+            {/*}
                   <div
                     className="rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-4 justify-between"
                     style={{
@@ -664,8 +684,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                       </button>
                     </div>
                   </div>
+                  */}
 
-                  {/* Game mode & players */}
+            {/* Game mode & players */}
+            {/*
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <section
                       className="rounded-2xl p-5 flex flex-col gap-4"
@@ -748,7 +770,9 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                       </header>
 
                       <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        {/* you */}
+                      */}
+            {/* you */}
+            {/*
                         <li
                           key="self"
                           className="flex items-center gap-3 p-3 rounded-xl"
@@ -808,8 +832,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 </>
               )}
             </div>
-          ) : (
-            // SOLO GAME (your original card)
+          ) : ( 
+            */}
+
+            {/* SOLO GAME (your original card) */}
             <>
               {/* Header */}
               <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
@@ -1029,7 +1055,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                 )}
               </div>
             </>
+            {/*}
           )}
+          */}
+          </>
         </motion.div>
       </div>
 

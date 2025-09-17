@@ -1,6 +1,23 @@
 const User = require('../models/Users');
 const bcrypt = require('bcryptjs');
 
+exports.getProfileStats = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.query?.userId;
+
+    if (!userId) return res.status(400).json({ error: 'User ID is required' });
+
+    const user = await User.findById(userId).select('username totalGamesPlayed highestScore totalSnippetsGuessed');
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json(user);
+  } catch (err) {
+    console.error('Error fetching profile stats:', err);
+    res.status(500).json({ error: 'Server error fetching stats' });
+  }
+};
+
 exports.getUserDummy = async (req, res) => {
   const dummyUser = {
     username: 'testuser123',
