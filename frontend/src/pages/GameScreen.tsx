@@ -88,7 +88,8 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
   const { user } = useAuth();
   const username = user?.username ?? 'Player';
-  const avatarUrl = user?.avatarUrl as string | undefined;
+  // const avatarUrl = user?.avatarUrl as string | undefined; Add once implemented
+  const avatarUrl = undefined;
 
   // local players list (store may or may not have one)
   // @ts-ignore optional players in store
@@ -196,11 +197,15 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   }, [username]);
 
   const createRoom = () => {
-    socketRef.current?.emit('createRoom', { name: username });
+    socketRef.current?.emit('createRoom', { hostId: user?.id, hostSocketId: socketRef.current.id });
   };
   const joinRoom = (code: string) => {
     if (!code.trim()) return;
-    socketRef.current?.emit('joinRoom', { roomId: code.trim(), name: username });
+    socketRef.current?.emit('joinRoom', {
+      code: code.trim(),
+      userId: user?.id,
+      userSocketId: socketRef.current.id,
+    });
   };
   const leaveRoom = () => {
     socketRef.current?.emit('leaveRoom', { roomId });
