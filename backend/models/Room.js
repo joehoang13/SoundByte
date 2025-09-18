@@ -80,19 +80,20 @@ RoomSchema.methods.addPlayer = function ({ userId, socketId }) {
 
 RoomSchema.methods.removePlayer = function (userId) {
   const before = this.playerCount;
-  this.players = this.players.filter(id => String(id) !== String(userId));
+  this.players = this.players.filter(p => String(p.user) !== String(userId));
 
   // If the host left and room is still in lobby, promote the first remaining player
   if (this.status === 'lobby' && this.players.length > 0 && String(this.host) === String(userId)) {
-    this.host = this.players[0];
+    this.host = this.players[0].user;
   }
+
   return before !== this.playerCount;
 };
 
 RoomSchema.methods.toLobbySummary = async function () {
   await this.populate([
     { path: 'host', select: 'username profilePicture' },
-    { path: 'players', select: 'username profilePicture' },
+    { path: 'players.user', select: 'username profilePicture' },
   ]);
 
   return {
@@ -107,9 +108,10 @@ RoomSchema.methods.toLobbySummary = async function () {
     playerCount: this.playerCount,
     maxPlayers: this.settings?.maxPlayers ?? 8,
     players: this.players.map(p => ({
-      id: p._id,
-      username: p.username,
-      profilePicture: p.profilePicture,
+      id: p.user._id,
+      username: p.user.username,
+      profilePicture: p.user.profilePicture,
+      socketId: p.socketId,
     })),
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
@@ -176,6 +178,7 @@ RoomSchema.statics.leaveByCode = async function ({ code, userId }) {
   if (!room) return null;
 
   const changed = room.removePlayer(userId);
+
   if (!changed) return room;
 
   if (room.players.length === 0) {

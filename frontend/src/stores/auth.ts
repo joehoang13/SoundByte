@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type AuthUser = { id: string; email: string; username?: string };
+export type AuthUser = { id: string; email: string; username?: string; profilePicture: string };
 export type AuthState = {
   token?: string;
   user?: AuthUser;
