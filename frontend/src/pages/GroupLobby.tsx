@@ -6,11 +6,31 @@ import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../stores/auth';
 import GamePrefModal from '../components/GameSteps/GamePrefModal';
 
-type Player = {
+export interface LobbyPlayer {
+  id: string;                 // MongoDB ObjectId as a string
+  username: string;
+  profilePicture?: string;    // Optional if not always present
+  socketId?: string;          // Optional if not always sent
+}
+
+export interface LobbyHost {
   id: string;
-  name: string;
-  avatarUrl?: string;
-};
+  username: string;
+  profilePicture?: string;
+}
+
+export interface LobbySummary {
+  code: string;
+  mode: string;               // e.g., "Classic"
+  status: 'lobby' | 'in-game' | 'ended';
+  host: LobbyHost;
+  playerCount: number;
+  maxPlayers: number;
+  players: LobbyPlayer[];
+  createdAt: string;          // ISO date string from MongoDB
+  updatedAt: string;          // ISO date string from MongoDB
+}
+
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 
@@ -19,7 +39,7 @@ const GroupLobby: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   const username = user?.username ?? 'Player';
-  const avatarUrl = user?.avatarUrl as string | undefined;
+  const avatarUrl = user?.profilePicture as string | undefined;
   // local players list (store may or may not have one)
   // @ts-ignore optional players in store
   const storePlayers: Player[] = useGameStore.getState?.().players ?? [];
@@ -38,22 +58,15 @@ const GroupLobby: React.FC = () => {
 
   const role = modalState?.role || 'create';
   // const role = 'create'; // for testing
-  const gameMode = modalState?.gameMode || 'classic';
+  const gameMode = 'classic';
   const snippetLength = modalState?.snippetLength;
 
   // ───────────────────── Socket.IO / Group Lobby ─────────────────────
   const socketRef = useRef<Socket | null>(null);
   const [roomId, setRoomId] = useState<string>('');
-  const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>(storePlayers);
+  const [lobbyPlayers, setLobbyPlayers] = useState<LobbyPlayer[]>(storePlayers);
   // const [roomId, setRoomId] = useState<string>('DEMO123'); // for testing
-  {
-    /* const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([
-        // MOCK DATA FOR TESTING
-        { id: '1', name: 'Alex', avatarUrl: undefined },
-        { id: '2', name: 'Sam', avatarUrl: undefined },
-        { id: '3', name: 'Jordan', avatarUrl: undefined },
-    ]); */
-  }
+
   const [joinCode, setJoinCode] = useState('');
   const [socketStatus, setSocketStatus] = useState<'disconnected' | 'connecting' | 'connected'>(
     'disconnected'
@@ -81,23 +94,28 @@ const GroupLobby: React.FC = () => {
     s.on('disconnect', () => setSocketStatus('disconnected'));
 
     // room created / joined / updates
-    s.on('room:created', ({ roomId: id, players }: { roomId: string; players: Player[] }) => {
-      setRoomId(id);
-      setLobbyPlayers(players || []);
+    s.on('room:created', (summary: LobbySummary) => {
+      setRoomId(summary.code);
+      setLobbyPlayers(summary.players || []);
     });
-    s.on('room:joined', ({ roomId: id, players }: { roomId: string; players: Player[] }) => {
-      setRoomId(id);
-      setLobbyPlayers(players || []);
+    s.on('room:joined', (summary: LobbySummary) => {
+      setRoomId(summary.code);
+      setLobbyPlayers(summary.players|| []);
     });
     s.on('room:left', () => {
       setRoomId('');
       setLobbyPlayers([]);
     });
-    s.on('lobby:update', ({ roomId: id, players }: { roomId: string; players: Player[] }) => {
-      if (id) setRoomId(id);
-      setLobbyPlayers(players || []);
+    s.on('room:update', (summary: LobbySummary) => {
+      if (summary) setRoomId(summary.code);
+      setLobbyPlayers(summary.players || []);
+      
     });
-
+    s.on('game:start', () => {
+      console.log('socket')
+      navigateGame()
+    });
+    
     return () => {
       try {
         s.disconnect();
@@ -107,14 +125,18 @@ const GroupLobby: React.FC = () => {
   }, [username]);
 
   const createRoom = () => {
-    socketRef.current?.emit('createRoom', { name: username });
+    socketRef.current?.emit('createRoom', { hostId: user?.id, hostSocketId: socketRef.current.id });
   };
   const joinRoom = (code: string) => {
     if (!code.trim()) return;
-    socketRef.current?.emit('joinRoom', { roomId: code.trim(), name: username });
+    socketRef.current?.emit('joinRoom', {
+      code: code.trim(),
+      userId: user?.id,
+      userSocketId: socketRef.current.id,
+    });
   };
   const leaveRoom = () => {
-    socketRef.current?.emit('leaveRoom', { roomId });
+    socketRef.current?.emit('leaveRoom', { roomId: roomId, userId: user?.id });
   };
 
   // invite link builder
@@ -135,14 +157,20 @@ const GroupLobby: React.FC = () => {
   }, [role, roomId, socketStatus]);
 
   const handleStartGame = () => {
+    socketRef.current?.emit('startGame', {code: roomId, hostId:user?.id});
+  };
+
+  const navigateGame = () => {
+    console.log("bobby")
     if (gameMode === 'classic') {
       navigate('/gamescreen');
     } else if (gameMode === 'inference') {
       navigate('/inference');
     }
-  };
+  }
 
   const handleBackToMenu = () => {
+    leaveRoom()
     if (modalState?.fromModal) {
       setShowGamePrefs(true);
     } else {
@@ -298,20 +326,20 @@ const GroupLobby: React.FC = () => {
                         style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
                       >
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
-                          {p.avatarUrl ? (
+                          {p.profilePicture ? (
                             <img
-                              src={p.avatarUrl}
-                              alt={p.name}
+                              src={p.profilePicture}
+                              alt={p.username}
                               className="w-full h-full object-cover"
                             />
                           ) : (
                             <span className="text-sm font-bold">
-                              {p.name?.[0]?.toUpperCase() ?? 'P'}
+                              {p.username?.[0]?.toUpperCase() ?? 'P'}
                             </span>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold truncate">{p.name || 'Player'}</div>
+                          <div className="font-semibold truncate">{p.username || 'Player'}</div>
                           <div className="text-xs text-grayblue">Ready</div>
                         </div>
                       </li>
