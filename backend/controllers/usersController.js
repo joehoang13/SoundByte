@@ -7,7 +7,9 @@ exports.getProfileStats = async (req, res) => {
 
     if (!userId) return res.status(400).json({ error: 'User ID is required' });
 
-    const user = await User.findById(userId).select('username totalGamesPlayed highestScore totalSnippetsGuessed');
+    const user = await User.findById(userId).select(
+      'username totalGamesPlayed highestScore totalSnippetsGuessed'
+    );
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
