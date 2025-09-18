@@ -9,7 +9,8 @@ import type { UserStats } from '../types/users';
 
 
 const UserProfile = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const isLoggedIn = !!(user && token);
   const navigate = useNavigate();
   const [stats, setStats] = useState<UserStats | null>(null);
 
@@ -34,7 +35,11 @@ const UserProfile = () => {
   };
 
   const handleReturn = () => {
-    navigate('/');
+    if (isLoggedIn) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
   };
 
   return (

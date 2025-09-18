@@ -10,8 +10,20 @@ export default {
         darkestblue: '#143D4D',
       },
       fontFamily: {
-        exo: ['"Exo"', 'sans-serif'],
-        montserrat: ['"Montserrat"', 'sans-serif'],
+        exo: [
+          '"Exo"',
+          '"Impact"',
+          '"Franklin Gothic Bold"', 
+          '"Arial Black"',
+          'sans-serif'
+        ],
+        montserrat: [
+          '"Montserrat"',
+          '"Helvetica Neue"',
+          '"Helvetica"',
+          '"Arial"',
+          'sans-serif'
+        ],
       },
       boxShadow: {
         whiteGlow: '0 0 20px rgba(255, 255, 255, 0.5)',

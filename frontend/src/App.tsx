@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
 import UserProfile from './pages/UserProfile';
+import Dashboard from './pages/Dashboard';
 import GameScreen from './pages/GameScreen';
 import InferenceScreen from './pages/InferenceScreen';
 import EndScreen from './pages/EndScreen';
@@ -25,6 +26,14 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
 
           {/* Protected */}
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <Dashboard />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/profile"
             element={

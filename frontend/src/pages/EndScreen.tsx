@@ -94,7 +94,7 @@ const EndScreen = () => {
               whileHover={{ scale: 1.05 }}
               onClick={() => {
                 reset();
-                navigate('/');
+                navigate('/dashboard');
               }}
             >
               Play Again
