@@ -7,10 +7,10 @@ import { useAuth } from '../stores/auth';
 import GamePrefModal from '../components/GameSteps/GamePrefModal';
 
 export interface LobbyPlayer {
-  id: string;                 // MongoDB ObjectId as a string
+  id: string; // MongoDB ObjectId as a string
   username: string;
-  profilePicture?: string;    // Optional if not always present
-  socketId?: string;          // Optional if not always sent
+  profilePicture?: string; // Optional if not always present
+  socketId?: string; // Optional if not always sent
 }
 
 export interface LobbyHost {
@@ -21,16 +21,15 @@ export interface LobbyHost {
 
 export interface LobbySummary {
   code: string;
-  mode: string;               // e.g., "Classic"
+  mode: string; // e.g., "Classic"
   status: 'lobby' | 'in-game' | 'ended';
   host: LobbyHost;
   playerCount: number;
   maxPlayers: number;
   players: LobbyPlayer[];
-  createdAt: string;          // ISO date string from MongoDB
-  updatedAt: string;          // ISO date string from MongoDB
+  createdAt: string; // ISO date string from MongoDB
+  updatedAt: string; // ISO date string from MongoDB
 }
-
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 
@@ -100,7 +99,7 @@ const GroupLobby: React.FC = () => {
     });
     s.on('room:joined', (summary: LobbySummary) => {
       setRoomId(summary.code);
-      setLobbyPlayers(summary.players|| []);
+      setLobbyPlayers(summary.players || []);
     });
     s.on('room:left', () => {
       setRoomId('');
@@ -109,13 +108,12 @@ const GroupLobby: React.FC = () => {
     s.on('room:update', (summary: LobbySummary) => {
       if (summary) setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
-      
     });
     s.on('game:start', () => {
-      console.log('socket')
-      navigateGame()
+      console.log('socket');
+      navigateGame();
     });
-    
+
     return () => {
       try {
         s.disconnect();
@@ -157,20 +155,20 @@ const GroupLobby: React.FC = () => {
   }, [role, roomId, socketStatus]);
 
   const handleStartGame = () => {
-    socketRef.current?.emit('startGame', {code: roomId, hostId:user?.id});
+    socketRef.current?.emit('startGame', { code: roomId, hostId: user?.id });
   };
 
   const navigateGame = () => {
-    console.log("bobby")
+    console.log('bobby');
     if (gameMode === 'classic') {
       navigate('/gamescreen');
     } else if (gameMode === 'inference') {
       navigate('/inference');
     }
-  }
+  };
 
   const handleBackToMenu = () => {
-    leaveRoom()
+    leaveRoom();
     if (modalState?.fromModal) {
       setShowGamePrefs(true);
     } else {

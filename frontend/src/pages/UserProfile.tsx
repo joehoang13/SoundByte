@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import type { UserStats } from '../types/users';
 
-
 const UserProfile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -58,9 +57,15 @@ const UserProfile = () => {
 
         {stats && (
           <div className="text-left mt-6 space-y-2 text-sm sm:text-base">
-            <p>Total Games Played: <span className="font-semibold">{stats.totalGamesPlayed}</span></p>
-            <p>Highest Score: <span className="font-semibold">{stats.highestScore}</span></p>
-            <p>Snippets Guessed: <span className="font-semibold">{stats.totalSnippetsGuessed}</span></p>
+            <p>
+              Total Games Played: <span className="font-semibold">{stats.totalGamesPlayed}</span>
+            </p>
+            <p>
+              Highest Score: <span className="font-semibold">{stats.highestScore}</span>
+            </p>
+            <p>
+              Snippets Guessed: <span className="font-semibold">{stats.totalSnippetsGuessed}</span>
+            </p>
           </div>
         )}
 

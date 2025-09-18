@@ -1,7 +1,6 @@
 const { Server } = require('socket.io');
 const socketState = new Map();
-const { multiplayerRoomHandler } = require('./roomHandlers')
-
+const { multiplayerRoomHandler } = require('./roomHandlers');
 
 function setupSocket(server) {
   const io = new Server(server, {

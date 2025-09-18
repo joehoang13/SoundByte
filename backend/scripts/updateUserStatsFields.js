@@ -3,11 +3,14 @@ const User = require('../models/Users');
 
 async function addMissingStats() {
   try {
-    await mongoose.connect('mongodb+srv://Group:SoundByte@work.isfmbkb.mongodb.net/SoundByte?retryWrites=true&w=majority&appName=Work', {
-      // These options are optional for mongoose 6+
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(
+      'mongodb+srv://Group:SoundByte@work.isfmbkb.mongodb.net/SoundByte?retryWrites=true&w=majority&appName=Work',
+      {
+        // These options are optional for mongoose 6+
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }
+    );
 
     const users = await User.find({});
     let updated = 0;

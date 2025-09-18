@@ -79,7 +79,6 @@ RoomSchema.methods.addPlayer = function ({ userId, socketId }) {
 };
 
 RoomSchema.methods.removePlayer = function (userId) {
-
   const before = this.playerCount;
   this.players = this.players.filter(p => String(p.user) !== String(userId));
 
@@ -87,12 +86,11 @@ RoomSchema.methods.removePlayer = function (userId) {
   if (this.status === 'lobby' && this.players.length > 0 && String(this.host) === String(userId)) {
     this.host = this.players[0].user;
   }
-  
+
   return before !== this.playerCount;
 };
 
 RoomSchema.methods.toLobbySummary = async function () {
-  
   await this.populate([
     { path: 'host', select: 'username profilePicture' },
     { path: 'players.user', select: 'username profilePicture' },
