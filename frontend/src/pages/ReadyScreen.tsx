@@ -43,7 +43,7 @@ const ReadyScreen = () => {
     if (modalState?.fromModal) {
       setShowGamePrefs(true);
     } else {
-      navigate('/');
+      navigate('/dashboard');
     }
   };
 

@@ -172,7 +172,7 @@ const GroupLobby: React.FC = () => {
     if (modalState?.fromModal) {
       setShowGamePrefs(true);
     } else {
-      navigate('/');
+      navigate('/dashboard');
     }
   };
 
