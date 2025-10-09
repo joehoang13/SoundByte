@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 import useGameStore from '../stores/GameSessionStore';
 
 const tabs = [
-  { id: "overview", label: "Overview" },
-  { id: "leaderboard", label: "Leaderboard" },
-  { id: "songresults", label: "Song Results" },
+  { id: 'overview', label: 'Overview' },
+  { id: 'leaderboard', label: 'Leaderboard' },
+  { id: 'songresults', label: 'Song Results' },
 ];
 
 const EndScreen = () => {
@@ -21,7 +21,7 @@ const EndScreen = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "overview":
+      case 'overview':
         return (
           <div className="flex flex-col items-center w-full">
             <div className="flex flex-col items-center justify-center bg-darkestblue rounded-xl px-6 py-4 w-full h-20 mb-3">
@@ -55,22 +55,23 @@ const EndScreen = () => {
           </div>
         );
 
-      case "leaderboard":
+      case 'leaderboard':
         return (
           <div className="flex flex-col items-center w-full space-y-3">
             <h3 className="text-lg font-semibold mb-2">Top Players</h3>
             {/* Placeholder for leaderboard data */}
             {[
-              { rank: 1, name: "You", score: score, highlight: true },
-              { rank: 2, name: "Player2", score: 8500 },
-              { rank: 3, name: "Player3", score: 7200 },
-              { rank: 4, name: "Player4", score: 6800 },
-              { rank: 5, name: "Player5", score: 6100 },
-            ].map((player) => (
+              { rank: 1, name: 'You', score: score, highlight: true },
+              { rank: 2, name: 'Player2', score: 8500 },
+              { rank: 3, name: 'Player3', score: 7200 },
+              { rank: 4, name: 'Player4', score: 6800 },
+              { rank: 5, name: 'Player5', score: 6100 },
+            ].map(player => (
               <div
                 key={player.rank}
-                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${player.highlight ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
-                  }`}
+                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
+                  player.highlight ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{player.rank}</span>
@@ -82,17 +83,17 @@ const EndScreen = () => {
           </div>
         );
 
-      case "songresults":
+      case 'songresults':
         return (
           <div className="flex flex-col items-center w-full space-y-3">
             <h3 className="text-lg font-semibold mb-2">Your Song Results</h3>
             {/* Placeholder for song results */}
             {[
-              { title: "Song 1", artist: "Artist 1", correct: true, time: "3.2s" },
-              { title: "Song 2", artist: "Artist 2", correct: true, time: "4.1s" },
-              { title: "Song 3", artist: "Artist 3", correct: false, time: "—" },
-              { title: "Song 4", artist: "Artist 4", correct: true, time: "2.8s" },
-              { title: "Song 5", artist: "Artist 5", correct: true, time: "5.0s" },
+              { title: 'Song 1', artist: 'Artist 1', correct: true, time: '3.2s' },
+              { title: 'Song 2', artist: 'Artist 2', correct: true, time: '4.1s' },
+              { title: 'Song 3', artist: 'Artist 3', correct: false, time: '—' },
+              { title: 'Song 4', artist: 'Artist 4', correct: true, time: '2.8s' },
+              { title: 'Song 5', artist: 'Artist 5', correct: true, time: '5.0s' },
             ].map((song, index) => (
               <div
                 key={index}
@@ -105,8 +106,9 @@ const EndScreen = () => {
                 <div className="flex items-center gap-3">
                   <span className="text-sm">{song.time}</span>
                   <span
-                    className={`w-6 h-6 rounded-full flex items-center justify-center ${song.correct ? 'bg-green-500' : 'bg-red-500'
-                      }`}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                      song.correct ? 'bg-green-500' : 'bg-red-500'
+                    }`}
                   >
                     {song.correct ? '✓' : '✗'}
                   </span>
@@ -132,10 +134,9 @@ const EndScreen = () => {
         }}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
       >
         <div className="flex flex-col h-full">
-
           {/* Header with Tabs */}
           <div className="flex-shrink-0 px-6 pt-8 pb-4">
             <h1 className="text-3xl font-bold mb-4 text-center">Game Complete</h1>
@@ -146,24 +147,23 @@ const EndScreen = () => {
               </div>
             </div>
 
-
-
             <div className="flex justify-center space-x-1 flex-wrap gap-y-2">
-              {tabs.map((tab) => (
+              {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${activeTab === tab.id ? "" : "hover:text-white/60"
-                    } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
+                  className={`${
+                    activeTab === tab.id ? '' : 'hover:text-white/60'
+                  } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
                   style={{
-                    WebkitTapHighlightColor: "transparent",
+                    WebkitTapHighlightColor: 'transparent',
                   }}
                 >
                   {activeTab === tab.id && (
                     <motion.span
                       layoutId="underline"
                       className="absolute bottom-0 left-0 right-0 h-[3px] bg-white z-10"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                     />
                   )}
                   <span className="relative z-20">{tab.label}</span>
