@@ -214,7 +214,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, token } = useAuth();
   const setConfig = useGameStore(state => state.setConfig);
-  const [selectedMode, setSelectedMode] = useState<string | null>('classic');
+  const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [showGamePrefs, setShowGamePrefs] = useState(false);
 
@@ -330,18 +330,18 @@ const Dashboard = () => {
           {/* Navigation Tabs */}
           <div className="hidden md:flex space-x-6">
             <button
-              className="px-4 py-2 text-sm text-grayblue transition-colors hover:text-white"
+              className="px-4 py-2 text-sm text-white transition-colors hover:text-teal"
               onClick={() => navigate('/dashboard')}
             >
               HOME
             </button>
             <button
-              className="px-4 py-2 text-sm text-grayblue transition-colors hover:text-white"
+              className="px-4 py-2 text-sm text-white transition-colors hover:text-teal"
               onClick={() => navigate('/profile')}
             >
               PROFILE
             </button>
-            <button className="px-4 py-2 text-sm text-grayblue transition-colors hover:text-white">
+            <button className="px-4 py-2 text-sm text-white transition-colors hover:text-teal">
               SETTINGS
             </button>
           </div>
@@ -497,9 +497,9 @@ const Dashboard = () => {
               <h3 className="text-lg font-bold text-white mb-4">Recent Activity</h3>
               <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-teal">
                 {recentActivity.map(activity => (
-                  <div key={activity.id} className="text-sm text-grayblue">
+                  <div key={activity.id} className="text-sm text-white">
                     <p>{activity.action}</p>
-                    <p className="text-xs text-grayblue/70">
+                    <p className="text-xs text-white/70">
                       Score: {activity.score} • {activity.time}
                     </p>
                   </div>
@@ -517,7 +517,7 @@ const Dashboard = () => {
                 {friends.map(friend => (
                   <div
                     key={friend.id}
-                    className="flex items-center justify-between text-sm text-grayblue"
+                    className="flex items-center justify-between text-sm text-white"
                   >
                     <div className="flex items-center space-x-3">
                       <div
@@ -525,7 +525,7 @@ const Dashboard = () => {
                       ></div>
                       <span>{friend.name}</span>
                     </div>
-                    <span className="text-xs text-grayblue/70">Last Score: {friend.lastScore}</span>
+                    <span className="text-xs text-white/70">Last Score: {friend.lastScore}</span>
                   </div>
                 ))}
               </div>

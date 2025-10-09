@@ -544,7 +544,6 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <motion.div
           className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[900px] min-h-[90dvh] sm:min-h-[500px] h-auto shadow-lg relative text-white p-4 sm:p-10"
-          style={{ backgroundColor: COLORS.darkblue }}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
