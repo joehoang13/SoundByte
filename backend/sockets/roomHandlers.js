@@ -172,9 +172,19 @@ function multiplayerRoomHandler(io, socket, socketState) {
       room.currentRound = 1;
       await room.save();
 
+      // 🔁 Generate shared question set
+      const gameData = await generateGameQuestions(10); // or pull rounds from settings
+      await redis.set(`room:${room.code}:questions`, JSON.stringify(gameData), 'EX', 3600); // TTL 1h
+
       const summary = await room.toLobbySummary();
+
       io.to(room.code).emit('room:update', summary);
-      io.to(room.code).emit('game:start');
+      io.to(room.code).emit('game:start', {
+        roomCode: room.code,
+        rounds: gameData.rounds,
+        snippets: gameData.snippets,
+      });
+
       cb?.({ ok: true, room: summary });
     } catch (err) {
       console.error('startGame error:', err.message);
@@ -204,6 +214,77 @@ function multiplayerRoomHandler(io, socket, socketState) {
       console.error('endGame error:', err.message);
       cb?.({ ok: false, error: err.message });
       socket.emit('room:error', err.message);
+    }
+  });
+
+  const redis = require('../utils/redisClient');
+  const { normalize, titleArtistMatch } = require('../utils/scoringUtils'); // we'll extract this
+  const Snippet = require('../models/Snippet');
+
+  socket.on('game:answer', async (payload, cb) => {
+    try {
+      const { code, userId, roundIndex, guess } = payload || {};
+      if (!code || !userId || !guess) throw new Error('Missing code/userId/guess');
+
+      const roomCode = code.toUpperCase();
+      const questionsRaw = await redis.get(`room:${roomCode}:questions`);
+      if (!questionsRaw) throw new Error('No questions found for this room');
+
+      const questions = JSON.parse(questionsRaw);
+      const snippetMeta = questions.snippets[roundIndex];
+      if (!snippetMeta) throw new Error('Invalid round index');
+
+      const snippet = await Snippet.findById(snippetMeta.snippetId);
+      if (!snippet) throw new Error('Snippet not found');
+
+      // Match logic (reuse from gsController)
+      const { titleHit, artistHit, correct } = titleArtistMatch(
+        guess,
+        snippet.title || '',
+        snippet.artist || ''
+      );
+
+      let base = 0, timeBonus = 0, total = 0;
+      let concluded = false;
+
+      if (correct) {
+        base = 1000;
+        timeBonus = 300; // static or adjust with timing later
+        total = base + timeBonus;
+        concluded = true;
+      }
+
+      // Update score in Redis
+      const scoreKey = `room:${roomCode}:scores`;
+      const scoreRaw = await redis.get(scoreKey);
+      const scoreMap = scoreRaw ? JSON.parse(scoreRaw) : {};
+
+      const prev = scoreMap[userId] || { score: 0, correct: 0 };
+      if (correct) {
+        prev.score += total;
+        prev.correct += 1;
+      }
+
+      scoreMap[userId] = prev;
+      await redis.set(scoreKey, JSON.stringify(scoreMap), 'EX', 3600);
+
+      // Emit score update
+      io.to(roomCode).emit('game:scoreUpdate', {
+        userId,
+        newScore: prev.score,
+        correctCount: prev.correct,
+      });
+
+      cb?.({
+        correct,
+        concluded,
+        breakdown: { base, timeBonus, total },
+        score: prev.score,
+      });
+    } catch (err) {
+      console.error('game:answer error:', err.message);
+      cb?.({ ok: false, error: err.message });
+      socket.emit('game:error', err.message);
     }
   });
 

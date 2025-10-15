@@ -26,6 +26,9 @@ interface GameState {
   score: number;
   streak: number;
   correctAnswers: number;
+  roomCode: string | null;
+  multiplayerQuestions: RoundMeta[];
+  setTimeBonusTotal: (n: number) => void;
   fastestTimeMs?: number;
   fastestTime: number;
   timeBonus: number;
@@ -67,6 +70,10 @@ export const useGameStore = create<GameState>((set, get) => ({
   lastResult: undefined,
   loading: false,
   starting: false,
+  roomCode: null,
+  multiplayerQuestions: [],
+  setTimeBonusTotal: (n: number) => set({ timeBonusTotal: n }),
+
 
   setConfig: p => set(s => ({ ...s, ...p })),
 
@@ -108,7 +115,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (!sessionId) return;
     try {
       await gsApi.setStarted(sessionId, currentRound);
-    } catch {}
+    } catch { }
   },
 
   submitGuess: async (guess: string) => {

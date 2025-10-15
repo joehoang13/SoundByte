@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const GameSession = require('../models/GameSession');
 const Snippet = require('../models/Snippet');
 const User = require('../models/Users');
+const { normalize, titleArtistMatch } = require('../utils/scoringUtils');
+
 
 // ---------- helpers ----------
 const now = () => new Date();
@@ -14,43 +16,6 @@ function difficultyFromSize(n) {
   if (x === 5) return 'medium';
   if (x === 10) return 'easy';
   return 'medium';
-}
-
-function normalize(s) {
-  return (s || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-// Very light fuzzy title/artist matching:
-// - token-based partials
-// - exact full-string match counts as correct
-// - title+artist partials together can count as correct
-// --- robust, tolerant matching for title OR artist ---
-function titleArtistMatch(guess, title, artist) {
-  const g = normalize(guess); // e.g. "gold digger"
-  const t = normalize(title || ''); // e.g. "gold digger ft jamie foxx"
-  const a = normalize(artist || ''); // e.g. "kanye west"
-  if (!g) return { titleHit: false, artistHit: false, correct: false };
-
-  // quick substring checks in both directions
-  const directTitle = t.includes(g) || g.includes(t);
-  const directArtist = a.includes(g) || g.includes(a);
-
-  // token overlap helper (helps when there are extra words like "ft jamie foxx")
-  const tokenHit = (needle, hay) => {
-    const toks = needle.split(' ').filter(s => s.length > 1); // ignore one-letter noise
-    if (!toks.length) return false;
-    const hits = toks.filter(tok => hay.includes(tok)).length;
-    return hits >= Math.min(2, toks.length) || hits / toks.length >= 0.6;
-  };
-
-  const titleHit = directTitle || tokenHit(g, t);
-  const artistHit = directArtist || tokenHit(g, a);
-
-  return { titleHit, artistHit, correct: titleHit || artistHit };
 }
 
 const MAX_ATTEMPTS = 5;
@@ -236,7 +201,7 @@ exports.submitGuess = async function submitGuess(req, res) {
       base = 1000;
       // faster => more bonus, dampened by snippet size to keep it fair
       const snippetSeconds = session.snippetSize || 5;
-      timeBonus = Math.max(0, Math.round((snippetSeconds * 1000 - timeMs) / 10)); // ~ up to ~500
+      timeBonus = Math.max(0, Math.round((snippetSeconds * 1000 - timeMs) / 20)); // ~ up to ~500
       penalty = 0;
       total = base + timeBonus;
 

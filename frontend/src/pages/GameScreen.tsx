@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import useGameStore from '../stores/GameSessionStore';
 import { motion, useReducedMotion, type Transition } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
+import MultiplayerGameHandler from '../components/GameSteps/MultiplayerGameHandler';
+
 
 import { useAuth } from '../stores/auth';
 import { logout } from '../api/auth';
@@ -84,6 +86,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     snippetSize,
     sessionId,
     loading,
+    multiplayer,
   } = useGameStore();
 
   const { user } = useAuth();
@@ -280,7 +283,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       startedOnceRef.current = true;
       try {
         await markRoundStarted();
-      } catch {}
+      } catch { }
     }
 
     setIsPlaying(true);
@@ -344,17 +347,17 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
       try {
         (srcNode as any).connect(analyser);
-      } catch {}
+      } catch { }
       try {
         analyser.connect(ctx.destination);
-      } catch {}
+      } catch { }
 
       const data = new Uint8Array(analyser.frequencyBinCount);
       analyserRef.current = analyser;
       dataArrayRef.current = data;
 
       drawBars();
-    } catch {}
+    } catch { }
   }
 
   function teardownAnalyser() {
@@ -449,10 +452,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     : { repeat: Infinity, duration: 2, ease: EASE_IN_OUT };
 
   const handleLogout = async () => {
-    await logout().catch(() => {});
+    await logout().catch(() => { });
     try {
       localStorage.removeItem('token');
-    } catch {}
+    } catch { }
     navigate('/welcome');
   };
 
@@ -836,225 +839,40 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
             */}
 
             {/* SOLO GAME (your original card) */}
-            <>
-              {/* Header */}
-              <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
-                <div className="flex-1 flex justify-center">
-                  <div
-                    className="flex flex-col items-center rounded-xl w-44 px-6 py-5"
-                    style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
-                  >
-                    <span className="text-sm font-bold text-center">Score</span>
-                    <span className="text-2xl font-bold text-center">{score}</span>
-                  </div>
+            {multiplayer ? (
+              <MultiplayerGameHandler userId={userId ?? ''} onFinish={() => navigate('/end')} />
+            ) : (
+              <>
+                {/* SOLO GAME (your original card) */}
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
+                  ...
                 </div>
 
-                <div className="flex-1 flex flex-col items-center justify-center relative">
-                  <h1 className="text-2xl font-bold text-center">Classic</h1>
-
-                  {/* Gamemode pill */}
-                  <div className="mt-2 relative">
-                    <button
-                      type="button"
-                      onClick={() => setModeOpen(o => !o)}
-                      onBlur={() => setTimeout(() => setModeOpen(false), 150)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm tracking-wide"
-                      style={{
-                        borderColor: COLORS.teal,
-                        backgroundColor: 'rgba(20, 61, 77, 0.4)',
-                        color: COLORS.grayblue,
-                      }}
-                      aria-haspopup="listbox"
-                      aria-expanded={modeOpen}
-                    >
-                      <span
-                        className="inline-block rounded-full"
-                        style={{ width: 8, height: 8, backgroundColor: COLORS.teal }}
-                      />
-                      Classic Mode
-                      <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
-                        <path fill="currentColor" d="M7 10l5 5 5-5z" />
-                      </svg>
-                    </button>
-
-                    {modeOpen && (
-                      <div
-                        className="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl border shadow-lg overflow-hidden z-20"
-                        role="listbox"
-                        style={{
-                          backgroundColor: COLORS.darkestblue,
-                          borderColor: 'rgba(255,255,255,0.08)',
-                        }}
-                      >
-                        <button
-                          type="button"
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                          onMouseDown={e => e.preventDefault()}
-                          onClick={() => navigate('/gamescreen')}
-                        >
-                          Classic Mode
-                        </button>
-                        <button
-                          type="button"
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
-                          onMouseDown={e => e.preventDefault()}
-                          onClick={() => navigate('/inference')}
-                        >
-                          Inference Mode
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                {/* Disc + needle control */}
+                <div className="flex items-center justify-center w-full px-4 sm:px-6 mt-2 mb-4">
+                  ...
                 </div>
 
-                <div className="flex-1 flex justify-center">
-                  <div
-                    className="flex flex-col items-center rounded-xl w-44 px-6 py-5"
-                    style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
-                  >
-                    <span className="text-sm font-bold text-center">Streak</span>
-                    <span className="text-2xl font-bold text-center">{streak}</span>
-                  </div>
+                {/* Status / visualizer */}
+                <div className="flex items-center justify-center w-full rounded-lg px-4 sm:px-6">
+                  ...
                 </div>
-              </div>
 
-              {/* Disc + needle control */}
-              <div className="flex items-center justify-center w-full px-4 sm:px-6 mt-2 mb-4">
-                <div className="relative w-28 h-28">
-                  <motion.img
-                    src={discdb}
-                    alt="Vinyl control"
-                    className="w-28 h-28 select-none cursor-pointer"
-                    draggable={false}
-                    onDragStart={e => e.preventDefault()}
-                    initial={{ rotate: 0 }}
-                    animate={shouldSpin ? { rotate: 360 } : { rotate: 0 }}
-                    transition={discTransition}
-                    whileHover={!shouldReduceMotion ? { scale: 1.03 } : undefined}
-                    whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
-                    onClick={onDiscClick}
-                    style={{
-                      willChange: 'transform',
-                      filter: TEAL_TINT_FILTER,
-                      boxShadow: '0 0 20px rgba(15, 193, 233, 0.35)',
-                      borderRadius: '50%',
-                    }}
-                  />
-                  <motion.img
-                    src={needledb}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute w-16 h-16 z-10 select-none pointer-events-none"
-                    style={{
-                      top: '-6%',
-                      right: '14%',
-                      transformOrigin: '85% 20%',
-                      willChange: 'transform',
-                      filter: TEAL_TINT_FILTER,
-                    }}
-                    initial={{ y: 0, rotate: -2 }}
-                    animate={{
-                      y: shouldReduceMotion ? 0 : [0, -1, 0],
-                      rotate: shouldReduceMotion ? -2 : [-2, -3, -2],
-                    }}
-                    transition={needleTransition}
-                  />
+                {/* Guess input */}
+                <form onSubmit={onSubmit} className="relative mb-6">
+                  ...
+                </form>
+
+                {/* Guess history */}
+                <div
+                  className="rounded-2xl p-5 max-h-48 flex-grow overflow-y-auto pr-2"
+                  style={{ backgroundColor: COLORS.darkestblue }}
+                >
+                  ...
                 </div>
-              </div>
-
-              {/* Status / visualizer */}
-              <div className="flex items-center justify-center w-full rounded-lg px-4 sm:px-6">
-                {isPlaying ? (
-                  <div className="flex flex-col items-center py-2 mb-2 w-full">
-                    <canvas
-                      ref={canvasRef}
-                      width={800}
-                      height={80}
-                      className="w-full h-full mb-3"
-                      style={{ imageRendering: 'pixelated' }}
-                    />
-                    <motion.div
-                      className="text-sm"
-                      style={{ color: COLORS.grayblue }}
-                      animate={{ opacity: [1, 0.5, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      now playing… (click the record to pause)
-                    </motion.div>
-                  </div>
-                ) : (
-                  <div className="text-center mb-2" style={{ color: COLORS.grayblue }}>
-                    {isFinished
-                      ? replayCount < 1
-                        ? 'Snippet Finished — Click the Record to Replay'
-                        : 'No more replays for this round'
-                      : ready
-                        ? 'Ready — Click the Record to Play'
-                        : 'Loading…'}
-                  </div>
-                )}
-              </div>
-
-              {/* Guess input */}
-              <form onSubmit={onSubmit} className="relative mb-6">
-                <div className="relative bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-cyan-400/20 p-[2px] rounded-2xl">
-                  <div className="flex bg-darkblue/90 rounded-2xl overflow-hidden backdrop-blur-sm">
-                    <input
-                      type="text"
-                      value={guess}
-                      onChange={e => setGuess(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && guess.trim()) onSubmit(e as any);
-                      }}
-                      placeholder={
-                        concluded
-                          ? 'Round concluded'
-                          : '                          Enter your answer here'
-                      }
-                      className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
-                      disabled={disable}
-                      autoFocus
-                    />
-                    <motion.button
-                      type="submit"
-                      disabled={disable || !guess.trim()}
-                      className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
-                        disable || !guess.trim()
-                          ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                          : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                      }`}
-                      whileHover={!disable && !!guess.trim() ? { scale: 1.02 } : {}}
-                      whileTap={!disable && !!guess.trim() ? { scale: 0.98 } : {}}
-                    >
-                      <span className="relative z-10 flex items-center gap-2">Submit</span>
-                    </motion.button>
-                  </div>
-                </div>
-              </form>
-
-              {/* Guess history */}
-              <div
-                className="rounded-2xl p-5 max-h-48 flex-grow overflow-y-auto pr-2"
-                style={{ backgroundColor: COLORS.darkestblue }}
-              >
-                <h2 className="text-lg font-semibold mb-2">Your Guesses:</h2>
-                <ul className="space-y-2 overflow-y-auto">
-                  {guessHistory.map(g => (
-                    <li key={g.guessNum} className="flex justify-between">
-                      <span>
-                        Attempt {g.guessNum}: {g.userGuess}
-                      </span>
-                      <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
-                        {g.isCorrect ? 'Correct' : `Incorrect (${g.timeTakenSec}s)`}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                {typeof attemptsLeft === 'number' && (
-                  <p className="mt-3 text-sm opacity-80">Attempts left: {attemptsLeft}</p>
-                )}
-              </div>
-            </>
+              </>
+            )}
             {/*}
           )}
           */}
