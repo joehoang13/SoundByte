@@ -15,6 +15,15 @@ interface RoundMeta {
   audioUrl: string;
 }
 
+interface SongResult {
+  snippetId: string;
+  songTitle: string;
+  artistName: string;
+  correct: boolean;
+  timeMs?: number;
+  userGuess?: string;
+}
+
 interface GameState {
   mode: 'classic';
   difficulty: Difficulty;
@@ -32,6 +41,7 @@ interface GameState {
   timeBonusTotal?: number;
   attemptsLeft?: number;
   lastResult?: LastResult;
+  songResults: SongResult[]; 
   loading: boolean;
   starting: boolean; // <— NEW: in-flight guard
   error?: string;
@@ -65,6 +75,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   timeBonusTotal: 0,
   attemptsLeft: undefined,
   lastResult: undefined,
+  songResults: [],
   loading: false,
   starting: false,
 
@@ -80,6 +91,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       error: undefined,
       lastResult: undefined,
       attemptsLeft: undefined,
+      songResults: [], 
     });
     try {
       const data = await gsApi.start({ userId: userId ?? '', difficulty, snippetSize, rounds });
@@ -167,17 +179,34 @@ export const useGameStore = create<GameState>((set, get) => ({
     const { sessionId } = get();
     if (!sessionId) return;
     try {
+      console.log('🎯 Calling finish API...');
       const f = await gsApi.finish(sessionId);
+      console.log('📦 Finish response:', f);
+
+      const songResults = f.answers.map(ans => ({
+        snippetId: ans.snippetId,
+        songTitle: ans.title || 'Unknown Song',
+        artistName: ans.artist || 'Unknown Artist',
+        correct: ans.correct || false,
+        timeMs: ans.timeMs,
+        userGuess: undefined, // could be added later
+      }));
+
+      console.log('🎵 Mapped song results:', songResults);
+
       set(s => ({
         score: f.score,
         streak: f.streak,
-        fastestTimeMs: f.fastestTimeMs,
+        fastestTimeMs: f.fastestTimeMs ?? s.fastestTimeMs, // only update if we got a new value
         fastestTime:
           f.fastestTimeMs !== undefined
             ? Math.round((f.fastestTimeMs / 1000) * 10) / 10
             : s.fastestTime,
         timeBonusTotal: f.timeBonusTotal ?? s.timeBonusTotal,
+        songResults,
       }));
+
+      console.log('✅ Store updated, songResults:', get().songResults);
       return f;
     } catch (e: any) {
       set({ error: e?.message || 'Failed to finish game' });
@@ -198,6 +227,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       timeBonusTotal: 0,
       attemptsLeft: undefined,
       lastResult: undefined,
+      songResults: [], 
       error: undefined,
       loading: false,
       starting: false,
