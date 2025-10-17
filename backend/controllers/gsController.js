@@ -348,12 +348,12 @@ exports.finishGame = async function finishGame(req, res) {
 
     // For each answer, load snippet details for title/artist
     const songDetails = await Promise.all(
-      session.answers.map(async (ans) => {
-        const snippet = await Snippet.findById(ans.snippetId, { 
-          title: 1, 
-          artist: 1 
+      session.answers.map(async ans => {
+        const snippet = await Snippet.findById(ans.snippetId, {
+          title: 1,
+          artist: 1,
         }).lean();
-        
+
         return {
           snippetId: ans.snippetId.toString(),
           title: snippet?.title || 'Unknown Song',

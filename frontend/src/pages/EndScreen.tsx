@@ -32,10 +32,10 @@ const EndScreen = () => {
     animatedTimeBonus.set(timeBonus);
   }, [score, correctAnswers, streak, timeBonus]);
 
-  const displayScore = useTransform(animatedScore, (value) => Math.floor(value));
-  const displayCorrectAnswers = useTransform(animatedCorrectAnswers, (value) => Math.floor(value));
-  const displayStreak = useTransform(animatedStreak, (value) => Math.floor(value));
-  const displayTimeBonus = useTransform(animatedTimeBonus, (value) => Math.floor(value));
+  const displayScore = useTransform(animatedScore, value => Math.floor(value));
+  const displayCorrectAnswers = useTransform(animatedCorrectAnswers, value => Math.floor(value));
+  const displayStreak = useTransform(animatedStreak, value => Math.floor(value));
+  const displayTimeBonus = useTransform(animatedTimeBonus, value => Math.floor(value));
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -43,9 +43,7 @@ const EndScreen = () => {
         return (
           <div className="flex flex-col items-center w-full">
             <div className="flex flex-col items-center justify-center bg-darkestblue rounded-xl px-6 py-4 w-full h-20 mb-3">
-              <motion.span className="text-xl font-bold text-center">
-                {displayScore}
-              </motion.span>
+              <motion.span className="text-xl font-bold text-center">{displayScore}</motion.span>
               <span className="text-sm text-center">Final Score</span>
             </div>
 
@@ -57,9 +55,7 @@ const EndScreen = () => {
                 <span className="text-sm text-center">Correct Answers</span>
               </div>
               <div className="flex flex-col items-center justify-center bg-darkestblue rounded-xl px-6 py-4 w-1/2 h-20 mb-3">
-                <motion.span className="text-xl font-bold text-center">
-                  {displayStreak}
-                </motion.span>
+                <motion.span className="text-xl font-bold text-center">{displayStreak}</motion.span>
                 <span className="text-sm text-center">Streak</span>
               </div>
             </div>
@@ -95,8 +91,9 @@ const EndScreen = () => {
             ].map(player => (
               <div
                 key={player.rank}
-                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${player.highlight ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
-                  }`}
+                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
+                  player.highlight ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{player.rank}</span>
@@ -127,13 +124,12 @@ const EndScreen = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm">
-                      {song.correct && song.timeMs
-                        ? `${(song.timeMs / 1000).toFixed(1)}s`
-                        : '—'}
+                      {song.correct && song.timeMs ? `${(song.timeMs / 1000).toFixed(1)}s` : '—'}
                     </span>
                     <span
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${song.correct ? 'bg-green-500' : 'bg-red-500'
-                        }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                        song.correct ? 'bg-green-500' : 'bg-red-500'
+                      }`}
                     >
                       {song.correct ? '✓' : '✗'}
                     </span>
@@ -178,8 +174,9 @@ const EndScreen = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${activeTab === tab.id ? '' : 'hover:text-white/60'
-                    } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
+                  className={`${
+                    activeTab === tab.id ? '' : 'hover:text-white/60'
+                  } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
                   style={{
                     WebkitTapHighlightColor: 'transparent',
                   }}

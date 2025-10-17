@@ -41,7 +41,7 @@ interface GameState {
   timeBonusTotal?: number;
   attemptsLeft?: number;
   lastResult?: LastResult;
-  songResults: SongResult[]; 
+  songResults: SongResult[];
   loading: boolean;
   starting: boolean; // <— NEW: in-flight guard
   error?: string;
@@ -91,7 +91,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       error: undefined,
       lastResult: undefined,
       attemptsLeft: undefined,
-      songResults: [], 
+      songResults: [],
     });
     try {
       const data = await gsApi.start({ userId: userId ?? '', difficulty, snippetSize, rounds });
@@ -227,7 +227,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       timeBonusTotal: 0,
       attemptsLeft: undefined,
       lastResult: undefined,
-      songResults: [], 
+      songResults: [],
       error: undefined,
       loading: false,
       starting: false,
