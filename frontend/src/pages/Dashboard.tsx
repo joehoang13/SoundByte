@@ -272,6 +272,7 @@ const Dashboard = () => {
     const snippetSize = preferences.snippetLength || 5;
 
     setConfig({
+      mode: mode.id as any,
       difficulty: preferences.difficulty as any,
       snippetSize: snippetSize as any,
     });

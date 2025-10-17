@@ -26,7 +26,7 @@ interface SongResult {
 }
 
 interface GameState {
-  mode: 'classic';
+  mode: 'classic' | 'inference' | 'multiplayer';
   difficulty: Difficulty;
   snippetSize: SnippetSize;
   rounds: number;
@@ -46,7 +46,7 @@ interface GameState {
   loading: boolean;
   starting: boolean; // <— NEW: in-flight guard
   error?: string;
-  setConfig: (p: Partial<Pick<GameState, 'difficulty' | 'snippetSize' | 'rounds'>>) => void;
+  setConfig: (p: Partial<Pick<GameState, 'mode' | 'difficulty' | 'snippetSize' | 'rounds'>>) => void;
   start: (userId?: string) => Promise<void>;
   markRoundStarted: () => Promise<void>;
   submitGuess: (guess: string) => Promise<LastResult | undefined>;

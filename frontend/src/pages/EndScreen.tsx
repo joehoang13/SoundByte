@@ -3,10 +3,10 @@ import { motion, useSpring, useTransform } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import useGameStore from '../stores/GameSessionStore';
 
-const tabs = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'leaderboard', label: 'Leaderboard' },
-  { id: 'songresults', label: 'Song Results' },
+const allTabs = [
+  { id: 'overview', label: 'Overview', showInModes: ['classic', 'inference', 'multiplayer'] },
+  { id: 'leaderboard', label: 'Leaderboard', showInModes: ['multiplayer'] },
+  { id: 'songresults', label: 'Song Results', showInModes: ['classic', 'inference', 'multiplayer'] },
 ];
 
 const EndScreen = () => {
@@ -17,7 +17,9 @@ const EndScreen = () => {
   const fastestTime = useGameStore(s => s.fastestTime);
   const timeBonus = useGameStore(s => s.timeBonus);
   const songResults = useGameStore(s => s.songResults);
+  const mode = useGameStore(s => s.mode); 
   const reset = useGameStore(s => s.reset);
+  const tabs = allTabs.filter(tab => tab.showInModes.includes(mode));
   const [activeTab, setActiveTab] = useState(tabs[0].id);
 
   const animatedScore = useSpring(0, { duration: 2000 });
