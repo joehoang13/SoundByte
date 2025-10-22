@@ -14,9 +14,9 @@ const NavBar = () => {
   return (
     <nav
       className="sticky top-0 z-50 flex items-center justify-between p-6 bg-darkblue/95 rounded-xl"
-      style={{ 
-        borderBottom: `1px solid rgba(255,255,255,0.10)`, 
-        backdropFilter: 'blur(10px)' 
+      style={{
+        borderBottom: `1px solid rgba(255,255,255,0.10)`,
+        backdropFilter: 'blur(10px)',
       }}
     >
       <div className="flex items-center space-x-8">
@@ -43,7 +43,7 @@ const NavBar = () => {
         >
           PROFILE
         </button>
-        <button 
+        <button
           className="px-4 py-2 text-sm text-white transition-colors hover:text-teal"
           onClick={() => navigate('/settings')}
         >

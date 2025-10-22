@@ -36,7 +36,7 @@ const UserProfile = () => {
     );
   }
 
-  // Mock data for game history 
+  // Mock data for game history
   const recentGames = [
     { id: 1, mode: 'Classic Mode', score: 850, date: '2 hours ago', result: 'win' },
     { id: 2, mode: 'Multiplayer', score: 920, date: '1 day ago', result: 'win' },
@@ -50,7 +50,6 @@ const UserProfile = () => {
       <NavBar />
 
       <div className="max-w-7xl mx-auto mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* LEFT SIDE - User Info Card */}
         <motion.div
           className="lg:col-span-1"
@@ -64,7 +63,7 @@ const UserProfile = () => {
               <div className="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center text-teal text-5xl font-bold mb-4 shadow-lg">
                 {user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
               </div>
-              
+
               <h2 className="text-2xl font-bold text-white mb-1">{user.username}</h2>
             </div>
 
@@ -74,7 +73,7 @@ const UserProfile = () => {
                 <p className="text-xs text-gray-400 tracking-wide mb-1">EMAIL</p>
                 <p className="text-sm text-white break-all">{user.email}</p>
               </div>
-              
+
               <div className="border-b border-white/10 pb-3">
                 <p className="text-xs text-gray-400 tracking-wide mb-1">PASSWORD</p>
                 <p className="text-sm text-white">******</p>
@@ -86,9 +85,7 @@ const UserProfile = () => {
               </div>
             </div>
             <div className="space-y-3">
-              <button
-                className="w-full py-2 text-sm bg-teal/20 text-teal rounded-xl hover:bg-teal/30 transition-colors"
-              >
+              <button className="w-full py-2 text-sm bg-teal/20 text-teal rounded-xl hover:bg-teal/30 transition-colors">
                 Change Account Info
               </button>
             </div>
@@ -97,7 +94,6 @@ const UserProfile = () => {
 
         {/* RIGHT SIDE - Stats & History */}
         <div className="lg:col-span-2 space-y-6">
-          
           {/* Stats Overview Cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -118,7 +114,10 @@ const UserProfile = () => {
                   </div>
                   <p className="text-sm text-gray-300">Total Games</p>
                   <div className="mt-2 h-1 bg-cyan-500/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${Math.min((stats.totalGamesPlayed / 10) * 100, 100)}%` }}></div>
+                    <div
+                      className="h-full bg-cyan-500 rounded-full"
+                      style={{ width: `${Math.min((stats.totalGamesPlayed / 10) * 100, 100)}%` }}
+                    ></div>
                   </div>
                 </div>
 
@@ -130,7 +129,10 @@ const UserProfile = () => {
                   </div>
                   <p className="text-sm text-gray-300">High Score</p>
                   <div className="mt-2 h-1 bg-cyan-500/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${Math.min((stats.highestScore / 1000) * 100, 100)}%` }}></div>
+                    <div
+                      className="h-full bg-cyan-500 rounded-full"
+                      style={{ width: `${Math.min((stats.highestScore / 1000) * 100, 100)}%` }}
+                    ></div>
                   </div>
                 </div>
 
@@ -142,7 +144,12 @@ const UserProfile = () => {
                   </div>
                   <p className="text-sm text-gray-300">Snippets Guessed</p>
                   <div className="mt-2 h-1 bg-cyan-500/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${Math.min((stats.totalSnippetsGuessed / 200) * 100, 100)}%` }}></div>
+                    <div
+                      className="h-full bg-cyan-500 rounded-full"
+                      style={{
+                        width: `${Math.min((stats.totalSnippetsGuessed / 200) * 100, 100)}%`,
+                      }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -160,13 +167,15 @@ const UserProfile = () => {
           >
             <h3 className="text-xl font-bold text-white mb-4">Recent Games</h3>
             <div className="space-y-3">
-              {recentGames.map((game) => (
+              {recentGames.map(game => (
                 <div
                   key={game.id}
                   className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:border-cyan-500/30 transition-all"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className={`w-2 h-2 rounded-full ${game.result === 'win' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                    <div
+                      className={`w-2 h-2 rounded-full ${game.result === 'win' ? 'bg-green-400' : 'bg-red-400'}`}
+                    ></div>
                     <div>
                       <p className="text-sm font-semibold text-white">{game.mode}</p>
                       <p className="text-xs text-gray-400">{game.date}</p>
@@ -180,7 +189,6 @@ const UserProfile = () => {
               ))}
             </div>
           </motion.div>
-
         </div>
       </div>
     </div>
