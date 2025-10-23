@@ -77,7 +77,6 @@ export default function App() {
           />
           <Route path="/email-verified" element={<EmailVerified />} />
 
-
           {/* Shared */}
           <Route path="/endscreen" element={<EndScreen />} />
 

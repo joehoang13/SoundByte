@@ -244,7 +244,9 @@ function multiplayerRoomHandler(io, socket, socketState) {
         snippet.artist || ''
       );
 
-      let base = 0, timeBonus = 0, total = 0;
+      let base = 0,
+        timeBonus = 0,
+        total = 0;
       let concluded = false;
 
       if (correct) {

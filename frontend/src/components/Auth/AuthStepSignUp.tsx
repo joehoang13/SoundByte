@@ -120,10 +120,11 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({ onClose, onSwitchToLogi
         </div>
 
         <motion.button
-          className={`w-full py-3 rounded-2xl font-semibold transition-colors duration-200 ${busy
+          className={`w-full py-3 rounded-2xl font-semibold transition-colors duration-200 ${
+            busy
               ? 'bg-gray-600/50 text-white/70 cursor-not-allowed'
               : 'bg-cyan-600 text-white hover:bg-cyan-500'
-            }`}
+          }`}
           whileHover={{ scale: busy ? 1 : 1.01 }}
           whileTap={{ scale: busy ? 1 : 0.99 }}
           type="submit"

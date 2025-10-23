@@ -88,7 +88,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
   multiplayerQuestions: [],
   setTimeBonusTotal: (n: number) => set({ timeBonusTotal: n }),
 
-
   setConfig: p => set(s => ({ ...s, ...p })),
 
   // Idempotent start: ignore if already starting or session exists
@@ -130,7 +129,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
     if (!sessionId) return;
     try {
       await gsApi.setStarted(sessionId, currentRound);
-    } catch { }
+    } catch {}
   },
 
   submitGuess: async (guess: string) => {
