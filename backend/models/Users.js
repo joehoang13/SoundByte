@@ -1,3 +1,4 @@
+// backend/models/Users.js
 'use strict';
 
 const mongoose = require('mongoose');
@@ -6,10 +7,13 @@ const bcrypt = require('bcryptjs');
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String },
-  // Store the bcrypt hash here
   passwordHash: { type: String },
 
-  // Provider/metadata
+  // NEW FIELDS FOR VERIFICATION
+  isVerified: { type: Boolean, default: false },
+  verificationToken: { type: String },
+  verificationTokenExpires: { type: Date },
+
   authProvider: { type: String, default: 'firebase' },
   profilePicture: { type: String },
   createdAt: { type: Date, default: Date.now },
@@ -19,12 +23,10 @@ const UserSchema = new mongoose.Schema({
   resetToken: { type: String, default: '' },
   needsReset: { type: Boolean, default: false },
 
-  // Lowercased mirrors for case-insensitive lookups & uniqueness
   emailLower: { type: String, index: true, unique: true, sparse: true },
   usernameLower: { type: String, index: true, unique: true, sparse: true },
 });
 
-// Keep lowercase mirrors in sync
 UserSchema.pre('save', function handleLowercase(next) {
   if (this.isModified('email') || this.isNew) {
     this.emailLower = (this.email || '').trim().toLowerCase();
@@ -35,20 +37,15 @@ UserSchema.pre('save', function handleLowercase(next) {
   next();
 });
 
-// Compare plaintext password with stored hash
 UserSchema.methods.comparePassword = async function comparePassword(plain) {
-  if (!this.passwordHash) return false; // why: avoid truthy compare on undefined
+  if (!this.passwordHash) return false;
   return bcrypt.compare(String(plain), this.passwordHash);
 };
 
-// Find by either email OR username (case-insensitive)
 UserSchema.statics.findByIdentifier = function findByIdentifier(identifier) {
-  const id = String(identifier || '')
-    .trim()
-    .toLowerCase();
+  const id = String(identifier || '').trim().toLowerCase();
   if (!id) return null;
   return this.findOne({ $or: [{ emailLower: id }, { usernameLower: id }] });
 };
 
-// Keep model export last
 module.exports = mongoose.model('User', UserSchema);

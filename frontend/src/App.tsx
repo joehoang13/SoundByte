@@ -8,6 +8,7 @@ import EndScreen from './pages/EndScreen';
 import ReadyScreen from './pages/ReadyScreen';
 import GroupLobby from './pages/GroupLobby';
 import Login from './pages/Login';
+import EmailVerified from './pages/EmailVerified';
 import Signup from './pages/Signup';
 import Background from './components/Background';
 import RequireAuth from './components/RequireAuth';
@@ -74,6 +75,8 @@ export default function App() {
               </RequireAuth>
             }
           />
+          <Route path="/email-verified" element={<EmailVerified />} />
+
 
           {/* Shared */}
           <Route path="/endscreen" element={<EndScreen />} />

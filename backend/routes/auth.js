@@ -3,8 +3,6 @@ const express = require('express');
 const { body, oneOf, validationResult } = require('express-validator');
 const authCtl = require('../controllers/authController');
 const auth = require('../middleware/auth');
-const authMiddleware = require('../middleware/auth');
-const authController = require('../controllers/authController');
 
 const router = express.Router();
 
@@ -34,7 +32,7 @@ router.post(
     oneOf(
       [
         body('identifier').isString().trim().notEmpty(),
-        body('email').isString().trim().notEmpty(), // may be username text too
+        body('email').isString().trim().notEmpty(),
         body('username').isString().trim().notEmpty(),
       ],
       'identifier/email/username required'
@@ -44,7 +42,8 @@ router.post(
   authCtl.login
 );
 
+router.get('/verify-email', authCtl.verifyEmail);
 router.get('/me', auth, authCtl.me);
-router.post('/logout', authMiddleware, authController.logout);
+router.post('/logout', auth, authCtl.logout);
 
 module.exports = router;
