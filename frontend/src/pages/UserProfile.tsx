@@ -85,8 +85,29 @@ const UserProfile = () => {
               </div>
             </div>
             <div className="space-y-3">
-              <button className="w-full py-2 text-sm bg-teal/20 text-teal rounded-xl hover:bg-teal/30 transition-colors">
-                Change Account Info
+              <button
+                className="w-full py-2 text-sm bg-red-600 text-white rounded-xl hover:bg-red-500 transition-colors"
+                onClick={async () => {
+                  const confirm = window.confirm(
+                    'We’ll send a reset password link to your registered email. Continue?'
+                  );
+                  if (!confirm) return;
+                  try {
+                    const apiBase = import.meta.env.VITE_API_URL.replace(/\/$/, '');
+                    const res = await fetch(`${apiBase}/api/auth/request-password-reset`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email: user.email }),
+                    });
+                    const data = await res.json();
+                    alert(data.message || 'Check your email for reset instructions.');
+                  } catch (err) {
+                    console.error(err);
+                    alert('Something went wrong while requesting a reset email.');
+                  }
+                }}
+              >
+                Reset Password
               </button>
             </div>
           </div>

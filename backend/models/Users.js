@@ -14,6 +14,10 @@ const UserSchema = new mongoose.Schema({
   verificationToken: { type: String },
   verificationTokenExpires: { type: Date },
 
+  // NEW FIELDS FOR PASSWORD RESET
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
+
   authProvider: { type: String, default: 'firebase' },
   profilePicture: { type: String },
   createdAt: { type: Date, default: Date.now },

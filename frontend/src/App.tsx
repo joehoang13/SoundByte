@@ -13,6 +13,7 @@ import Signup from './pages/Signup';
 import Background from './components/Background';
 import RequireAuth from './components/RequireAuth';
 import { GameProvider } from './stores/GameSessionStore';
+import ResetPassword from './pages/ResetPassword';
 import './App.css';
 
 export default function App() {
@@ -76,6 +77,8 @@ export default function App() {
             }
           />
           <Route path="/email-verified" element={<EmailVerified />} />
+
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Shared */}
           <Route path="/endscreen" element={<EndScreen />} />

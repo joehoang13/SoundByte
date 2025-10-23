@@ -3,6 +3,7 @@ const express = require('express');
 const { body, oneOf, validationResult } = require('express-validator');
 const authCtl = require('../controllers/authController');
 const auth = require('../middleware/auth');
+const usersCtl = require('../controllers/usersController');
 
 const router = express.Router();
 
@@ -41,6 +42,9 @@ router.post(
   ]),
   authCtl.login
 );
+
+router.post('/request-password-reset', usersCtl.requestPasswordReset);
+router.post('/reset-password', usersCtl.resetPassword);
 
 router.get('/verify-email', authCtl.verifyEmail);
 router.get('/me', auth, authCtl.me);
