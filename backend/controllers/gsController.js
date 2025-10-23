@@ -311,12 +311,34 @@ exports.finishGame = async function finishGame(req, res) {
       }
     }
 
+    // For each answer, load snippet details for title/artist
+    const songDetails = await Promise.all(
+      session.answers.map(async ans => {
+        const snippet = await Snippet.findById(ans.snippetId, {
+          title: 1,
+          artist: 1,
+        }).lean();
+
+        return {
+          snippetId: ans.snippetId.toString(),
+          title: snippet?.title || 'Unknown Song',
+          artist: snippet?.artist || 'Unknown Artist',
+          correct: ans.correct || false,
+          pointsAwarded: ans.pointsAwarded || 0,
+          timeMs: ans.timeTaken || 0,
+          attempts: ans.attempts || 0,
+        };
+      })
+    );
+
     return res.json({
+      sessionId: session._id.toString(),
       score: session.score,
       streak: session.streak,
       fastestTimeMs: session.fastestTimeMs ?? undefined,
       timeBonusTotal: session.timeBonusTotal ?? 0,
       rounds: session.rounds,
+      answers: songDetails,
     });
   } catch (err) {
     console.error('[gs] finishGame error', err);

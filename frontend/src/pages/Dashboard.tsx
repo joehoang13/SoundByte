@@ -12,9 +12,9 @@ import disc from '../assets/disc.svg';
 import needle from '../assets/needle.svg';
 import Background from '../components/Background';
 import useGameStore from '../stores/GameSessionStore';
-import { useAuth } from '../stores/auth';
 import { logout } from '../api/auth';
 import GamePrefModal from '../components/GameSteps/GamePrefModal';
+import NavBar from '../components/NavBar';
 
 interface GameMode {
   id: string;
@@ -212,9 +212,8 @@ const GamePreferences: React.FC<GamePreferencesProps> = ({ mode, onPlay, onClose
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, token } = useAuth();
   const setConfig = useGameStore(state => state.setConfig);
-  const [selectedMode, setSelectedMode] = useState<string | null>('classic');
+  const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [showGamePrefs, setShowGamePrefs] = useState(false);
 
@@ -272,6 +271,7 @@ const Dashboard = () => {
     const snippetSize = preferences.snippetLength || 5;
 
     setConfig({
+      mode: mode.id as any,
       difficulty: preferences.difficulty as any,
       snippetSize: snippetSize as any,
     });
@@ -313,60 +313,7 @@ const Dashboard = () => {
       <Background />
 
       <div className="min-h-screen max-h-screen overflow-hidden items-center justify-center font-montserrat p-4 relative">
-        {/* Navigation Bar */}
-        <nav
-          className="relative z-50 flex items-center justify-between p-6 bg-darkblue rounded-xl"
-          style={{ borderBottom: `1px solid rgba(255,255,255,0.10)`, backdropFilter: 'blur(6px)' }}
-        >
-          <div className="flex items-center space-x-8">
-            <h1
-              className="text-2xl font-exo font-bold text-teal tracking-widest"
-              style={{ textShadow: '0 0 20px rgba(15, 193, 233, 0.5)' }}
-            >
-              SOUNDBYTE
-            </h1>
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className="hidden md:flex space-x-6">
-            <button
-              className="px-4 py-2 text-sm text-grayblue transition-colors hover:text-white"
-              onClick={() => navigate('/dashboard')}
-            >
-              HOME
-            </button>
-            <button
-              className="px-4 py-2 text-sm text-grayblue transition-colors hover:text-white"
-              onClick={() => navigate('/profile')}
-            >
-              PROFILE
-            </button>
-            <button className="px-4 py-2 text-sm text-grayblue transition-colors hover:text-white">
-              SETTINGS
-            </button>
-          </div>
-
-          {/* User Info */}
-          {user && (
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
-                <span className="text-base font-bold text-teal">
-                  {user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
-                </span>
-              </div>
-              <span className="text-sm text-grayblue">
-                {user.username || user.email?.split('@')[0] || 'Player'}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="px-3 py-1 text-xs rounded-xl transition-colors hover:bg-red-500"
-                style={{ backgroundColor: 'rgba(239, 68, 68, 0.8)', color: 'white' }}
-              >
-                LOGOUT
-              </button>
-            </div>
-          )}
-        </nav>
+        <NavBar />
 
         <div className="flex h-screen">
           <div className="w-2/3">
@@ -497,9 +444,9 @@ const Dashboard = () => {
               <h3 className="text-lg font-bold text-white mb-4">Recent Activity</h3>
               <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-teal">
                 {recentActivity.map(activity => (
-                  <div key={activity.id} className="text-sm text-grayblue">
+                  <div key={activity.id} className="text-sm text-white">
                     <p>{activity.action}</p>
-                    <p className="text-xs text-grayblue/70">
+                    <p className="text-xs text-white/70">
                       Score: {activity.score} • {activity.time}
                     </p>
                   </div>
@@ -517,7 +464,7 @@ const Dashboard = () => {
                 {friends.map(friend => (
                   <div
                     key={friend.id}
-                    className="flex items-center justify-between text-sm text-grayblue"
+                    className="flex items-center justify-between text-sm text-white"
                   >
                     <div className="flex items-center space-x-3">
                       <div
@@ -525,7 +472,7 @@ const Dashboard = () => {
                       ></div>
                       <span>{friend.name}</span>
                     </div>
-                    <span className="text-xs text-grayblue/70">Last Score: {friend.lastScore}</span>
+                    <span className="text-xs text-white/70">Last Score: {friend.lastScore}</span>
                   </div>
                 ))}
               </div>
