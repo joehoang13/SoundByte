@@ -6,7 +6,7 @@ interface SettingsState {
   musicVolume: number;
   soundEffectsVolume: number;
   movingBackground: boolean;
-  
+
   setMasterVolume: (volume: number) => void;
   setMusicVolume: (volume: number) => void;
   setSoundEffectsVolume: (volume: number) => void;
@@ -16,23 +16,24 @@ interface SettingsState {
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set) => ({
+    set => ({
       masterVolume: 70,
       musicVolume: 50,
       soundEffectsVolume: 50,
       movingBackground: true,
 
-      setMasterVolume: (volume) => set({ masterVolume: volume }),
-      setMusicVolume: (volume) => set({ musicVolume: volume }),
-      setSoundEffectsVolume: (volume) => set({ soundEffectsVolume: volume }),
-      setMovingBackground: (enabled) => set({ movingBackground: enabled }),
-      
-      resetToDefaults: () => set({
-        masterVolume: 70,
-        musicVolume: 50,
-        soundEffectsVolume: 50,
-        movingBackground: true,
-      }),
+      setMasterVolume: volume => set({ masterVolume: volume }),
+      setMusicVolume: volume => set({ musicVolume: volume }),
+      setSoundEffectsVolume: volume => set({ soundEffectsVolume: volume }),
+      setMovingBackground: enabled => set({ movingBackground: enabled }),
+
+      resetToDefaults: () =>
+        set({
+          masterVolume: 70,
+          musicVolume: 50,
+          soundEffectsVolume: 50,
+          movingBackground: true,
+        }),
     }),
     {
       name: 'soundbyte-settings',

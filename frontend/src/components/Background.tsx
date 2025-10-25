@@ -3,8 +3,7 @@ import { motion } from 'framer-motion';
 import { useSettingsStore } from '../stores/SettingsStore';
 
 const Background: React.FC = () => {
-
-  const movingBackground = useSettingsStore((state) => state.movingBackground);
+  const movingBackground = useSettingsStore(state => state.movingBackground);
 
   return (
     <>
@@ -40,8 +39,8 @@ const Background: React.FC = () => {
           animate={
             movingBackground
               ? {
-                backgroundPosition: ['0px 0px', '60px 60px'],
-              }
+                  backgroundPosition: ['0px 0px', '60px 60px'],
+                }
               : undefined
           }
           transition={{
@@ -68,8 +67,8 @@ const Background: React.FC = () => {
           animate={
             movingBackground
               ? {
-                backgroundPosition: ['0px 0px', '-120px -120px'],
-              }
+                  backgroundPosition: ['0px 0px', '-120px -120px'],
+                }
               : undefined
           }
           transition={{
@@ -115,22 +114,20 @@ const Background: React.FC = () => {
         animate={
           movingBackground
             ? {
-              backgroundPosition: [
-                '30% 20%',
-                '60% 40%',
-                '40% 75%',
-                '70% 60%',
-                '20% 70%',
-                '50% 50%',
-                '30% 20%',
-              ],
-            }
+                backgroundPosition: [
+                  '30% 20%',
+                  '60% 40%',
+                  '40% 75%',
+                  '70% 60%',
+                  '20% 70%',
+                  '50% 50%',
+                  '30% 20%',
+                ],
+              }
             : undefined
         }
         transition={
-          movingBackground
-            ? { duration: 30, repeat: Infinity, ease: 'easeInOut' }
-            : { duration: 0 }
+          movingBackground ? { duration: 30, repeat: Infinity, ease: 'easeInOut' } : { duration: 0 }
         }
       />
 
@@ -145,7 +142,7 @@ const Background: React.FC = () => {
         }}
       />
     </>
-  )
+  );
 };
 
 export default Background;
