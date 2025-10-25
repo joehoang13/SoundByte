@@ -6,6 +6,7 @@ import GameScreen from './pages/GameScreen';
 import InferenceScreen from './pages/InferenceScreen';
 import EndScreen from './pages/EndScreen';
 import ReadyScreen from './pages/ReadyScreen';
+import Settings from './pages/Settings';
 import GroupLobby from './pages/GroupLobby';
 import Login from './pages/Login';
 import EmailVerified from './pages/EmailVerified';
@@ -41,6 +42,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <UserProfile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <RequireAuth>
+                <Settings />
               </RequireAuth>
             }
           />

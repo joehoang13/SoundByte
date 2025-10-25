@@ -325,6 +325,9 @@ const Dashboard = () => {
                 scrollbarColor: '#0FC1E9 transparent',
                 maskImage,
               }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4 }}
             >
               {gameModes.map(mode => {
                 const isExpanded = expandedCard === mode.id;
@@ -437,9 +440,12 @@ const Dashboard = () => {
 
           <div className="w-1/3 p-10 space-y-6">
             {/* Recent Activity */}
-            <div
+            <motion.div
               className="bg-darkblue/80 backdrop-blur-sm rounded-2xl p-4"
               style={{ border: '1px solid rgba(255,255,255,0.10)' }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
             >
               <h3 className="text-lg font-bold text-white mb-4">Recent Activity</h3>
               <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-teal">
@@ -452,12 +458,15 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Friends List */}
-            <div
+            <motion.div
               className="bg-darkblue/80 backdrop-blur-sm rounded-2xl p-4"
               style={{ border: '1px solid rgba(255,255,255,0.10)' }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
             >
               <h3 className="text-lg font-bold text-white mb-4">Friends</h3>
               <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-teal">
@@ -476,7 +485,7 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
