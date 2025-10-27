@@ -1,4 +1,5 @@
 const Room = require('../models/Room');
+const { generateGameQuestions } = require('../utils/gameUtils');
 
 function ensureHost(room, userId) {
   if (!room?.host || room.host.toString() !== userId) {
@@ -179,11 +180,9 @@ function multiplayerRoomHandler(io, socket, socketState) {
       const summary = await room.toLobbySummary();
 
       io.to(room.code).emit('room:update', summary);
-      io.to(room.code).emit('game:start', {
-        roomCode: room.code,
-        rounds: gameData.rounds,
-        snippets: gameData.snippets,
-      });
+      io.to(room.code).emit('game:start', 
+        await redis.get(`room:${room.code}:questions`),
+      );
 
       cb?.({ ok: true, room: summary });
     } catch (err) {
