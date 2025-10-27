@@ -25,5 +25,10 @@
     "**/*.{js,jsx,ts,tsx,json,css,md,yml,yaml,html}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.10"
   }
 }

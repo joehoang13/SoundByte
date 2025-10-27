@@ -6,23 +6,19 @@ import { useAuth } from '../../stores/auth';
 
 interface AuthStepSignUpProps {
   onClose: () => void;
-  onSignUpSuccess: () => void;
   onSwitchToLogin: () => void;
-  /** presentational only; used by parent for alignment */
+  onSignUpSuccess?: () => void; // optional now, since verification defers login
   align?: 'start' | 'end';
-  /** presentational only; parent sometimes hides a close button */
   hideClose?: boolean;
 }
 
-const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({ onSignUpSuccess }) => {
+const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({ onClose, onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-
-  const { setAuth } = useAuth();
 
   const inputCls =
     'w-full py-3.5 px-4 rounded-2xl bg-white/5 text-white/90 placeholder-white/45 ' +
@@ -53,15 +49,12 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({ onSignUpSuccess }) => {
 
     setBusy(true);
     try {
-      const response = await registerUser({ email, username: username || undefined, password });
-      setAuth(response.token, response.user);
-      onSignUpSuccess();
-      setEmail('');
-      setUsername('');
-      setPassword('');
-      setConfirmPassword('');
+      await registerUser({ email, username: username || undefined, password });
+
+      alert('Signup successful! Please check your email to verify your account.');
+      onSwitchToLogin(); // Switch view to login after showing message
     } catch (e: any) {
-      setError(e?.message || 'Signup failed');
+      setError(e?.response?.data?.error || 'Signup failed');
     } finally {
       setBusy(false);
     }

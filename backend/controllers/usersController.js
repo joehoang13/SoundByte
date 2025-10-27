@@ -1,5 +1,16 @@
 const User = require('../models/Users');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587', 10),
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 exports.getProfileStats = async (req, res) => {
   try {
@@ -138,29 +149,36 @@ exports.loginUser = async (req, res) => {
 
 exports.requestPasswordReset = async (req, res) => {
   try {
-    const { username } = req.body;
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required to reset password.' });
 
-    if (!username) {
-      return res.status(400).json({ error: 'Username is required.' });
-    }
-
-    const user = await User.findOne({ username });
-
+    const user = await User.findOne({ emailLower: email.trim().toLowerCase() });
     if (!user) {
-      return res.status(404).json({ error: 'User not found.' });
+      // Security: return 200 even if user not found
+      return res.status(200).json({ message: 'If that email exists, a reset link will be sent.' });
     }
 
-    // Generate a 6-digit token (e.g. 123456)
-    const token = Math.floor(100000 + Math.random() * 900000).toString();
-
-    user.resetToken = token;
-    user.needsReset = true;
-
+    // Generate secure token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    //TODO: Send user email with token
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-    res.status(200).json({ message: 'Reset code sent to email' });
+    // Send email
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || '"SoundByte" <no-reply@soundbyte.com>',
+      to: user.email,
+      subject: 'Reset your SoundByte password',
+      html: `
+        <h2>Password Reset Request</h2>
+        <p>Click the link below to reset your password. This link expires in 1 hour.</p>
+        <a href="${resetUrl}">${resetUrl}</a>
+      `,
+    });
+
+    res.status(200).json({ message: 'Password reset link sent to email.' });
   } catch (err) {
     console.error('Error requesting password reset:', err);
     res.status(500).json({ error: 'Server error while requesting password reset.' });
@@ -169,28 +187,24 @@ exports.requestPasswordReset = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
   try {
-    const { username, newPassword, resetToken } = req.body;
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword)
+      return res.status(400).json({ error: 'Token and new password are required.' });
 
-    if (!username || !newPassword || !resetToken) {
-      return res
-        .status(400)
-        .json({ error: 'Username, new password, and reset token are required.' });
-    }
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
 
-    const user = await User.findOne({ username });
+    if (!user) return res.status(400).json({ error: 'Invalid or expired reset token.' });
 
-    if (!user || !user.needsReset || user.resetToken !== resetToken) {
-      return res.status(403).json({ error: 'Invalid or expired reset token.' });
-    }
-
-    const newHashedPassword = await bcrypt.hash(newPassword, 10);
-    user.passwordHash = newHashedPassword;
-    user.resetToken = '';
-    user.needsReset = false;
-
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = hashed;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
     await user.save();
 
-    res.status(200).json({ message: 'Password reset successful.' });
+    res.status(200).json({ message: 'Password has been reset successfully.' });
   } catch (err) {
     console.error('Error resetting password:', err);
     res.status(500).json({ error: 'Server error while resetting password.' });
