@@ -7,7 +7,6 @@ import useGameStore from '../stores/GameSessionStore';
 import { motion, useReducedMotion, type Transition } from 'framer-motion';
 import MultiplayerGameHandler from '../components/GameSteps/MultiplayerGameHandler';
 
-
 import { useAuth } from '../stores/auth';
 import { logout } from '../api/auth';
 
@@ -138,9 +137,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     'disconnected'
   );
 
-
   // ─────────────────────────── Core game ────────────────────────────
-
 
   // Start session once
   useEffect(() => {
@@ -189,7 +186,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       startedOnceRef.current = true;
       try {
         await markRoundStarted();
-      } catch { }
+      } catch {}
     }
 
     setIsPlaying(true);
@@ -253,17 +250,17 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
       try {
         (srcNode as any).connect(analyser);
-      } catch { }
+      } catch {}
       try {
         analyser.connect(ctx.destination);
-      } catch { }
+      } catch {}
 
       const data = new Uint8Array(analyser.frequencyBinCount);
       analyserRef.current = analyser;
       dataArrayRef.current = data;
 
       drawBars();
-    } catch { }
+    } catch {}
   }
 
   function teardownAnalyser() {
@@ -358,10 +355,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     : { repeat: Infinity, duration: 2, ease: EASE_IN_OUT };
 
   const handleLogout = async () => {
-    await logout().catch(() => { });
+    await logout().catch(() => {});
     try {
       localStorage.removeItem('token');
-    } catch { }
+    } catch {}
     navigate('/welcome');
   };
 

@@ -61,7 +61,7 @@ const GroupLobby: React.FC = () => {
   const snippetLength = modalState?.snippetLength;
 
   // ───────────────────── Socket.IO / Group Lobby ─────────────────────
-  const { socket, connect, disconnect} = useSocketStore();
+  const { socket, connect, disconnect } = useSocketStore();
   const [roomId, setRoomId] = useState<string>('');
   const [lobbyPlayers, setLobbyPlayers] = useState<LobbyPlayer[]>(storePlayers);
   // const [roomId, setRoomId] = useState<string>('DEMO123'); // for testing
@@ -73,8 +73,8 @@ const GroupLobby: React.FC = () => {
 
   useEffect(() => {
     connect(SOCKET_URL);
-  }, [connect])
-  
+  }, [connect]);
+
   useEffect(() => {
     if (!socket) return;
 

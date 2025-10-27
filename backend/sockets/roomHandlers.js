@@ -180,9 +180,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       const summary = await room.toLobbySummary();
 
       io.to(room.code).emit('room:update', summary);
-      io.to(room.code).emit('game:start', 
-        await redis.get(`room:${room.code}:questions`),
-      );
+      io.to(room.code).emit('game:start', await redis.get(`room:${room.code}:questions`));
 
       cb?.({ ok: true, room: summary });
     } catch (err) {
@@ -243,7 +241,9 @@ function multiplayerRoomHandler(io, socket, socketState) {
         snippet.artist || ''
       );
 
-      let base = 0, timeBonus = 0, total = 0;
+      let base = 0,
+        timeBonus = 0,
+        total = 0;
       let concluded = false;
 
       if (correct) {

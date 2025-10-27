@@ -6,7 +6,6 @@ const Snippet = require('../models/Snippet');
 const User = require('../models/Users');
 const { normalize, titleArtistMatch } = require('../utils/scoringUtils');
 
-
 // ---------- helpers ----------
 const now = () => new Date();
 
