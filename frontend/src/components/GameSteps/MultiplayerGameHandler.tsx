@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, use } from 'react';
 import { useGameStore } from '../../stores/GameSessionStore';
-import socket from '../../utils/socket';
+import { useSocketStore } from '../../stores/SocketStore';
 
 interface Props {
   userId: string;
@@ -24,9 +24,10 @@ const MultiplayerGameHandler: React.FC<Props> = ({ userId, onFinish }) => {
   const [roundComplete, setRoundComplete] = useState(false);
 
   const current = multiplayerQuestions[currentRound];
+  const { socket, connect, disconnect } = useSocketStore();
 
   const handleGuessSubmit = useCallback(() => {
-    if (!roomCode || !current?.snippetId || !guess) return;
+    if (!roomCode || !current?.snippetId || !guess || !socket) return;
 
     socket.emit(
       'game:answer',

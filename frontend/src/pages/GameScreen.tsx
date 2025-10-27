@@ -5,7 +5,6 @@ import { Howl, Howler } from 'howler';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../stores/GameSessionStore';
 import { motion, useReducedMotion, type Transition } from 'framer-motion';
-import { io, Socket } from 'socket.io-client';
 import MultiplayerGameHandler from '../components/GameSteps/MultiplayerGameHandler';
 
 import { useAuth } from '../stores/auth';
@@ -85,7 +84,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     snippetSize,
     sessionId,
     loading,
-    multiplayer,
+    multiplayerQuestions,
   } = useGameStore();
 
   const { user } = useAuth();
@@ -134,104 +133,9 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
   const snippetSeconds = useMemo(() => snippetSize ?? 5, [snippetSize]);
 
-  // ───────────────────── Socket.IO / Group Lobby ─────────────────────
   const [socketStatus, setSocketStatus] = useState<'disconnected' | 'connecting' | 'connected'>(
     'disconnected'
   );
-
-  {
-    /* 
-  const socketRef = useRef<Socket | null>(null);
-  const [partyMode, setPartyMode] = useState<PartyMode>('solo');
-  const [roomId, setRoomId] = useState<string>('DEMO123'); 
-  const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([
-        // MOCK DATA FOR TESTING
-        { id: '1', name: 'Alex', avatarUrl: undefined },
-        { id: '2', name: 'Sam', avatarUrl: undefined },
-        { id: '3', name: 'Jordan', avatarUrl: undefined },
-    ]);
-  const [joinCode, setJoinCode] = useState('');
-  const [groupGameMode, setGroupGameMode] = useState<GroupGameMode>('classic');
-  
-
-  // connect socket once
-  useEffect(() => {
-    if (socketRef.current) return;
-    setSocketStatus('connecting');
-    const s = io(SOCKET_URL, {
-      transports: ['websocket'],
-      withCredentials: true,
-    });
-    socketRef.current = s;
-
-    s.on('connect', () => {
-      setSocketStatus('connected');
-      // say hello so server can track display name
-      s.emit('lobby:hello', { name: username });
-    });
-
-    s.on('disconnect', () => setSocketStatus('disconnected'));
-
-    // room created / joined / updates
-    s.on('room:created', ({ roomId: id, players }: { roomId: string; players: Player[] }) => {
-      setRoomId(id);
-      setLobbyPlayers(players || []);
-    });
-    s.on('room:joined', ({ roomId: id, players }: { roomId: string; players: Player[] }) => {
-      setRoomId(id);
-      setLobbyPlayers(players || []);
-    });
-    s.on('room:left', () => {
-      setRoomId('');
-      setLobbyPlayers([]);
-    });
-    s.on('lobby:update', ({ roomId: id, players }: { roomId: string; players: Player[] }) => {
-      if (id) setRoomId(id);
-      setLobbyPlayers(players || []);
-    });
-
-    return () => {
-      try {
-        s.disconnect();
-      } catch {}
-      socketRef.current = null;
-    };
-  }, [username]);
-
-  const createRoom = () => {
-    socketRef.current?.emit('createRoom', { hostId: user?.id, hostSocketId: socketRef.current.id });
-  };
-  const joinRoom = (code: string) => {
-    if (!code.trim()) return;
-    socketRef.current?.emit('joinRoom', {
-      code: code.trim(),
-      userId: user?.id,
-      userSocketId: socketRef.current.id,
-    });
-  };
-  const leaveRoom = () => {
-    socketRef.current?.emit('leaveRoom', { roomId });
-  };
-
-  // invite link builder
-  const inviteUrl = useMemo(() => {
-    if (!roomId) return '';
-    const url = new URL(window.location.href);
-    url.searchParams.set('room', roomId);
-    return url.toString();
-  }, [roomId]);
-
-  // auto-join if ?room=ID present and in Group
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const r = params.get('room');
-    if (partyMode === 'group' && r && !roomId) {
-      joinRoom(r);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [partyMode]);
-  */
-  }
 
   // ─────────────────────────── Core game ────────────────────────────
 
@@ -837,7 +741,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
             */}
 
             {/* SOLO GAME (your original card) */}
-            {multiplayer ? (
+            {multiplayerQuestions ? (
               <MultiplayerGameHandler userId={userId ?? ''} onFinish={() => navigate('/end')} />
             ) : (
               <>

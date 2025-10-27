@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useGameStore from '../stores/GameSessionStore';
-import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../stores/auth';
 import GamePrefModal from '../components/GameSteps/GamePrefModal';
+import { useSocketStore } from '../stores/SocketStore';
 
 export interface LobbyPlayer {
   id: string; // MongoDB ObjectId as a string
@@ -61,7 +61,7 @@ const GroupLobby: React.FC = () => {
   const snippetLength = modalState?.snippetLength;
 
   // ───────────────────── Socket.IO / Group Lobby ─────────────────────
-  const socketRef = useRef<Socket | null>(null);
+  const { socket, connect, disconnect } = useSocketStore();
   const [roomId, setRoomId] = useState<string>('');
   const [lobbyPlayers, setLobbyPlayers] = useState<LobbyPlayer[]>(storePlayers);
   // const [roomId, setRoomId] = useState<string>('DEMO123'); // for testing
@@ -71,70 +71,64 @@ const GroupLobby: React.FC = () => {
     'disconnected'
   );
 
-  // connect socket once
   useEffect(() => {
-    if (socketRef.current) return;
-    setSocketStatus('connecting');
-    const s = io(SOCKET_URL, {
-      transports: ['websocket'],
-      withCredentials: true,
-    });
-    socketRef.current = s;
+    connect(SOCKET_URL);
+  }, [connect]);
 
-    s.on('connect', () => {
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('connect', () => {
       setSocketStatus('connected');
       // say hello so server can track display name
-      s.emit('lobby:hello', { name: username });
+      socket.emit('lobby:hello', { name: username });
       if (role === 'create') {
         setTimeout(() => createRoom(), 100); // Small delay to ensure connection is stable
       }
     });
 
-    s.on('disconnect', () => setSocketStatus('disconnected'));
+    socket.on('disconnect', () => setSocketStatus('disconnected'));
 
     // room created / joined / updates
-    s.on('room:created', (summary: LobbySummary) => {
+    socket.on('room:created', (summary: LobbySummary) => {
       setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
     });
-    s.on('room:joined', (summary: LobbySummary) => {
+    socket.on('room:joined', (summary: LobbySummary) => {
       setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
     });
-    s.on('room:left', () => {
+    socket.on('room:left', () => {
       setRoomId('');
       setLobbyPlayers([]);
     });
-    s.on('room:update', (summary: LobbySummary) => {
+    socket.on('room:update', (summary: LobbySummary) => {
       if (summary) setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
     });
-    s.on('game:start', () => {
-      console.log('socket');
+    socket.on('game:start', (questions: string) => {
+      useGameStore.getState().setMultiplayerQuestions(JSON.parse(questions).snippets);
       navigateGame();
     });
 
     return () => {
-      try {
-        s.disconnect();
-      } catch {}
-      socketRef.current = null;
+      disconnect();
     };
-  }, [username]);
+  }, [socket, username]);
 
   const createRoom = () => {
-    socketRef.current?.emit('createRoom', { hostId: user?.id, hostSocketId: socketRef.current.id });
+    socket?.emit('createRoom', { hostId: user?.id, hostSocketId: socket.id });
   };
   const joinRoom = (code: string) => {
     if (!code.trim()) return;
-    socketRef.current?.emit('joinRoom', {
+    socket?.emit('joinRoom', {
       code: code.trim(),
       userId: user?.id,
-      userSocketId: socketRef.current.id,
+      userSocketId: socket.id,
     });
   };
   const leaveRoom = () => {
-    socketRef.current?.emit('leaveRoom', { roomId: roomId, userId: user?.id });
+    socket?.emit('leaveRoom', { roomId: roomId, userId: user?.id });
   };
 
   // invite link builder
@@ -155,11 +149,10 @@ const GroupLobby: React.FC = () => {
   }, [role, roomId, socketStatus]);
 
   const handleStartGame = () => {
-    socketRef.current?.emit('startGame', { code: roomId, hostId: user?.id });
+    socket?.emit('startGame', { code: roomId, hostId: user?.id });
   };
 
   const navigateGame = () => {
-    console.log('bobby');
     if (gameMode === 'classic') {
       navigate('/gamescreen');
     } else if (gameMode === 'inference') {

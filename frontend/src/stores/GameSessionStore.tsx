@@ -11,9 +11,12 @@ interface LastResult {
   attemptsLeft: number;
   timeMs?: number;
 }
-interface RoundMeta {
+
+export interface RoundMeta {
   snippetId: string;
   audioUrl: string;
+  title: string;
+  artist: string;
 }
 
 interface SongResult {
@@ -62,6 +65,7 @@ interface GameState {
   setStreak: (n: number) => void;
   setCorrectAnswers: (n: number) => void;
   setTimeBonus: (n: number) => void;
+  setMultiplayerQuestions: (q: RoundMeta[]) => void;
 }
 
 export const useGameStore = create<GameState>()((set, get) => ({
@@ -240,12 +244,14 @@ export const useGameStore = create<GameState>()((set, get) => ({
       error: undefined,
       loading: false,
       starting: false,
+      multiplayerQuestions: [],
     }),
 
   setScore: (n: number) => set({ score: n }),
   setStreak: (n: number) => set({ streak: n }),
   setCorrectAnswers: (n: number) => set({ correctAnswers: n }),
   setTimeBonus: (n: number) => set({ timeBonus: n }),
+  setMultiplayerQuestions: (q: RoundMeta[]) => set({ multiplayerQuestions: q }),
 }));
 
 export default useGameStore;
