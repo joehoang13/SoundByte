@@ -2,14 +2,15 @@ import { useEffect, useRef } from 'react';
 import { Howl } from 'howler';
 import { useSettingsStore } from '../stores/SettingsStore';
 
-const CLICK_SOUND_URL = 'https://res.cloudinary.com/dqyszqny2/video/upload/v1761459825/Menu_Selection_Click_zagfzj.wav';
+const CLICK_SOUND_URL =
+  'https://res.cloudinary.com/dqyszqny2/video/upload/v1761459825/Menu_Selection_Click_zagfzj.wav';
 
 export const useClickSound = () => {
   const clickSoundRef = useRef<Howl | null>(null);
-  
+
   // volume settings from the store
-  const masterVolume = useSettingsStore((state) => state.masterVolume);
-  const soundEffectsVolume = useSettingsStore((state) => state.soundEffectsVolume);
+  const masterVolume = useSettingsStore(state => state.masterVolume);
+  const soundEffectsVolume = useSettingsStore(state => state.soundEffectsVolume);
   const finalVolume = (masterVolume / 100) * (soundEffectsVolume / 100);
 
   // initialize the click sound
@@ -32,7 +33,7 @@ export const useClickSound = () => {
     }
   }, [finalVolume]);
 
-  // global click listener 
+  // global click listener
   useEffect(() => {
     const handleClick = () => {
       if (clickSoundRef.current) {

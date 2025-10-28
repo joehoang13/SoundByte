@@ -4,75 +4,70 @@ import { useLocation } from 'react-router-dom';
 import { useSettingsStore } from '../stores/SettingsStore';
 
 const LOBBY_MUSIC_URL =
-    'https://res.cloudinary.com/dqyszqny2/video/upload/v1761459815/in_the_lobby_pvyeww.wav';
+  'https://res.cloudinary.com/dqyszqny2/video/upload/v1761459815/in_the_lobby_pvyeww.wav';
 
 const LobbyMusic = () => {
+  // howl reference
+  const lobbyMusicRef = useRef<Howl | null>(null);
 
-    // howl reference
-    const lobbyMusicRef = useRef<Howl | null>(null);
+  // get current page location
+  const location = useLocation();
 
-    // get current page location
-    const location = useLocation();
+  // get volume settings from the store
+  const masterVolume = useSettingsStore(state => state.masterVolume);
+  const musicVolume = useSettingsStore(state => state.musicVolume);
+  const finalVolume = (masterVolume / 100) * (musicVolume / 100);
 
-    // get volume settings from the store
-    const masterVolume = useSettingsStore((state) => state.masterVolume);
-    const musicVolume = useSettingsStore((state) => state.musicVolume);
-    const finalVolume = (masterVolume / 100) * (musicVolume / 100);
+  // when component mounts, initialize and play music
+  useEffect(() => {
+    lobbyMusicRef.current = new Howl({
+      src: [LOBBY_MUSIC_URL],
+      loop: true,
+      volume: finalVolume,
+      html5: true,
+    });
 
-    // when component mounts, initialize and play music
-    useEffect(() => {
-        
-        lobbyMusicRef.current = new Howl({
-            src: [LOBBY_MUSIC_URL],
-            loop: true,
-            volume: finalVolume,
-            html5: true,
-        });
+    lobbyMusicRef.current.play();
 
-        lobbyMusicRef.current.play();
+    return () => {
+      if (lobbyMusicRef.current) {
+        lobbyMusicRef.current.unload();
+      }
+    };
+  }, []);
 
-        return () => {
-            if (lobbyMusicRef.current) {
-                lobbyMusicRef.current.unload();
-            }
-        };
-    }, []);
+  // when setting changes, update volume
+  useEffect(() => {
+    const howl = lobbyMusicRef.current;
+    if (howl) {
+      howl.volume(finalVolume);
+    }
+  }, [finalVolume]);
 
-    // when setting changes, update volume
-    useEffect(() => {
-        const howl = lobbyMusicRef.current;
-        if (howl) {
-            howl.volume(finalVolume);
-        }
-    }, [finalVolume]);
+  // handle page navigation
+  useEffect(() => {
+    const howl = lobbyMusicRef.current;
+    if (!howl) return;
 
-    // handle page navigation
-    useEffect(() => {
-        const howl = lobbyMusicRef.current;
-        if (!howl) return;
+    const currentPath = location.pathname;
 
-        const currentPath = location.pathname;
+    // doesnt play music during game screens
+    const shouldPause = currentPath === '/gamescreen' || currentPath.includes('/game');
 
-        // doesnt play music during game screens
-        const shouldPause =
-            currentPath === '/gamescreen' ||
-            currentPath.includes('/game');
+    if (shouldPause) {
+      // pause lobby music on game screens
+      if (howl.playing()) {
+        howl.pause();
+      }
+    } else {
+      // resume lobby music on other pages
+      if (!howl.playing()) {
+        howl.play();
+      }
+    }
+  }, [location]);
 
-        if (shouldPause) {
-            // pause lobby music on game screens
-            if (howl.playing()) {
-                howl.pause();
-            }
-        } else {
-            // resume lobby music on other pages
-            if (!howl.playing()) {
-                howl.play();
-            }
-        }
-    }, [location]);
-
-    return null;
-
+  return null;
 };
 
 export default LobbyMusic;

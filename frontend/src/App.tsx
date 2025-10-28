@@ -12,7 +12,7 @@ import Login from './pages/Login';
 import EmailVerified from './pages/EmailVerified';
 import Signup from './pages/Signup';
 import Background from './components/Background';
-import LobbyMusic from './components/LobbyMusic'; 
+import LobbyMusic from './components/LobbyMusic';
 import RequireAuth from './components/RequireAuth';
 import { GameProvider } from './stores/GameSessionStore';
 import ResetPassword from './pages/ResetPassword';
@@ -20,9 +20,8 @@ import { useClickSound } from './hooks/useClickSound';
 import './App.css';
 
 export default function App() {
-
   useClickSound();
-  
+
   return (
     <GameProvider>
       <Router>
