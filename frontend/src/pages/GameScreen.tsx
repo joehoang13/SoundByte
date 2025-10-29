@@ -354,12 +354,11 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     ? { duration: 0 }
     : { repeat: Infinity, duration: 2, ease: EASE_IN_OUT };
 
-  const handleLogout = async () => {
-    await logout().catch(() => {});
-    try {
-      localStorage.removeItem('token');
-    } catch {}
-    navigate('/welcome');
+  const handleQuitGame = async () => {
+    // finish the game session to save progress
+    await finish();
+    
+    navigate('/endscreen');
   };
 
   // merged list for Settings modal (self + others)
@@ -925,7 +924,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
                   <motion.button
                     type="button"
-                    onClick={handleLogout}
+                    onClick={handleQuitGame}
                     className="w-full px-4 py-2 rounded-xl font-semibold"
                     style={{
                       background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)',
@@ -934,7 +933,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Log Out
+                    Quit Game
                   </motion.button>
                 </div>
               </section>

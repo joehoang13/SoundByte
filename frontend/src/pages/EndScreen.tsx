@@ -23,6 +23,13 @@ const EndScreen = () => {
   const songResults = useGameStore(s => s.songResults);
   const mode = useGameStore(s => s.mode);
   const reset = useGameStore(s => s.reset);
+
+  const currentRound = useGameStore(s => s.currentRound);
+  const rounds = useGameStore(s => s.rounds);
+  const isComplete = currentRound + 1 >= rounds;
+
+  const [showEarlyQuitModal, setShowEarlyQuitModal] = useState(!isComplete);
+
   const tabs = allTabs.filter(tab => tab.showInModes.includes(mode));
   const [activeTab, setActiveTab] = useState(tabs[0].id);
 
@@ -97,9 +104,8 @@ const EndScreen = () => {
             ].map(player => (
               <div
                 key={player.rank}
-                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
-                  player.highlight ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
-                }`}
+                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${player.highlight ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{player.rank}</span>
@@ -133,9 +139,8 @@ const EndScreen = () => {
                       {song.correct && song.timeMs ? `${(song.timeMs / 1000).toFixed(1)}s` : '—'}
                     </span>
                     <span
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                        song.correct ? 'bg-green-500' : 'bg-red-500'
-                      }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${song.correct ? 'bg-green-500' : 'bg-red-500'
+                        }`}
                     >
                       {song.correct ? '✓' : '✗'}
                     </span>
@@ -167,22 +172,33 @@ const EndScreen = () => {
         <div className="flex flex-col h-full">
           {/* Header with Tabs */}
           <div className="flex-shrink-0 px-6 pt-8 pb-4">
-            <h1 className="text-3xl font-bold mb-4 text-center">Game Complete</h1>
+            <h1 className="text-3xl font-bold mb-4 text-center">
+              {isComplete ? 'Game Complete!' : 'Game Ended'}
+            </h1>
 
-            <div className="border-b border-white/10 mb-4 flex justify-center">
-              <div className="inline-block text-sm text-center mb-2 bg-white text-black rounded-full px-4 py-1">
-                First Place!
+            {isComplete && (
+              <div className="border-b border-white/10 mb-4 flex justify-center">
+                <div className="inline-block text-sm text-center mb-2 bg-white text-black rounded-full px-4 py-1">
+                  First Place!
+                </div>
               </div>
-            </div>
+            )}
+
+            {!isComplete && (
+              <div className="border-b border-white/10 mb-4 flex justify-center">
+                <div className="inline-block text-sm text-center mb-2 bg-teal/20 text-white border border-teal/30 rounded-full px-4 py-1">
+                  Completed {currentRound + 1} of {rounds} rounds
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-center space-x-1 flex-wrap gap-y-2">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${
-                    activeTab === tab.id ? '' : 'hover:text-white/60'
-                  } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
+                  className={`${activeTab === tab.id ? '' : 'hover:text-white/60'
+                    } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
                   style={{
                     WebkitTapHighlightColor: 'transparent',
                   }}
@@ -229,6 +245,56 @@ const EndScreen = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Early Quit Modal */}
+      {showEarlyQuitModal && !isComplete && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-darkblue/95 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full shadow-2xl border border-teal/30"
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            transition={{ type: 'spring', duration: 0.5 }}
+          >
+            {/* Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-teal/20 flex items-center justify-center">
+                <span className="text-white text-4xl">☹</span>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-center text-white mb-3">
+              Game Ended Early
+            </h2>
+
+            {/* Message */}
+            <p className="text-center text-white/90 mb-2">
+              You completed <span className="font-bold text-teal">{currentRound + 1}</span> of{' '}
+              <span className="font-bold text-teal">{rounds}</span> rounds.
+            </p>
+            <p className="text-center text-grayblue text-sm mb-6">
+              These are your stats from the rounds you completed.
+            </p>
+
+            {/* Okay Button */}
+            <motion.button
+              onClick={() => setShowEarlyQuitModal(false)}
+              className="w-full px-6 py-3 bg-teal hover:bg-teal/80 text-white rounded-xl font-bold transition-colors shadow-lg"
+              style={{ boxShadow: '0 0 20px rgba(15, 193, 233, 0.3)' }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Okay
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };

@@ -32,6 +32,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/settings" element={<Settings />} />
 
           {/* Protected */}
           <Route
@@ -47,14 +48,6 @@ export default function App() {
             element={
               <RequireAuth>
                 <UserProfile />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <RequireAuth>
-                <Settings />
               </RequireAuth>
             }
           />
