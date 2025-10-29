@@ -118,6 +118,13 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     localStorage.setItem('sb_volume', String(volume));
   }, [volume]);
 
+
+  useEffect(() => {
+    console.log('GameScreen mounted');
+    console.log('Session ID:', sessionId);
+    console.log('Current round:', current);
+  }, [sessionId, current]);
+
   const shouldReduceMotion = useReducedMotion();
   const howl = useHowl(current?.audioUrl, true);
 
@@ -186,7 +193,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       startedOnceRef.current = true;
       try {
         await markRoundStarted();
-      } catch {}
+      } catch { }
     }
 
     setIsPlaying(true);
@@ -250,17 +257,17 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
       try {
         (srcNode as any).connect(analyser);
-      } catch {}
+      } catch { }
       try {
         analyser.connect(ctx.destination);
-      } catch {}
+      } catch { }
 
       const data = new Uint8Array(analyser.frequencyBinCount);
       analyserRef.current = analyser;
       dataArrayRef.current = data;
 
       drawBars();
-    } catch {}
+    } catch { }
   }
 
   function teardownAnalyser() {
@@ -359,6 +366,12 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     await finish();
 
     navigate('/endscreen');
+  const handleLogout = async () => {
+    await logout().catch(() => { });
+    try {
+      localStorage.removeItem('token');
+    } catch { }
+    navigate('/welcome');
   };
 
   // merged list for Settings modal (self + others)
@@ -745,24 +758,166 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
             ) : (
               <>
                 {/* SOLO GAME (your original card) */}
-                {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
-                  ...
+                  <div className="flex-1 flex justify-center">
+                    <div
+                      className="flex flex-col items-center rounded-xl w-44 px-6 py-5"
+                      style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
+                    >
+                      <span className="text-sm font-bold text-center">Score</span>
+                      <span className="text-2xl font-bold text-center">{score}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col items-center justify-center relative">
+                    <h1 className="text-2xl font-bold text-center">Classic</h1>
+
+                    <div className="mt-2 relative">
+                      <button
+                        type="button"
+                        onClick={() => setModeOpen(o => !o)}
+                        onBlur={() => setTimeout(() => setModeOpen(false), 150)}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm tracking-wide"
+                        style={{
+                          borderColor: COLORS.teal,
+                          backgroundColor: 'rgba(20, 61, 77, 0.4)',
+                          color: COLORS.grayblue,
+                        }}
+                        aria-haspopup="listbox"
+                        aria-expanded={modeOpen}
+                      >
+                        <span
+                          className="inline-block rounded-full"
+                          style={{ width: 8, height: 8, backgroundColor: COLORS.teal }}
+                        />
+                        Classic Mode
+                        <svg width="14" height="14" viewBox="0 0 24 24" className="opacity-80">
+                          <path fill="currentColor" d="M7 10l5 5 5-5z" />
+                        </svg>
+                      </button>
+
+                      {modeOpen && (
+                        <div
+                          className="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl border shadow-lg overflow-hidden z-20"
+                          role="listbox"
+                          style={{
+                            backgroundColor: COLORS.darkestblue,
+                            borderColor: 'rgba(255,255,255,0.08)',
+                          }}
+                        >
+                          <button
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
+                            onMouseDown={e => e.preventDefault()}
+                            onClick={() => navigate('/gamescreen')}
+                          >
+                            Classic Mode
+                          </button>
+                          <button
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-white/10"
+                            onMouseDown={e => e.preventDefault()}
+                            onClick={() => navigate('/inference')}
+                          >
+                            Inference Mode
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex justify-center">
+                    <div
+                      className="flex flex-col items-center rounded-xl w-44 px-6 py-5"
+                      style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
+                    >
+                      <span className="text-sm font-bold text-center">Streak</span>
+                      <span className="text-2xl font-bold text-center">{streak}</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Disc + needle control */}
+                {/* Disc + Needle control */}
                 <div className="flex items-center justify-center w-full px-4 sm:px-6 mt-2 mb-4">
-                  ...
-                </div>
-
-                {/* Status / visualizer */}
-                <div className="flex items-center justify-center w-full rounded-lg px-4 sm:px-6">
-                  ...
+                  <div className="relative w-28 h-28">
+                    <motion.img
+                      src={discdb}
+                      alt="Vinyl control"
+                      className="w-28 h-28 select-none cursor-pointer"
+                      draggable={false}
+                      onDragStart={e => e.preventDefault()}
+                      initial={{ rotate: 0 }}
+                      animate={shouldSpin ? { rotate: 360 } : { rotate: 0 }}
+                      transition={discTransition}
+                      whileHover={!shouldReduceMotion ? { scale: 1.03 } : undefined}
+                      whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
+                      onClick={onDiscClick}
+                      style={{
+                        willChange: 'transform',
+                        filter: TEAL_TINT_FILTER,
+                        boxShadow: '0 0 20px rgba(15, 193, 233, 0.35)',
+                        borderRadius: '50%',
+                      }}
+                    />
+                    <motion.img
+                      src={needledb}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute w-16 h-16 z-10 select-none pointer-events-none"
+                      style={{
+                        top: '-6%',
+                        right: '14%',
+                        transformOrigin: '85% 20%',
+                        willChange: 'transform',
+                        filter: TEAL_TINT_FILTER,
+                      }}
+                      initial={{ y: 0, rotate: -2 }}
+                      animate={{
+                        y: shouldReduceMotion ? 0 : [0, -1, 0],
+                        rotate: shouldReduceMotion ? -2 : [-2, -3, -2],
+                      }}
+                      transition={needleTransition}
+                    />
+                  </div>
                 </div>
 
                 {/* Guess input */}
                 <form onSubmit={onSubmit} className="relative mb-6">
-                  ...
+                  <div className="relative bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-cyan-400/20 p-[2px] rounded-2xl">
+                    <div className="flex bg-darkblue/90 rounded-2xl overflow-hidden backdrop-blur-sm">
+                      <input
+                        type="text"
+                        value={guess}
+                        onChange={e => setGuess(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && guess.trim()) onSubmit(e as any);
+                        }}
+                        placeholder={
+                          concluded ? 'Round concluded' : ' Enter your answer here'
+                        }
+                        className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
+                        disabled={disable}
+                        autoFocus
+                      />
+
+                      <motion.button
+                        type="submit"
+                        disabled={disable || !guess.trim()}
+                        className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${disable || !guess.trim()
+                          ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                          : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                          }`}
+                        whileHover={
+                          !disable && !!guess.trim() ? { scale: 1.02 } : {}
+                        }
+                        whileTap={
+                          !disable && !!guess.trim() ? { scale: 0.98 } : {}
+                        }
+                      >
+                        <span className="relative z-10 flex items-center gap-2">Submit</span>
+                      </motion.button>
+                    </div>
+                  </div>
                 </form>
 
                 {/* Guess history */}
@@ -770,157 +925,212 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                   className="rounded-2xl p-5 max-h-48 flex-grow overflow-y-auto pr-2"
                   style={{ backgroundColor: COLORS.darkestblue }}
                 >
-                  ...
+                  <h2 className="text-lg font-semibold mb-2">Your Guesses:</h2>
+                  <ul className="space-y-2 overflow-y-auto">
+                    {guessHistory.map(g => (
+                      <li key={g.guessNum} className="flex justify-between">
+                        <span>
+                          Attempt {g.guessNum}: {g.userGuess}
+                        </span>
+                        <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
+                          {g.isCorrect
+                            ? 'Correct'
+                            : `Incorrect (${g.timeTakenSec}s)`}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {typeof attemptsLeft === 'number' && (
+                    <p className="mt-3 text-sm opacity-80">
+                      Attempts left: {attemptsLeft}
+                    </p>
+                  )}
                 </div>
+
+
               </>
             )}
-            {/*}
-          )}
-          */}
           </>
         </motion.div>
       </div>
 
-      {/* SETTINGS MODAL */}
-      {settingsOpen && (
-        <motion.div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setSettingsOpen(false)}
-        >
-          <motion.div
-            className="relative w-full max-w-3xl bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-6 sm:p-8 text-white"
-            style={{ backgroundColor: 'rgba(39,77,91,0.9)' }}
-            initial={{ y: 20, scale: 0.98, opacity: 0 }}
-            animate={{ y: 0, scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Close X */}
-            <button
-              type="button"
-              onClick={() => setSettingsOpen(false)}
-              aria-label="Close"
-              className="absolute right-4 top-4 rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white text-xl"
+      {/* Status / visualizer */}
+      <div className="flex items-center justify-center w-full rounded-lg px-4 sm:px-6">
+        {isPlaying ? (
+          <div className="flex flex-col items-center py-2 mb-2 w-full">
+            <canvas
+              ref={canvasRef}
+              width={800}
+              height={80}
+              className="w-full h-full mb-3"
+              style={{ imageRendering: 'pixelated' }}
+            />
+            <motion.div
+              className="text-sm"
+              style={{ color: COLORS.grayblue }}
+              animate={{ opacity: [1, 0.5, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
             >
-              ×
-            </button>
+              now playing… (click the record to pause)
+            </motion.div>
+          </div>
+        ) : (
+          <div className="text-center mb-2" style={{ color: COLORS.grayblue }}>
+            {isFinished
+              ? replayCount < 1
+                ? 'Snippet Finished — Click the Record to Replay'
+                : 'No more replays for this round'
+              : ready
+                ? 'Ready — Click the Record to Play'
+                : 'Loading…'}
+          </div>
+        )}
+      </div>
 
-            {/* Header */}
-            <div className="mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold">Game Settings</h2>
-              <p className="text-sm mt-1" style={{ color: COLORS.grayblue }}>
-                Adjust volume, manage your session, and see who’s playing.
-              </p>
-            </div>
 
-            {/* Content grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Players */}
-              <section
-                className="lg:col-span-2 rounded-2xl p-5"
-                style={{
-                  backgroundColor: 'rgba(20, 61, 77, 0.65)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}
+
+      {/* SETTINGS MODAL */}
+      {
+        settingsOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSettingsOpen(false)}
+          >
+            <motion.div
+              className="relative w-full max-w-3xl bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-6 sm:p-8 text-white"
+              style={{ backgroundColor: 'rgba(39,77,91,0.9)' }}
+              initial={{ y: 20, scale: 0.98, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Close X */}
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(false)}
+                aria-label="Close"
+                className="absolute right-4 top-4 rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white text-xl"
               >
-                <header className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg sm:text-xl font-semibold">Players</h3>
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full border"
-                    style={{
-                      borderColor: COLORS.teal,
-                      color: COLORS.grayblue,
-                      backgroundColor: 'rgba(20, 61, 77, 0.35)',
-                    }}
-                  >
-                    {settingsPlayers.length} {settingsPlayers.length === 1 ? 'player' : 'players'}
-                  </span>
-                </header>
+                ×
+              </button>
 
-                <ul className="grid grid-cols-1 gap-3">
-                  {settingsPlayers.map(p => (
-                    <li
-                      key={p.id}
-                      className="w-full flex items-center gap-4 p-4 rounded-xl"
-                      style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+              {/* Header */}
+              <div className="mb-6">
+                <h2 className="text-2xl sm:text-3xl font-bold">Game Settings</h2>
+                <p className="text-sm mt-1" style={{ color: COLORS.grayblue }}>
+                  Adjust volume, manage your session, and see who’s playing.
+                </p>
+              </div>
+
+              {/* Content grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Players */}
+                <section
+                  className="lg:col-span-2 rounded-2xl p-5"
+                  style={{
+                    backgroundColor: 'rgba(20, 61, 77, 0.65)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}
+                >
+                  <header className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg sm:text-xl font-semibold">Players</h3>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full border"
+                      style={{
+                        borderColor: COLORS.teal,
+                        color: COLORS.grayblue,
+                        backgroundColor: 'rgba(20, 61, 77, 0.35)',
+                      }}
                     >
-                      <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
-                        {p.avatarUrl ? (
-                          <img
-                            src={p.avatarUrl}
-                            alt={p.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-sm font-bold">
-                            {p.name?.[0]?.toUpperCase() ?? 'P'}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div
-                          className="font-semibold truncate"
-                          style={{ color: p.id === 'self' ? COLORS.teal : undefined }}
-                        >
-                          {p.name || 'Player'}
-                        </div>
-                        <div className="text-xs" style={{ color: COLORS.grayblue }}>
-                          {p.id === 'self' ? 'You' : 'Ready'}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+                      {settingsPlayers.length} {settingsPlayers.length === 1 ? 'player' : 'players'}
+                    </span>
+                  </header>
 
-              {/* Controls */}
-              <section
-                className="rounded-2xl p-5 flex flex-col gap-6"
-                style={{
-                  backgroundColor: 'rgba(20, 61, 77, 0.65)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}
-              >
-                {/* Volume */}
-                <div>
-                  <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm" style={{ color: COLORS.grayblue }}>
-                      0
-                    </span>
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      value={volume}
-                      onChange={e => setVolume(Number(e.target.value))}
-                      className="flex-1 accent-cyan-400"
-                      aria-label="Master volume"
-                    />
-                    <span className="text-sm w-10 text-right" style={{ color: COLORS.grayblue }}>
-                      {volume}
-                    </span>
+                  <ul className="grid grid-cols-1 gap-3">
+                    {settingsPlayers.map(p => (
+                      <li
+                        key={p.id}
+                        className="w-full flex items-center gap-4 p-4 rounded-xl"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+                      >
+                        <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
+                          {p.avatarUrl ? (
+                            <img
+                              src={p.avatarUrl}
+                              alt={p.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm font-bold">
+                              {p.name?.[0]?.toUpperCase() ?? 'P'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div
+                            className="font-semibold truncate"
+                            style={{ color: p.id === 'self' ? COLORS.teal : undefined }}
+                          >
+                            {p.name || 'Player'}
+                          </div>
+                          <div className="text-xs" style={{ color: COLORS.grayblue }}>
+                            {p.id === 'self' ? 'You' : 'Ready'}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                {/* Controls */}
+                <section
+                  className="rounded-2xl p-5 flex flex-col gap-6"
+                  style={{
+                    backgroundColor: 'rgba(20, 61, 77, 0.65)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}
+                >
+                  {/* Volume */}
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm" style={{ color: COLORS.grayblue }}>
+                        0
+                      </span>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={volume}
+                        onChange={e => setVolume(Number(e.target.value))}
+                        className="flex-1 accent-cyan-400"
+                        aria-label="Master volume"
+                      />
+                      <span className="text-sm w-10 text-right" style={{ color: COLORS.grayblue }}>
+                        {volume}
+                      </span>
+                    </div>
+                    <p className="text-xs mt-2" style={{ color: COLORS.grayblue }}>
+                      Controls the game’s master volume.
+                    </p>
                   </div>
-                  <p className="text-xs mt-2" style={{ color: COLORS.grayblue }}>
-                    Controls the game’s master volume.
-                  </p>
-                </div>
 
-                {/* Back / Logout */}
-                <div className="flex flex-col gap-3">
-                  <motion.button
-                    type="button"
-                    onClick={() => setSettingsOpen(false)}
-                    className="w-full px-4 py-2 rounded-xl font-semibold"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Back to Game
-                  </motion.button>
+                  {/* Back / Logout */}
+                  <div className="flex flex-col gap-3">
+                    <motion.button
+                      type="button"
+                      onClick={() => setSettingsOpen(false)}
+                      className="w-full px-4 py-2 rounded-xl font-semibold"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Back to Game
+                    </motion.button>
 
                   <motion.button
                     type="button"

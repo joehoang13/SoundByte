@@ -29,11 +29,6 @@ const ReadyScreen = () => {
   } | null;
 
   const handleStartGame = () => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
     setIsStarting(true);
     setCountdown(3);
   };
@@ -53,8 +48,17 @@ const ReadyScreen = () => {
     navigate('/');
   };
 
+  // Redirect if not authenticated
   useEffect(() => {
-    if (!isStarting) return;
+    if (isStarting && !isAuthenticated) {
+      setTimeout(() => navigate('/login'), 0);
+    }
+  }, [isStarting, isAuthenticated, navigate]);
+
+
+  // Countdown and game start
+  useEffect(() => {
+    if (!isStarting || !isAuthenticated) return;
 
     const countdownInterval = setInterval(() => {
       setCountdown(prev => {
@@ -68,7 +72,8 @@ const ReadyScreen = () => {
     }, 1000);
 
     return () => clearInterval(countdownInterval);
-  }, [isStarting, countdown, navigate]);
+  }, [isStarting, isAuthenticated, navigate]);
+
 
   return (
     <>
@@ -169,11 +174,10 @@ const ReadyScreen = () => {
             <motion.button
               onClick={handleStartGame}
               disabled={isStarting}
-              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${
-                isStarting
-                  ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
-                  : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
-              }`}
+              className={`flex-1 px-8 py-4 font-bold rounded-xl transition-all duration-300 relative overflow-hidden ${isStarting
+                ? 'bg-gray-600/50 cursor-not-allowed text-gray-400'
+                : 'bg-cyan-500 hover:from-cyan-400 text-white shadow-lg hover:shadow-cyan-500/25'
+                }`}
               whileHover={!isStarting ? { scale: 1.02 } : {}}
               whileTap={!isStarting ? { scale: 0.98 } : {}}
             >
