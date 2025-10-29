@@ -27,7 +27,7 @@ const Landing = () => {
     navigate('/dashboard');
   };
 
-  const showSettings = () => navigate('/ready');
+  const showSettings = () => navigate('/settings');
 
   return (
     <>

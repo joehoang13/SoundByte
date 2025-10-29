@@ -1,9 +1,15 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../stores/auth';
 import Background from '../components/Background';
 import NavBar from '../components/NavBar';
 import { useSettingsStore } from '../stores/SettingsStore';
 
 const Settings = () => {
+  const navigate = useNavigate();
+  const { user, token } = useAuth();
+  const isLoggedIn = !!(user && token);
+
   const {
     masterVolume,
     musicVolume,
@@ -21,13 +27,35 @@ const Settings = () => {
     // add a confirmation message
   };
 
+  const handleReturnToLanding = () => {
+    navigate('/');
+  };
+
   return (
     <div className="h-screen overflow-hidden font-montserrat p-4">
       <Background />
-      <NavBar />
+      {isLoggedIn && <NavBar />}
+
+      {!isLoggedIn && (
+        <button
+          onClick={handleReturnToLanding}
+          className="group px-5 py-3 bg-darkblue/90 backdrop-blur-sm text-white rounded-xl font-bold hover:bg-teal transition-all duration-300 shadow-2xl border-2 border-teal/50 hover:border-teal flex items-center gap-3 hover:scale-105 hover:shadow-teal/50"
+          style={{
+            boxShadow: '0 0 20px rgba(15, 193, 233, 0.3)',
+          }}
+        >
+          ← Return
+        </button>
+      )}
 
       {/* Main container */}
-      <div className="flex items-center justify-center min-h-[calc(100vh-120px)] pt-6">
+      <div
+        className={
+          isLoggedIn
+            ? 'flex items-center justify-center min-h-[calc(100vh-120px)] pt-6' // ← if logged in
+            : 'flex items-start justify-center mt-18 mb-8' // ← if NOT logged in
+        }
+      >
         {/* Settings Sections */}
         <div className="max-w-3xl w-full space-y-4">
           {/* AUDIO SETTINGS SECTION */}
