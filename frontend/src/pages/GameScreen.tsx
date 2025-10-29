@@ -741,7 +741,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
             */}
 
             {/* SOLO GAME (your original card) */}
-            {multiplayerQuestions ? (
+            {multiplayerQuestions.length > 0 ? (
               <MultiplayerGameHandler userId={userId ?? ''} onFinish={() => navigate('/end')} />
             ) : (
               <>

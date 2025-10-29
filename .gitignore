@@ -27,6 +27,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+#Redis
+dump.rdb
+
 # Local tooling and snapshot reports — do not commit
 /tools/
 /FRONTEND_SNAPSHOT.md
