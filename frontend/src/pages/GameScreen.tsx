@@ -357,7 +357,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
   const handleQuitGame = async () => {
     // finish the game session to save progress
     await finish();
-    
+
     navigate('/endscreen');
   };
 

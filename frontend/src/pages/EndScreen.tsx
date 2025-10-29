@@ -104,8 +104,9 @@ const EndScreen = () => {
             ].map(player => (
               <div
                 key={player.rank}
-                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${player.highlight ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
-                  }`}
+                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
+                  player.highlight ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{player.rank}</span>
@@ -139,8 +140,9 @@ const EndScreen = () => {
                       {song.correct && song.timeMs ? `${(song.timeMs / 1000).toFixed(1)}s` : '—'}
                     </span>
                     <span
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${song.correct ? 'bg-green-500' : 'bg-red-500'
-                        }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                        song.correct ? 'bg-green-500' : 'bg-red-500'
+                      }`}
                     >
                       {song.correct ? '✓' : '✗'}
                     </span>
@@ -197,8 +199,9 @@ const EndScreen = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${activeTab === tab.id ? '' : 'hover:text-white/60'
-                    } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
+                  className={`${
+                    activeTab === tab.id ? '' : 'hover:text-white/60'
+                  } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
                   style={{
                     WebkitTapHighlightColor: 'transparent',
                   }}
@@ -269,9 +272,7 @@ const EndScreen = () => {
             </div>
 
             {/* Title */}
-            <h2 className="text-2xl font-bold text-center text-white mb-3">
-              Game Ended Early
-            </h2>
+            <h2 className="text-2xl font-bold text-center text-white mb-3">Game Ended Early</h2>
 
             {/* Message */}
             <p className="text-center text-white/90 mb-2">
