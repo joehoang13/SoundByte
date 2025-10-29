@@ -118,7 +118,6 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     localStorage.setItem('sb_volume', String(volume));
   }, [volume]);
 
-
   useEffect(() => {
     console.log('GameScreen mounted');
     console.log('Session ID:', sessionId);
@@ -193,7 +192,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
       startedOnceRef.current = true;
       try {
         await markRoundStarted();
-      } catch { }
+      } catch {}
     }
 
     setIsPlaying(true);
@@ -257,17 +256,17 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
       try {
         (srcNode as any).connect(analyser);
-      } catch { }
+      } catch {}
       try {
         analyser.connect(ctx.destination);
-      } catch { }
+      } catch {}
 
       const data = new Uint8Array(analyser.frequencyBinCount);
       analyserRef.current = analyser;
       dataArrayRef.current = data;
 
       drawBars();
-    } catch { }
+    } catch {}
   }
 
   function teardownAnalyser() {
@@ -367,10 +366,10 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
 
     navigate('/endscreen');
   const handleLogout = async () => {
-    await logout().catch(() => { });
+    await logout().catch(() => {});
     try {
       localStorage.removeItem('token');
-    } catch { }
+    } catch {}
     navigate('/welcome');
   };
 
@@ -892,9 +891,7 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                         onKeyDown={e => {
                           if (e.key === 'Enter' && guess.trim()) onSubmit(e as any);
                         }}
-                        placeholder={
-                          concluded ? 'Round concluded' : ' Enter your answer here'
-                        }
+                        placeholder={concluded ? 'Round concluded' : ' Enter your answer here'}
                         className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
                         disabled={disable}
                         autoFocus
@@ -903,16 +900,13 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                       <motion.button
                         type="submit"
                         disabled={disable || !guess.trim()}
-                        className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${disable || !guess.trim()
-                          ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                          : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                          }`}
-                        whileHover={
-                          !disable && !!guess.trim() ? { scale: 1.02 } : {}
-                        }
-                        whileTap={
-                          !disable && !!guess.trim() ? { scale: 0.98 } : {}
-                        }
+                        className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                          disable || !guess.trim()
+                            ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                            : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                        }`}
+                        whileHover={!disable && !!guess.trim() ? { scale: 1.02 } : {}}
+                        whileTap={!disable && !!guess.trim() ? { scale: 0.98 } : {}}
                       >
                         <span className="relative z-10 flex items-center gap-2">Submit</span>
                       </motion.button>
@@ -933,22 +927,16 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
                           Attempt {g.guessNum}: {g.userGuess}
                         </span>
                         <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
-                          {g.isCorrect
-                            ? 'Correct'
-                            : `Incorrect (${g.timeTakenSec}s)`}
+                          {g.isCorrect ? 'Correct' : `Incorrect (${g.timeTakenSec}s)`}
                         </span>
                       </li>
                     ))}
                   </ul>
 
                   {typeof attemptsLeft === 'number' && (
-                    <p className="mt-3 text-sm opacity-80">
-                      Attempts left: {attemptsLeft}
-                    </p>
+                    <p className="mt-3 text-sm opacity-80">Attempts left: {attemptsLeft}</p>
                   )}
                 </div>
-
-
               </>
             )}
           </>
@@ -988,149 +976,146 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
         )}
       </div>
 
-
-
       {/* SETTINGS MODAL */}
-      {
-        settingsOpen && (
+      {settingsOpen && (
+        <motion.div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setSettingsOpen(false)}
+        >
           <motion.div
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSettingsOpen(false)}
+            className="relative w-full max-w-3xl bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-6 sm:p-8 text-white"
+            style={{ backgroundColor: 'rgba(39,77,91,0.9)' }}
+            initial={{ y: 20, scale: 0.98, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            onClick={e => e.stopPropagation()}
           >
-            <motion.div
-              className="relative w-full max-w-3xl bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-6 sm:p-8 text-white"
-              style={{ backgroundColor: 'rgba(39,77,91,0.9)' }}
-              initial={{ y: 20, scale: 0.98, opacity: 0 }}
-              animate={{ y: 0, scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              onClick={e => e.stopPropagation()}
+            {/* Close X */}
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white text-xl"
             >
-              {/* Close X */}
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(false)}
-                aria-label="Close"
-                className="absolute right-4 top-4 rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white text-xl"
+              ×
+            </button>
+
+            {/* Header */}
+            <div className="mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold">Game Settings</h2>
+              <p className="text-sm mt-1" style={{ color: COLORS.grayblue }}>
+                Adjust volume, manage your session, and see who’s playing.
+              </p>
+            </div>
+
+            {/* Content grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Players */}
+              <section
+                className="lg:col-span-2 rounded-2xl p-5"
+                style={{
+                  backgroundColor: 'rgba(20, 61, 77, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
               >
-                ×
-              </button>
+                <header className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold">Players</h3>
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full border"
+                    style={{
+                      borderColor: COLORS.teal,
+                      color: COLORS.grayblue,
+                      backgroundColor: 'rgba(20, 61, 77, 0.35)',
+                    }}
+                  >
+                    {settingsPlayers.length} {settingsPlayers.length === 1 ? 'player' : 'players'}
+                  </span>
+                </header>
 
-              {/* Header */}
-              <div className="mb-6">
-                <h2 className="text-2xl sm:text-3xl font-bold">Game Settings</h2>
-                <p className="text-sm mt-1" style={{ color: COLORS.grayblue }}>
-                  Adjust volume, manage your session, and see who’s playing.
-                </p>
-              </div>
-
-              {/* Content grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Players */}
-                <section
-                  className="lg:col-span-2 rounded-2xl p-5"
-                  style={{
-                    backgroundColor: 'rgba(20, 61, 77, 0.65)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                  }}
-                >
-                  <header className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg sm:text-xl font-semibold">Players</h3>
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full border"
-                      style={{
-                        borderColor: COLORS.teal,
-                        color: COLORS.grayblue,
-                        backgroundColor: 'rgba(20, 61, 77, 0.35)',
-                      }}
+                <ul className="grid grid-cols-1 gap-3">
+                  {settingsPlayers.map(p => (
+                    <li
+                      key={p.id}
+                      className="w-full flex items-center gap-4 p-4 rounded-xl"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
                     >
-                      {settingsPlayers.length} {settingsPlayers.length === 1 ? 'player' : 'players'}
+                      <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
+                        {p.avatarUrl ? (
+                          <img
+                            src={p.avatarUrl}
+                            alt={p.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-sm font-bold">
+                            {p.name?.[0]?.toUpperCase() ?? 'P'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className="font-semibold truncate"
+                          style={{ color: p.id === 'self' ? COLORS.teal : undefined }}
+                        >
+                          {p.name || 'Player'}
+                        </div>
+                        <div className="text-xs" style={{ color: COLORS.grayblue }}>
+                          {p.id === 'self' ? 'You' : 'Ready'}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              {/* Controls */}
+              <section
+                className="rounded-2xl p-5 flex flex-col gap-6"
+                style={{
+                  backgroundColor: 'rgba(20, 61, 77, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
+                {/* Volume */}
+                <div>
+                  <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm" style={{ color: COLORS.grayblue }}>
+                      0
                     </span>
-                  </header>
-
-                  <ul className="grid grid-cols-1 gap-3">
-                    {settingsPlayers.map(p => (
-                      <li
-                        key={p.id}
-                        className="w-full flex items-center gap-4 p-4 rounded-xl"
-                        style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
-                      >
-                        <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
-                          {p.avatarUrl ? (
-                            <img
-                              src={p.avatarUrl}
-                              alt={p.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-sm font-bold">
-                              {p.name?.[0]?.toUpperCase() ?? 'P'}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div
-                            className="font-semibold truncate"
-                            style={{ color: p.id === 'self' ? COLORS.teal : undefined }}
-                          >
-                            {p.name || 'Player'}
-                          </div>
-                          <div className="text-xs" style={{ color: COLORS.grayblue }}>
-                            {p.id === 'self' ? 'You' : 'Ready'}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-
-                {/* Controls */}
-                <section
-                  className="rounded-2xl p-5 flex flex-col gap-6"
-                  style={{
-                    backgroundColor: 'rgba(20, 61, 77, 0.65)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                  }}
-                >
-                  {/* Volume */}
-                  <div>
-                    <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm" style={{ color: COLORS.grayblue }}>
-                        0
-                      </span>
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        value={volume}
-                        onChange={e => setVolume(Number(e.target.value))}
-                        className="flex-1 accent-cyan-400"
-                        aria-label="Master volume"
-                      />
-                      <span className="text-sm w-10 text-right" style={{ color: COLORS.grayblue }}>
-                        {volume}
-                      </span>
-                    </div>
-                    <p className="text-xs mt-2" style={{ color: COLORS.grayblue }}>
-                      Controls the game’s master volume.
-                    </p>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={volume}
+                      onChange={e => setVolume(Number(e.target.value))}
+                      className="flex-1 accent-cyan-400"
+                      aria-label="Master volume"
+                    />
+                    <span className="text-sm w-10 text-right" style={{ color: COLORS.grayblue }}>
+                      {volume}
+                    </span>
                   </div>
+                  <p className="text-xs mt-2" style={{ color: COLORS.grayblue }}>
+                    Controls the game’s master volume.
+                  </p>
+                </div>
 
-                  {/* Back / Logout */}
-                  <div className="flex flex-col gap-3">
-                    <motion.button
-                      type="button"
-                      onClick={() => setSettingsOpen(false)}
-                      className="w-full px-4 py-2 rounded-xl font-semibold"
-                      style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Back to Game
-                    </motion.button>
+                {/* Back / Logout */}
+                <div className="flex flex-col gap-3">
+                  <motion.button
+                    type="button"
+                    onClick={() => setSettingsOpen(false)}
+                    className="w-full px-4 py-2 rounded-xl font-semibold"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Back to Game
+                  </motion.button>
 
                   <motion.button
                     type="button"
