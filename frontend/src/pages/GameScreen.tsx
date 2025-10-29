@@ -1139,5 +1139,5 @@ const GameScreen: React.FC<{ userId?: string }> = ({ userId }) => {
     </>
   );
 };
-
+}
 export default GameScreen;
