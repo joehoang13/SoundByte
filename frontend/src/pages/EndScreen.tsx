@@ -94,8 +94,9 @@ const EndScreen = () => {
         );
 
       case 'leaderboard':
-        return (leaderboard.length < 1 ? 
-          <h3>Nothing to see here! </h3> :  //Replace with actual thing
+        return leaderboard.length < 1 ? (
+          <h3>Nothing to see here! </h3> //Replace with actual thing
+        ) : (
           <div className="flex flex-col items-center w-full space-y-3">
             <h3 className="text-lg font-semibold mb-2">Top Players</h3>
             {/* Placeholder for leaderboard data */}
@@ -103,12 +104,16 @@ const EndScreen = () => {
               <div
                 key={index + 1}
                 className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
-                  player.name === user?.username ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
+                  player.name === user?.username
+                    ? 'bg-teal/20 border border-teal'
+                    : 'bg-darkestblue'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{index + 1}</span>
-                  <span className={player.name === user?.username ? 'font-semibold' : ''}>{player.name}</span>
+                  <span className={player.name === user?.username ? 'font-semibold' : ''}>
+                    {player.name}
+                  </span>
                 </div>
                 <span className="font-bold">{player.score}</span>
               </div>
@@ -237,7 +242,6 @@ const EndScreen = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                
                 reset();
                 navigate('/dashboard');
               }}

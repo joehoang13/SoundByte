@@ -266,9 +266,9 @@ export const useGameStore = create<GameState>()((set, get) => ({
   setCorrectAnswers: (n: number) => set({ correctAnswers: n }),
   setTimeBonus: (n: number) => set({ timeBonus: n }),
   setMultiplayerQuestions: (q: RoundMeta[]) => set({ multiplayerQuestions: q }),
-  setRoomCode: (c: string) => set({roomCode: c}),
-  setFastestTime: (n: number) => set({fastestTime: n}),
-  setLeaderboard: (l: Placing[]) => set({leaderboard: l}),
+  setRoomCode: (c: string) => set({ roomCode: c }),
+  setFastestTime: (n: number) => set({ fastestTime: n }),
+  setLeaderboard: (l: Placing[]) => set({ leaderboard: l }),
 }));
 
 export default useGameStore;

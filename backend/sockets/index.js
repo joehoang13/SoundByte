@@ -32,8 +32,7 @@ function setupSocket(server) {
 
         const room = await Room.leaveByCode({ code, userId });
         socketState.delete(socket.id);
-        
-        
+
         if (room) {
           io.to(code).emit('room:update', await room.toLobbySummary());
         } else {

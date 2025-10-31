@@ -85,7 +85,7 @@ const GroupLobby: React.FC = () => {
     if (!socket) return;
 
     const handleLeave = () => {
-      if (roomStatusRef.current === "lobby") {
+      if (roomStatusRef.current === 'lobby') {
         disconnect();
       }
     };
@@ -170,7 +170,7 @@ const GroupLobby: React.FC = () => {
   }, [role, roomId, socketStatus]);
 
   const handleStartGame = () => {
-    socket?.emit('startGame', { code: roomId, hostId: user?.id , players: lobbyPlayers});
+    socket?.emit('startGame', { code: roomId, hostId: user?.id, players: lobbyPlayers });
   };
 
   const navigateGame = () => {

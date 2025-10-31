@@ -188,7 +188,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
               finished: false,
             };
             return acc;
-          }, {} )
+          }, {})
         )
       );
       const summary = await room.toLobbySummary();
@@ -212,7 +212,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       scoresString = await redis.get(`room:${roomCode}:scores`);
       const scoresJSON = JSON.parse(scoresString);
-      
+
       const players = Object.values(scoresJSON);
       const finishedCount = players.filter(p => p.finished).length;
       const shouldEndGame = finishedCount >= players.length - 1;
@@ -224,19 +224,17 @@ function multiplayerRoomHandler(io, socket, socketState) {
           const entry = {
             name: user.username,
             score: scoresJSON[userId].score,
-          }
+          };
           leaderboard.push(entry);
         }
-        leaderboard.sort((a,b) => b.score - a.score); 
+        leaderboard.sort((a, b) => b.score - a.score);
         io.to(roomCode).emit('game:end', leaderboard);
-        cb?.({ allDone: true});
-      }
-      else {
+        cb?.({ allDone: true });
+      } else {
         scoresJSON[userId].finished = true;
-        await redis.set(`room:${roomCode}:scores`,JSON.stringify(scoresJSON));
-        cb?.({ allDone: false})
+        await redis.set(`room:${roomCode}:scores`, JSON.stringify(scoresJSON));
+        cb?.({ allDone: false });
       }
-      
     } catch (err) {
       console.error('endGame error:', err.message);
       cb?.({ ok: false, error: err.message });
@@ -325,7 +323,6 @@ function multiplayerRoomHandler(io, socket, socketState) {
       console.error('guess error:', err.message);
     }
   });
-
 }
 
 module.exports = { multiplayerRoomHandler };

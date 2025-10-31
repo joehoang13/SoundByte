@@ -63,8 +63,7 @@ const GameScreen: React.FC = () => {
   const audioRef = useRef<Howl | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  const TEAL_TINT_FILTER =
-    'brightness(1.1) sepia(0.4) hue-rotate(160deg) saturate(2)';
+  const TEAL_TINT_FILTER = 'brightness(1.1) sepia(0.4) hue-rotate(160deg) saturate(2)';
   const discTransition = {
     ease: 'linear',
     duration: snippetSize,
@@ -95,10 +94,13 @@ const GameScreen: React.FC = () => {
     setGuessStartTime(Date.now());
     setPlaybackCount(count => count + 1);
 
-    timerRef.current = window.setTimeout(() => {
-      audioRef.current?.stop();
-      setIsPlaying(false);
-    }, (snippetSize || 0) * 1000);
+    timerRef.current = window.setTimeout(
+      () => {
+        audioRef.current?.stop();
+        setIsPlaying(false);
+      },
+      (snippetSize || 0) * 1000
+    );
   };
 
   const onDiscClick = () => {
@@ -186,8 +188,9 @@ const GameScreen: React.FC = () => {
     navigate('/endscreen');
   };
 
-  return (
-    multiplayerQuestions.length > 0? <MultiplayerGameHandler user={user}/> :
+  return multiplayerQuestions.length > 0 ? (
+    <MultiplayerGameHandler user={user} />
+  ) : (
     <>
       {/* Username Badge */}
       {user && (
@@ -267,7 +270,12 @@ const GameScreen: React.FC = () => {
             aria-label="Open Settings"
             title="Settings"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
               <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor" />
               <path
                 d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z"
@@ -359,20 +367,47 @@ const GameScreen: React.FC = () => {
                       onSubmit(e as any);
                     }
                   }}
-                  placeholder={lastResult?.concluded ? 'Round concluded' : ' Enter your answer here'}
+                  placeholder={
+                    lastResult?.concluded ? 'Round concluded' : ' Enter your answer here'
+                  }
                   className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
-                  disabled={lastResult?.concluded || (attemptsLeft !== undefined && attemptsLeft <= 0)}
+                  disabled={
+                    lastResult?.concluded || (attemptsLeft !== undefined && attemptsLeft <= 0)
+                  }
                   autoFocus
                 />
                 <motion.button
                   type="submit"
-                  disabled={lastResult?.concluded || !guess.trim() || (attemptsLeft !== undefined && attemptsLeft <= 0)}
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${(lastResult?.concluded || !guess.trim() || (attemptsLeft !== undefined && attemptsLeft <= 0))
-                    ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
-                  whileHover={!(lastResult?.concluded || !guess.trim() || (attemptsLeft !== undefined && attemptsLeft <= 0)) ? { scale: 1.02 } : {}}
-                  whileTap={!(lastResult?.concluded || !guess.trim() || (attemptsLeft !== undefined && attemptsLeft <= 0)) ? { scale: 0.98 } : {}}
+                  disabled={
+                    lastResult?.concluded ||
+                    !guess.trim() ||
+                    (attemptsLeft !== undefined && attemptsLeft <= 0)
+                  }
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    lastResult?.concluded ||
+                    !guess.trim() ||
+                    (attemptsLeft !== undefined && attemptsLeft <= 0)
+                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                  }`}
+                  whileHover={
+                    !(
+                      lastResult?.concluded ||
+                      !guess.trim() ||
+                      (attemptsLeft !== undefined && attemptsLeft <= 0)
+                    )
+                      ? { scale: 1.02 }
+                      : {}
+                  }
+                  whileTap={
+                    !(
+                      lastResult?.concluded ||
+                      !guess.trim() ||
+                      (attemptsLeft !== undefined && attemptsLeft <= 0)
+                    )
+                      ? { scale: 0.98 }
+                      : {}
+                  }
                 >
                   <span className="relative z-10 flex items-center gap-2">Submit</span>
                 </motion.button>
@@ -381,12 +416,17 @@ const GameScreen: React.FC = () => {
           </form>
 
           {/* Guess History */}
-          <div className="rounded-2xl p-5 max-h-48 flex-grow overflow-y-auto pr-2" style={{ backgroundColor: COLORS.darkestblue }}>
+          <div
+            className="rounded-2xl p-5 max-h-48 flex-grow overflow-y-auto pr-2"
+            style={{ backgroundColor: COLORS.darkestblue }}
+          >
             <h2 className="text-lg font-semibold mb-2">Your Guesses:</h2>
             <ul className="space-y-2 overflow-y-auto">
               {guessHistory.map(g => (
                 <li key={g.guessNum} className="flex justify-between">
-                  <span>Attempt {g.guessNum}: {g.userGuess}</span>
+                  <span>
+                    Attempt {g.guessNum}: {g.userGuess}
+                  </span>
                   <span className={g.isCorrect ? 'text-green-400' : 'text-red-400'}>
                     {g.isCorrect ? 'Correct' : `Incorrect (${g.timeTakenSec}s)`}
                   </span>
@@ -397,7 +437,6 @@ const GameScreen: React.FC = () => {
               <p className="mt-3 text-sm opacity-80">Attempts left: {attemptsLeft}</p>
             )}
           </div>
-
         </motion.div>
       </div>
 
@@ -437,11 +476,16 @@ const GameScreen: React.FC = () => {
               {/* Volume & Controls Section */}
               <section
                 className="lg:col-span-2 rounded-2xl p-5"
-                style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)', border: '1px solid rgba(255,255,255,0.08)' }}
+                style={{
+                  backgroundColor: 'rgba(20, 61, 77, 0.65)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
               >
                 <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm" style={{ color: COLORS.grayblue }}>0</span>
+                  <span className="text-sm" style={{ color: COLORS.grayblue }}>
+                    0
+                  </span>
                   <input
                     type="range"
                     min={0}
@@ -451,7 +495,9 @@ const GameScreen: React.FC = () => {
                     className="flex-1 accent-cyan-400"
                     aria-label="Master volume"
                   />
-                  <span className="text-sm w-10 text-right" style={{ color: COLORS.grayblue }}>{volume}</span>
+                  <span className="text-sm w-10 text-right" style={{ color: COLORS.grayblue }}>
+                    {volume}
+                  </span>
                 </div>
                 <p className="text-xs mt-2" style={{ color: COLORS.grayblue }}>
                   Controls the game’s master volume.
@@ -473,7 +519,10 @@ const GameScreen: React.FC = () => {
                     type="button"
                     onClick={handleQuitGame}
                     className="w-full px-4 py-2 rounded-xl font-semibold"
-                    style={{ background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)', color: '#fff' }}
+                    style={{
+                      background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)',
+                      color: '#fff',
+                    }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
