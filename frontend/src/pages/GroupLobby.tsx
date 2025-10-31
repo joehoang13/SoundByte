@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useGameStore from '../stores/GameSessionStore';
@@ -42,7 +42,9 @@ const GroupLobby: React.FC = () => {
   // local players list (store may or may not have one)
   // @ts-ignore optional players in store
   const storePlayers: Player[] = useGameStore.getState?.().players ?? [];
+  const [roomStatus, setRoomStatus] = useState<'lobby' | 'in-game' | 'ended'>('lobby');
   const [showGamePrefs, setShowGamePrefs] = useState(false);
+  const roomStatusRef = useRef(roomStatus);
 
   const modalState = location.state as {
     fromModal?: boolean;
@@ -76,7 +78,17 @@ const GroupLobby: React.FC = () => {
   }, [connect]);
 
   useEffect(() => {
+    roomStatusRef.current = roomStatus;
+  }, [roomStatus]);
+
+  useEffect(() => {
     if (!socket) return;
+
+    const handleLeave = () => {
+      if (roomStatusRef.current === 'lobby') {
+        disconnect();
+      }
+    };
 
     socket.on('connect', () => {
       setSocketStatus('connected');
@@ -87,16 +99,21 @@ const GroupLobby: React.FC = () => {
       }
     });
 
-    socket.on('disconnect', () => setSocketStatus('disconnected'));
+    socket.on('disconnect', () => {
+      setSocketStatus('disconnected');
+      disconnect();
+    });
 
     // room created / joined / updates
     socket.on('room:created', (summary: LobbySummary) => {
       setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
+      setRoomStatus(summary.status);
     });
     socket.on('room:joined', (summary: LobbySummary) => {
       setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
+      setRoomStatus(summary.status);
     });
     socket.on('room:left', () => {
       setRoomId('');
@@ -104,21 +121,25 @@ const GroupLobby: React.FC = () => {
     });
     socket.on('room:update', (summary: LobbySummary) => {
       if (summary) setRoomId(summary.code);
+      useGameStore.getState().setRoomCode(summary.code);
       setLobbyPlayers(summary.players || []);
+      setRoomStatus(summary.status);
     });
     socket.on('game:start', (questions: string) => {
       useGameStore.getState().setMultiplayerQuestions(JSON.parse(questions).snippets);
+      setRoomStatus('in-game');
       navigateGame();
     });
 
     return () => {
-      disconnect();
+      handleLeave();
     };
   }, [socket, username]);
 
   const createRoom = () => {
     socket?.emit('createRoom', { hostId: user?.id, hostSocketId: socket.id });
   };
+
   const joinRoom = (code: string) => {
     if (!code.trim()) return;
     socket?.emit('joinRoom', {
@@ -149,7 +170,7 @@ const GroupLobby: React.FC = () => {
   }, [role, roomId, socketStatus]);
 
   const handleStartGame = () => {
-    socket?.emit('startGame', { code: roomId, hostId: user?.id });
+    socket?.emit('startGame', { code: roomId, hostId: user?.id, players: lobbyPlayers });
   };
 
   const navigateGame = () => {
@@ -263,7 +284,7 @@ const GroupLobby: React.FC = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={leaveRoom}
+                      onClick={handleBackToMenu}
                       className="px-3 py-2 rounded-xl border border-red-500 text-red-300 hover:bg-red-500/10 text-sm"
                     >
                       Leave

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import useGameStore from '../stores/GameSessionStore';
+import { useAuth } from '../stores/auth';
 
 const allTabs = [
   { id: 'overview', label: 'Overview', showInModes: ['classic', 'inference', 'multiplayer'] },
@@ -15,6 +16,7 @@ const allTabs = [
 
 const EndScreen = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const score = useGameStore(s => s.score);
   const correctAnswers = useGameStore(s => s.correctAnswers);
   const streak = useGameStore(s => s.streak);
@@ -26,6 +28,7 @@ const EndScreen = () => {
 
   const currentRound = useGameStore(s => s.currentRound);
   const rounds = useGameStore(s => s.rounds);
+  const leaderboard = useGameStore(s => s.leaderboard);
   const isComplete = currentRound + 1 >= rounds;
 
   const [showEarlyQuitModal, setShowEarlyQuitModal] = useState(!isComplete);
@@ -91,26 +94,26 @@ const EndScreen = () => {
         );
 
       case 'leaderboard':
-        return (
+        return leaderboard.length < 1 ? (
+          <h3>Nothing to see here! </h3> //Replace with actual thing
+        ) : (
           <div className="flex flex-col items-center w-full space-y-3">
             <h3 className="text-lg font-semibold mb-2">Top Players</h3>
             {/* Placeholder for leaderboard data */}
-            {[
-              { rank: 1, name: 'You', score: score, highlight: true },
-              { rank: 2, name: 'Player2', score: 8500 },
-              { rank: 3, name: 'Player3', score: 7200 },
-              { rank: 4, name: 'Player4', score: 6800 },
-              { rank: 5, name: 'Player5', score: 6100 },
-            ].map(player => (
+            {leaderboard.map((player, index) => (
               <div
-                key={player.rank}
+                key={index + 1}
                 className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
-                  player.highlight ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
+                  player.name === user?.username
+                    ? 'bg-teal/20 border border-teal'
+                    : 'bg-darkestblue'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold w-6">{player.rank}</span>
-                  <span className={player.highlight ? 'font-semibold' : ''}>{player.name}</span>
+                  <span className="text-lg font-bold w-6">{index + 1}</span>
+                  <span className={player.name === user?.username ? 'font-semibold' : ''}>
+                    {player.name}
+                  </span>
                 </div>
                 <span className="font-bold">{player.score}</span>
               </div>
