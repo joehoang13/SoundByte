@@ -1,6 +1,7 @@
 const { Server } = require('socket.io');
 const socketState = new Map();
 const { multiplayerRoomHandler } = require('./roomHandlers');
+const Room = require('../models/Room');
 
 function setupSocket(server) {
   const io = new Server(server, {
@@ -31,9 +32,10 @@ function setupSocket(server) {
 
         const room = await Room.leaveByCode({ code, userId });
         socketState.delete(socket.id);
-
+        
+        
         if (room) {
-          io.to(code).emit('room:update', room.toLobbySummary());
+          io.to(code).emit('room:update', await room.toLobbySummary());
         } else {
           io.to(code).emit('room:deleted');
         }

@@ -4,6 +4,11 @@ import type { ReactNode } from 'react';
 import { gsApi } from '../api/gs';
 import type { Difficulty, SnippetSize, GuessResp, FinishResp } from '../types/game';
 
+export interface Placing {
+  score: number;
+  name: string;
+}
+
 interface LastResult {
   correct: boolean;
   concluded: boolean;
@@ -52,6 +57,7 @@ interface GameState {
   loading: boolean;
   starting: boolean; // <— NEW: in-flight guard
   error?: string;
+  leaderboard: Placing[];
   setConfig: (
     p: Partial<Pick<GameState, 'mode' | 'difficulty' | 'snippetSize' | 'rounds'>>
   ) => void;
@@ -66,6 +72,9 @@ interface GameState {
   setCorrectAnswers: (n: number) => void;
   setTimeBonus: (n: number) => void;
   setMultiplayerQuestions: (q: RoundMeta[]) => void;
+  setRoomCode: (c: string) => void;
+  setFastestTime: (n: number) => void;
+  setLeaderboard: (l: Placing[]) => void;
 }
 
 export const useGameStore = create<GameState>()((set, get) => ({
@@ -90,6 +99,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
   starting: false,
   roomCode: null,
   multiplayerQuestions: [],
+  leaderboard: [],
   setTimeBonusTotal: (n: number) => set({ timeBonusTotal: n }),
 
   setConfig: p => set(s => ({ ...s, ...p })),
@@ -192,9 +202,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
     const { sessionId } = get();
     if (!sessionId) return;
     try {
-      console.log('🎯 Calling finish API...');
       const f = await gsApi.finish(sessionId);
-      console.log('📦 Finish response:', f);
 
       const songResults = f.answers.map(ans => ({
         snippetId: ans.snippetId,
@@ -228,6 +236,10 @@ export const useGameStore = create<GameState>()((set, get) => ({
 
   reset: () =>
     set({
+      mode: 'classic',
+      difficulty: 'easy',
+      snippetSize: 5,
+      rounds: 10,
       sessionId: undefined,
       currentRound: 0,
       current: undefined,
@@ -241,10 +253,12 @@ export const useGameStore = create<GameState>()((set, get) => ({
       attemptsLeft: undefined,
       lastResult: undefined,
       songResults: [],
-      error: undefined,
       loading: false,
       starting: false,
+      roomCode: null,
       multiplayerQuestions: [],
+      leaderboard: [],
+      error: undefined,
     }),
 
   setScore: (n: number) => set({ score: n }),
@@ -252,6 +266,9 @@ export const useGameStore = create<GameState>()((set, get) => ({
   setCorrectAnswers: (n: number) => set({ correctAnswers: n }),
   setTimeBonus: (n: number) => set({ timeBonus: n }),
   setMultiplayerQuestions: (q: RoundMeta[]) => set({ multiplayerQuestions: q }),
+  setRoomCode: (c: string) => set({roomCode: c}),
+  setFastestTime: (n: number) => set({fastestTime: n}),
+  setLeaderboard: (l: Placing[]) => set({leaderboard: l}),
 }));
 
 export default useGameStore;

@@ -1,4 +1,5 @@
 const Room = require('../models/Room');
+const User = require('../models/Users');
 const { generateGameQuestions } = require('../utils/gameUtils');
 
 function ensureHost(room, userId) {
@@ -23,7 +24,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       });
 
       socket.join(room.code);
-      socketState.set(socket.id, { code: room.code, hostId });
+      socketState.set(socket.id, { code: room.code, userId: hostId });
 
       const summary = await room.toLobbySummary();
       io.to(room.code).emit('room:update', summary);
@@ -161,8 +162,8 @@ function multiplayerRoomHandler(io, socket, socketState) {
   // Client → startGame (host only)
   socket.on('startGame', async (payload, cb) => {
     try {
-      const { code, hostId } = payload || {};
-      if (!code || !hostId) throw new Error('Missing code/hostId');
+      const { code, hostId, players } = payload || {};
+      if (!code || !hostId || !players) throw new Error('Missing code/hostId/players');
 
       const room = await Room.findOne({ code: code.toUpperCase() });
       if (!room) throw new Error('Room not found');
@@ -174,9 +175,22 @@ function multiplayerRoomHandler(io, socket, socketState) {
       await room.save();
 
       // 🔁 Generate shared question set
-      const gameData = await generateGameQuestions(10); // or pull rounds from settings
+      const gameData = await generateGameQuestions(4); // or pull rounds from settings
       await redis.set(`room:${room.code}:questions`, JSON.stringify(gameData), 'EX', 3600); // TTL 1h
 
+      await redis.set(
+        `room:${room.code}:scores`,
+        JSON.stringify(
+          players.reduce((acc, player) => {
+            acc[player.id] = {
+              score: 1,
+              correct: 1,
+              finished: false,
+            };
+            return acc;
+          }, {} )
+        )
+      );
       const summary = await room.toLobbySummary();
 
       io.to(room.code).emit('room:update', summary);
@@ -193,20 +207,36 @@ function multiplayerRoomHandler(io, socket, socketState) {
   // Client → endGame (host only)
   socket.on('endGame', async (payload, cb) => {
     try {
-      const { code, userId } = payload || {};
-      if (!code || !userId) throw new Error('Missing code/userId');
+      const { roomCode, userId } = payload || {};
+      if (!roomCode || !userId) throw new Error('Missing code/userId');
 
-      const room = await Room.findOne({ code: code.toUpperCase() });
-      if (!room) throw new Error('Room not found');
-      ensureHost(room, userId);
+      scoresString = await redis.get(`room:${roomCode}:scores`);
+      const scoresJSON = JSON.parse(scoresString);
+      
+      const players = Object.values(scoresJSON);
+      const finishedCount = players.filter(p => p.finished).length;
+      const shouldEndGame = finishedCount >= players.length - 1;
 
-      if (room.status === 'ended') throw new Error('Game already ended');
-      room.status = 'ended';
-      await room.save();
-
-      const summary = await room.toLobbySummary();
-      io.to(room.code).emit('room:update', summary);
-      cb?.({ ok: true, room: summary });
+      if (shouldEndGame) {
+        const leaderboard = [];
+        for (const userId in scoresJSON) {
+          const user = await User.findById(userId);
+          const entry = {
+            name: user.username,
+            score: scoresJSON[userId].score,
+          }
+          leaderboard.push(entry);
+        }
+        leaderboard.sort((a,b) => b.score - a.score); 
+        io.to(roomCode).emit('game:end', leaderboard);
+        cb?.({ allDone: true});
+      }
+      else {
+        scoresJSON[userId].finished = true;
+        await redis.set(`room:${roomCode}:scores`,JSON.stringify(scoresJSON));
+        cb?.({ allDone: false})
+      }
+      
     } catch (err) {
       console.error('endGame error:', err.message);
       cb?.({ ok: false, error: err.message });
@@ -233,14 +263,12 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       const snippet = await Snippet.findById(snippetMeta.snippetId);
       if (!snippet) throw new Error('Snippet not found');
-
       // Match logic (reuse from gsController)
       const { titleHit, artistHit, correct } = titleArtistMatch(
         guess,
         snippet.title || '',
         snippet.artist || ''
       );
-
       let base = 0,
         timeBonus = 0,
         total = 0;
@@ -297,6 +325,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       console.error('guess error:', err.message);
     }
   });
+
 }
 
 module.exports = { multiplayerRoomHandler };
