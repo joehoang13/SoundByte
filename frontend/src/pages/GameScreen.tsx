@@ -4,8 +4,8 @@ import { Howl, Howler } from 'howler';
 import { useNavigate } from 'react-router-dom';
 import useGameStore from '../stores/GameSessionStore';
 import { useAuth } from '../stores/auth';
-import discdb from '../assets/discdb.png';
-import needledb from '../assets/needledb.png';
+import discdb from '../assets/disc.svg';
+import needledb from '../assets/needle.svg';
 import MultiplayerGameHandler from '../components/GameSteps/MultiplayerGameHandler';
 
 type GuessRow = {
@@ -64,17 +64,21 @@ const GameScreen: React.FC = () => {
   const audioRef = useRef<Howl | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  const TEAL_TINT_FILTER = 'brightness(1.1) sepia(0.4) hue-rotate(160deg) saturate(2)';
-  const discTransition = {
-    ease: 'linear',
-    duration: snippetSize,
-    repeat: Infinity,
-  };
+  const TEAL_TINT_FILTER = 'brightness(0) saturate(100%) invert(76%) sepia(63%) saturate(6240%) hue-rotate(157deg) brightness(101%) contrast(97%)';
+  const shouldSpin = isPlaying && !shouldReduceMotion;
+  const discTransition = shouldSpin
+    ? { repeat: Infinity, repeatType: 'loop' as const, ease: [0, 0, 1, 1] as const, duration: 10 }
+    : { duration: 0.2 };
   const needleTransition = {
     repeat: Infinity,
     duration: 2,
-    ease: 'easeInOut' as any,
+    ease: 'easeInOut' as const,
   };
+
+  // Add this near the top of your component
+useEffect(() => {
+  console.log('📊 Attempts Left:', attemptsLeft);
+}, [attemptsLeft]);
 
   useEffect(() => {
     if (!sessionId || !current) start(user?.id || '');
@@ -231,7 +235,7 @@ const GameScreen: React.FC = () => {
               <div className="text-xl font-extrabold" style={{ color: '#E6F6FA' }}>
                 {username}
               </div>
-              <button
+              {/* <button
                 type="button"
                 className="text-xs font-semibold hover:underline"
                 style={{ color: 'rgba(15,193,233,0.9)' }}
@@ -244,16 +248,29 @@ const GameScreen: React.FC = () => {
                 style={{ color: 'rgba(15,193,233,0.9)' }}
               >
                 Stats
-              </button>
+              </button> */}
             </div>
             <div className="text-xs" style={{ color: COLORS.grayblue }}>
               online
             </div>
           </div>
+
+          {/* Settings button */}
+          <motion.button
+            type="button"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors ml-2"
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Open Settings"
+            title="Settings"
+          >
+            <span className="text-white text-2xl -mt-0.5"> ⚙︎ </span>
+          </motion.button>
         </div>
       )}
 
-      {/* Solo / Group Switch – placeholder */}
+      {/* Solo / Group Switch – placeholder 
       <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[60]">
         <div
           className="flex items-center gap-1 rounded-full px-1 py-1"
@@ -263,9 +280,9 @@ const GameScreen: React.FC = () => {
             backdropFilter: 'blur(6px)',
           }}
         >
-          {/* toggle buttons here */}
+          toggle buttons here 
         </div>
-      </div>
+      </div> */}
 
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <motion.div
@@ -274,35 +291,24 @@ const GameScreen: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
         >
-          {/* Settings button */}
-          <motion.button
-            type="button"
-            className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setSettingsOpen(true)}
-            aria-label="Open Settings"
-            title="Settings"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="currentColor" />
-              <path
-                d="M19.43 12.98a7.94 7.94 0 0 0 .05-.98 7.94 7.94 0 0 0-.05-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.78 7.78 0 0 0-1.7-.98l-.38-2.65A.5.5 0 0 0 12 1h-4a.5.5 0 0 0-.49.41l-.38 2.65c-.62.24-1.2.56-1.74.95l-2.47-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64L2.57 11a7.94 7.94 0 0 0-.05.98c0 .33.02.66.05.98L.46 14.61a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.54.39 1.13.71 1.74.95l.38 2.65A.5.5 0 0 0 8 23h4a.5.5 0 0 0 .49-.41l.38-2.65c.62-.24 1.2-.56 1.74-.95l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.43 12.98z"
-                fill="currentColor"
-              />
-            </svg>
-          </motion.button>
+
+          {/* Progress Bar */}
+          <div className="w-full h-3 rounded-full mb-6 overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${((currentRound + (lastResult?.concluded ? 1 : 0)) / rounds) * 100}%`,
+                background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
+                transition: 'width 0.5s ease-in-out',
+              }}
+            />
+          </div>
 
           {/* Score / Streak Panel */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
             <div className="flex-1 flex justify-center">
               <div
-                className="flex flex-col items-center rounded-xl w-44 px-6 py-5"
+                className="flex items-center gap-2 rounded-full px-5 py-2 backdrop-blur-sm"
                 style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
               >
                 <span className="text-sm font-bold text-center">Score</span>
@@ -310,11 +316,11 @@ const GameScreen: React.FC = () => {
               </div>
             </div>
             <div className="flex-1 flex flex-col items-center justify-center relative">
-              <h1 className="text-2xl font-bold text-center">Classic</h1>
+              <h1 className="text-2xl font-bold text-center">Round {currentRound + 1}</h1>
             </div>
             <div className="flex-1 flex justify-center">
               <div
-                className="flex flex-col items-center rounded-xl w-44 px-6 py-5"
+                className="flex items-center gap-2 rounded-full px-5 py-2 backdrop-blur-sm"
                 style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
               >
                 <span className="text-sm font-bold text-center">Streak</span>
@@ -368,8 +374,28 @@ const GameScreen: React.FC = () => {
             </div>
           </div>
 
+          {/* Status */}
+          <div className="flex items-center justify-center w-full px-4 sm:px-6 mb-4">
+            {isPlaying ? (
+              <motion.div
+                className="text-sm text-center"
+                style={{ color: COLORS.grayblue }}
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                now playing… (click the record to stop)
+              </motion.div>
+            ) : (
+              <div className="text-sm text-center text-grayblue">
+                {playbackCount >= 2
+                  ? 'No more replays for this round'
+                  : 'Ready — Click the Record to Play'}
+              </div>
+            )}
+          </div>
+
           {/* Guess Input */}
-          <form onSubmit={onSubmit} className="relative mb-6 mx-auto w-full max-w-md">
+          <form onSubmit={onSubmit} className="relative mb-6">
             <div className="relative bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-cyan-400/20 p-[2px] rounded-2xl">
               <div className="flex bg-darkblue/90 rounded-2xl overflow-hidden backdrop-blur-sm">
                 <input
@@ -493,10 +519,10 @@ const GameScreen: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {/* Volume & Controls Section */}
               <section
-                className="lg:col-span-2 rounded-2xl p-5"
+                className="rounded-2xl p-5 max-w-2xl mx-auto w-full"
                 style={{
                   backgroundColor: 'rgba(20, 61, 77, 0.65)',
                   border: '1px solid rgba(255,255,255,0.08)',

@@ -12,7 +12,6 @@ import disc from '../assets/disc.svg';
 import needle from '../assets/needle.svg';
 import Background from '../components/Background';
 import useGameStore from '../stores/GameSessionStore';
-import { logout } from '../api/auth';
 import GamePrefModal from '../components/GameSteps/GamePrefModal';
 import NavBar from '../components/NavBar';
 
@@ -301,11 +300,6 @@ const Dashboard = () => {
     } else {
       navigate('/ready');
     }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
   };
 
   return (
