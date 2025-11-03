@@ -247,7 +247,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
   socket.on('game:answer', async (payload, cb) => {
     try {
-      const { code, userId, roundIndex, guess } = payload || {};
+      const { code, userId, roundIndex, guess, snippetSize, elapsedMs } = payload || {};
       if (!code || !userId || !guess) throw new Error('Missing code/userId/guess');
 
       const roomCode = code.toUpperCase();
@@ -273,7 +273,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       if (correct) {
         base = 1000;
-        timeBonus = 300; // static or adjust with timing later
+        timeBonus = Math.max(0, Math.round((snippetSize * 1000 - elapsedMs) / 20));
         total = base + timeBonus;
         concluded = true;
       }

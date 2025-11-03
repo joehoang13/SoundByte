@@ -34,7 +34,6 @@ async function addMissingStats() {
       }
     }
 
-    console.log(`✅ Updated ${updated} user(s) with new stat fields.`);
     mongoose.disconnect();
   } catch (err) {
     console.error('❌ Error updating users:', err);

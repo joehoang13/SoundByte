@@ -201,9 +201,7 @@ exports.submitGuess = async function submitGuess(req, res) {
       ans.correct = true;
       ans.timeTaken = timeMs;
 
-      // simple scoring model
       base = 1000;
-      // faster => more bonus, dampened by snippet size to keep it fair
       const snippetSeconds = session.snippetSize || 5;
       timeBonus = Math.max(0, Math.round((snippetSeconds * 1000 - timeMs) / 20)); // ~ up to ~500
       penalty = 0;
