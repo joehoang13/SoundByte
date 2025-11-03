@@ -112,11 +112,9 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       e?.preventDefault();
 
       if (!roomCode || !current?.snippetId || !guess || !socket) return;
-
       const g = guess.trim();
       if (!g) return;
-      console.log(guessHistory.length);
-      console.log(current.title);
+
       const elapsedMs = Date.now() - (guessStartTime ?? Date.now());
       const elapedSeconds = Math.round((elapsedMs / 1000) * 100) / 100;
       socket.emit(
@@ -126,6 +124,8 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
           userId,
           roundIndex: currentRound,
           guess: g,
+          snippetSize,
+          elapsedMs,
         },
         (res: any) => {
           if (!res) return;

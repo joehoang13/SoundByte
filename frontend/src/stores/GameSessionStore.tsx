@@ -223,7 +223,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         userGuess: undefined, // could be added later
       }));
 
-      console.log('🎵 Mapped song results:', songResults);
 
       set(s => ({
         score: f.score,
@@ -237,7 +236,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         songResults,
       }));
 
-      console.log('✅ Store updated, songResults:', get().songResults);
       return f;
     } catch (e: any) {
       set({ error: e?.message || 'Failed to finish game' });
