@@ -78,8 +78,9 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const audioRef = useRef<Howl | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  const TEAL_TINT_FILTER = 'brightness(0) saturate(100%) invert(76%) sepia(63%) saturate(6240%) hue-rotate(157deg) brightness(101%) contrast(97%)';
-   const shouldSpin = isPlaying && !shouldReduceMotion;
+  const TEAL_TINT_FILTER =
+    'brightness(0) saturate(100%) invert(76%) sepia(63%) saturate(6240%) hue-rotate(157deg) brightness(101%) contrast(97%)';
+  const shouldSpin = isPlaying && !shouldReduceMotion;
   const discTransition = shouldSpin
     ? { repeat: Infinity, repeatType: 'loop' as const, ease: [0, 0, 1, 1] as const, duration: 10 }
     : { duration: 0.2 };
@@ -328,7 +329,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
               online
             </div>
           </div>
-          
+
           {/* Settings button */}
           <motion.button
             type="button"
@@ -379,7 +380,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
               }}
             />
           </div>
-
 
           {/* Score / Streak Panel */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-3 gap-4">
