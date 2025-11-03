@@ -19,12 +19,6 @@ async function removeSnippetSizeField() {
 
     const result = await Snippet.updateMany({}, { $unset: { snippetSize: 1 } });
 
-    console.log(`✅ Operation complete.`);
-    console.log(`🔢 Matched: ${result.matchedCount}`);
-    console.log(`🛠️ Modified: ${result.modifiedCount}`);
-
-    console.log(`✅ Removed 'snippetSize' from ${result.modifiedCount} snippet(s).`);
-
     await mongoose.disconnect();
   } catch (err) {
     console.error('❌ Failed to remove snippetSize:', err);
