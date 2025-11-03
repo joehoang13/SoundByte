@@ -120,7 +120,7 @@ const GameScreen: React.FC = () => {
     e.preventDefault();
     const g = guess.trim();
     if (!g) return;
-
+    
     const elapsedMs = Date.now() - (guessStartTime ?? Date.now());
     const res = await submitGuess(g);
     if (!res?.correct) {

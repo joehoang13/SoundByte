@@ -115,8 +115,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
       const g = guess.trim();
       if (!g) return;
-      console.log(guessHistory.length);
-      console.log(current.title);
       const elapsedMs = Date.now() - (guessStartTime ?? Date.now());
       const elapedSeconds = Math.round((elapsedMs / 1000) * 100) / 100;
       socket.emit(

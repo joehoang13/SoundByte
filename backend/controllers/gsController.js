@@ -208,7 +208,6 @@ exports.submitGuess = async function submitGuess(req, res) {
       timeBonus = Math.max(0, Math.round((snippetSeconds * 1000 - timeMs) / 20)); // ~ up to ~500
       penalty = 0;
       total = base + timeBonus;
-
       session.score += total;
       session.streak = (session.streak || 0) + 1;
       session.timeBonusTotal = (session.timeBonusTotal || 0) + timeBonus;
