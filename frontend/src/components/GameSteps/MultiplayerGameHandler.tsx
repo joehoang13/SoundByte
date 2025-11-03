@@ -61,6 +61,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const avatarUrl = user?.profilePicture;
   const userId = user?.id;
 
+  const [hintsUnlocked, setHintsUnlocked] = useState(0);
   const [current, setCurrent] = useState<RoundMeta>();
   const [isPlaying, setIsPlaying] = useState(false);
   const [guessHistory, setGuessHistory] = useState<GuessRow[]>([]);
@@ -95,6 +96,17 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
   const { socket, connect, disconnect } = useSocketStore();
 
+  function formatInitials(fullString: string, revealedWords = 1): string {
+    const words = (fullString || '').split(' ');
+    return words
+      .map((word, i) =>
+        i < revealedWords
+          ? word[0].toUpperCase() + '_'.repeat(Math.max(1, word.length - 1))
+          : '____'
+      )
+      .join(' ');
+  }
+
   const handleGuessSubmit = useCallback(
     (e?: React.KeyboardEvent<HTMLInputElement> | React.MouseEvent<HTMLButtonElement>) => {
       e?.preventDefault();
@@ -103,6 +115,8 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
       const g = guess.trim();
       if (!g) return;
+      console.log(guessHistory.length);
+      console.log(current.title);
       const elapsedMs = Date.now() - (guessStartTime ?? Date.now());
       const elapedSeconds = Math.round((elapsedMs / 1000) * 100) / 100;
       socket.emit(
@@ -125,6 +139,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
               timeTakenSec: elapedSeconds,
             },
           ]);
+          setGuess('');
           if (res.correct) {
             setScore(res.score);
             setCorrectAnswers(correctAnswers + 1);
@@ -136,9 +151,10 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             }
           } else {
             setStreak(0);
+            setHintsUnlocked(prev => Math.min(prev + 1, 3)); // hints cap at 3 levels
           }
 
-          if (res.concluded) {
+          if (res.concluded || guessHistory.length > 4) {
             setTimeout(async () => {
               await handleNext();
             }, 400);
@@ -217,6 +233,8 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     setCurrent(multiplayerQuestions[currentRound]);
+    setPlaybackCount(0);
+    setHintsUnlocked(0);
   }, [currentRound]);
 
   const startSnippetPlayback = () => {
@@ -488,6 +506,16 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
               </div>
             </div>
           </form>
+
+          {hintsUnlocked > 0 && current?.title && current?.artist && (
+            <div className="mt-2 mb-4 text-center text-cyan-300 text-sm sm:text-base font-semibold">
+              <p className="mb-1"> Hint Unlocked:</p>
+              {hintsUnlocked >= 1 && <p> Title: {formatInitials(current.title, hintsUnlocked)}</p>}
+              {hintsUnlocked >= 2 && (
+                <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>
+              )}
+            </div>
+          )}
 
           {/* Guess History */}
           <div
