@@ -223,7 +223,6 @@ export const useGameStore = create<GameState>()((set, get) => ({
         userGuess: undefined, // could be added later
       }));
 
-
       set(s => ({
         score: f.score,
         streak: f.streak,
