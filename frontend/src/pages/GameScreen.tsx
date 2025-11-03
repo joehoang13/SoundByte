@@ -197,7 +197,9 @@ const GameScreen: React.FC = () => {
     const words = (fullString || '').split(' ');
     return words
       .map((word, i) =>
-        i < revealedWords ? word[0].toUpperCase() + '_'.repeat(Math.max(1, word.length - 1)) : '____'
+        i < revealedWords
+          ? word[0].toUpperCase() + '_'.repeat(Math.max(1, word.length - 1))
+          : '____'
       )
       .join(' ');
   }
@@ -397,12 +399,13 @@ const GameScreen: React.FC = () => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    lastResult?.concluded ||
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
-                    ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
+                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                  }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||
@@ -432,7 +435,9 @@ const GameScreen: React.FC = () => {
             <div className="mt-2 mb-4 text-center text-cyan-300 text-sm sm:text-base font-semibold">
               <p className="mb-1"> Hint Unlocked:</p>
               {hintsUnlocked >= 1 && <p> Title: {formatInitials(current.title, hintsUnlocked)}</p>}
-              {hintsUnlocked >= 2 && <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>}
+              {hintsUnlocked >= 2 && (
+                <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>
+              )}
             </div>
           )}
 

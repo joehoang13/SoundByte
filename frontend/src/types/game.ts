@@ -15,7 +15,6 @@ type RoundRef = {
   artist?: string;
 };
 
-
 export interface StartResp {
   sessionId: string;
   rounds: number;

@@ -102,7 +102,6 @@ exports.startGame = async function startGame(req, res) {
         artist: first.artist,
       },
     });
-
   } catch (err) {
     console.error('[gs] start error', err);
     return res.status(500).json({ error: 'Failed to start game' });
@@ -280,8 +279,8 @@ exports.nextRound = async function nextRound(req, res) {
       round: {
         snippetId: snip._id.toString(),
         audioUrl: snip.audioUrl,
-        title: snip.title,       // add this
-        artist: snip.artist      // add this
+        title: snip.title, // add this
+        artist: snip.artist, // add this
       },
     });
   } catch (err) {

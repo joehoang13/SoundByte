@@ -100,7 +100,9 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     const words = (fullString || '').split(' ');
     return words
       .map((word, i) =>
-        i < revealedWords ? word[0].toUpperCase() + '_'.repeat(Math.max(1, word.length - 1)) : '____'
+        i < revealedWords
+          ? word[0].toUpperCase() + '_'.repeat(Math.max(1, word.length - 1))
+          : '____'
       )
       .join(' ');
   }
@@ -113,8 +115,8 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
       const g = guess.trim();
       if (!g) return;
-      console.log(guessHistory.length)
-      console.log(current.title)
+      console.log(guessHistory.length);
+      console.log(current.title);
       const elapsedMs = Date.now() - (guessStartTime ?? Date.now());
       const elapedSeconds = Math.round((elapsedMs / 1000) * 100) / 100;
       socket.emit(
@@ -509,7 +511,9 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             <div className="mt-2 mb-4 text-center text-cyan-300 text-sm sm:text-base font-semibold">
               <p className="mb-1"> Hint Unlocked:</p>
               {hintsUnlocked >= 1 && <p> Title: {formatInitials(current.title, hintsUnlocked)}</p>}
-              {hintsUnlocked >= 2 && <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>}
+              {hintsUnlocked >= 2 && (
+                <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>
+              )}
             </div>
           )}
 
