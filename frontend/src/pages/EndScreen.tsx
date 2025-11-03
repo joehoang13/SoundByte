@@ -103,10 +103,11 @@ const EndScreen = () => {
             {leaderboard.map((player, index) => (
               <div
                 key={index + 1}
-                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${player.name === user?.username
-                  ? 'bg-teal/20 border border-teal'
-                  : 'bg-darkestblue'
-                  }`}
+                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
+                  player.name === user?.username
+                    ? 'bg-teal/20 border border-teal'
+                    : 'bg-darkestblue'
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{index + 1}</span>
@@ -139,8 +140,9 @@ const EndScreen = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${song.correct ? 'bg-green-500' : 'bg-red-500'
-                        }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                        song.correct ? 'bg-green-500' : 'bg-red-500'
+                      }`}
                     >
                       {song.correct ? '✓' : '✗'}
                     </span>
@@ -157,9 +159,7 @@ const EndScreen = () => {
   };
 
   const getMessage = () => {
-
     if (mode === 'multiplayer') {
-
       const playerRank = leaderboard.findIndex(player => player.name === user?.username) + 1;
 
       if (isComplete) {
@@ -173,7 +173,7 @@ const EndScreen = () => {
           return `${playerRank}th Place!`;
         }
       }
-      return 'Great Game!'; 
+      return 'Great Game!';
     }
 
     if (score >= 1000) {
@@ -230,8 +230,9 @@ const EndScreen = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${activeTab === tab.id ? '' : 'hover:text-white/60'
-                    } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
+                  className={`${
+                    activeTab === tab.id ? '' : 'hover:text-white/60'
+                  } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
                   style={{
                     WebkitTapHighlightColor: 'transparent',
                   }}

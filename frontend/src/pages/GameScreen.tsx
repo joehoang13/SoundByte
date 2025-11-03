@@ -64,7 +64,8 @@ const GameScreen: React.FC = () => {
   const audioRef = useRef<Howl | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  const TEAL_TINT_FILTER = 'brightness(0) saturate(100%) invert(76%) sepia(63%) saturate(6240%) hue-rotate(157deg) brightness(101%) contrast(97%)';
+  const TEAL_TINT_FILTER =
+    'brightness(0) saturate(100%) invert(76%) sepia(63%) saturate(6240%) hue-rotate(157deg) brightness(101%) contrast(97%)';
   const shouldSpin = isPlaying && !shouldReduceMotion;
   const discTransition = shouldSpin
     ? { repeat: Infinity, repeatType: 'loop' as const, ease: [0, 0, 1, 1] as const, duration: 10 }
@@ -76,9 +77,9 @@ const GameScreen: React.FC = () => {
   };
 
   // Add this near the top of your component
-useEffect(() => {
-  console.log('📊 Attempts Left:', attemptsLeft);
-}, [attemptsLeft]);
+  useEffect(() => {
+    console.log('📊 Attempts Left:', attemptsLeft);
+  }, [attemptsLeft]);
 
   useEffect(() => {
     if (!sessionId || !current) start(user?.id || '');
@@ -201,7 +202,9 @@ useEffect(() => {
     const words = (fullString || '').split(' ');
     return words
       .map((word, i) =>
-        i < revealedWords ? word[0].toUpperCase() + '_'.repeat(Math.max(1, word.length - 1)) : '____'
+        i < revealedWords
+          ? word[0].toUpperCase() + '_'.repeat(Math.max(1, word.length - 1))
+          : '____'
       )
       .join(' ');
   }
@@ -291,9 +294,11 @@ useEffect(() => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
         >
-
           {/* Progress Bar */}
-          <div className="w-full h-3 rounded-full mb-6 overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+          <div
+            className="w-full h-3 rounded-full mb-6 overflow-hidden"
+            style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+          >
             <div
               className="h-full rounded-full"
               style={{
@@ -423,12 +428,13 @@ useEffect(() => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    lastResult?.concluded ||
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
-                    ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
+                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                  }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||
@@ -458,7 +464,9 @@ useEffect(() => {
             <div className="mt-2 mb-4 text-center text-cyan-300 text-sm sm:text-base font-semibold">
               <p className="mb-1"> Hint Unlocked:</p>
               {hintsUnlocked >= 1 && <p> Title: {formatInitials(current.title, hintsUnlocked)}</p>}
-              {hintsUnlocked >= 2 && <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>}
+              {hintsUnlocked >= 2 && (
+                <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>
+              )}
             </div>
           )}
 
