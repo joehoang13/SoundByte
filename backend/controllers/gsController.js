@@ -59,7 +59,7 @@ exports.startGame = async function startGame(req, res) {
     const docs = await Snippet.aggregate([
       { $match: match },
       { $sample: { size: take } },
-      { $project: { _id: 1, audioUrl: 1 } },
+      { $project: { _id: 1, audioUrl: 1, title: 1, artist: 1 } },
     ]).exec();
 
     const answers = docs.map(d => ({
@@ -95,8 +95,14 @@ exports.startGame = async function startGame(req, res) {
       sessionId: session._id.toString(),
       roundIndex: 0,
       rounds: take,
-      round: { snippetId: first._id.toString(), audioUrl: first.audioUrl },
+      round: {
+        snippetId: first._id.toString(),
+        audioUrl: first.audioUrl,
+        title: first.title,
+        artist: first.artist,
+      },
     });
+
   } catch (err) {
     console.error('[gs] start error', err);
     return res.status(500).json({ error: 'Failed to start game' });
@@ -271,7 +277,12 @@ exports.nextRound = async function nextRound(req, res) {
 
     return res.json({
       roundIndex: session.currentRound,
-      round: { snippetId: snip._id.toString(), audioUrl: snip.audioUrl },
+      round: {
+        snippetId: snip._id.toString(),
+        audioUrl: snip.audioUrl,
+        title: snip.title,       // add this
+        artist: snip.artist      // add this
+      },
     });
   } catch (err) {
     console.error('[gs] nextRound error', err);

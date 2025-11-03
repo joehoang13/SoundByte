@@ -8,10 +8,13 @@ export interface StartPayload {
   rounds: number;
 }
 
-export interface RoundRef {
+type RoundRef = {
   snippetId: string;
   audioUrl: string;
-}
+  title?: string;
+  artist?: string;
+};
+
 
 export interface StartResp {
   sessionId: string;

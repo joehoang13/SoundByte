@@ -122,8 +122,12 @@ export const useGameStore = create<GameState>()((set, get) => ({
         sessionId: data.sessionId,
         currentRound: data.roundIndex,
         rounds: data.rounds,
-        current: { snippetId: data.round.snippetId, audioUrl: data.round.audioUrl },
-        score: 0,
+        current: {
+          snippetId: data.round.snippetId,
+          audioUrl: data.round.audioUrl,
+          title: data.round.title,
+          artist: data.round.artist
+        }, score: 0,
         streak: 0,
         correctAnswers: 0,
         fastestTimeMs: undefined,
@@ -143,7 +147,7 @@ export const useGameStore = create<GameState>()((set, get) => ({
     if (!sessionId) return;
     try {
       await gsApi.setStarted(sessionId, currentRound);
-    } catch {}
+    } catch { }
   },
 
   submitGuess: async (guess: string) => {
@@ -189,8 +193,12 @@ export const useGameStore = create<GameState>()((set, get) => ({
       const n = await gsApi.next(sessionId);
       set({
         currentRound: n.roundIndex,
-        current: { snippetId: n.round.snippetId, audioUrl: n.round.audioUrl },
-        attemptsLeft: undefined,
+        current: {
+          snippetId: n.round.snippetId,
+          audioUrl: n.round.audioUrl,
+          title: n.round.title,
+          artist: n.round.artist
+        }, attemptsLeft: undefined,
         lastResult: undefined,
       });
     } catch (e: any) {
