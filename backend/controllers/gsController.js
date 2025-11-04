@@ -31,20 +31,15 @@ function currentAnswer(session) {
 // ---------- handlers ----------
 
 // POST /api/gs/game/start
-// backend/controllers/gsController.js
-
-// …
 exports.startGame = async function startGame(req, res) {
   try {
-    const userId = req.user?.id || req.body?.userId; // ok if blank in dev
+    const userId = req.user?.id || req.body?.userId;
     const snippetSize = Number(req.body?.snippetSize) || 5;
 
-    // Derive difficulty from the snippet size (3->hard, 5->medium, 10->easy)
     const difficulty = difficultyFromSize(snippetSize);
-
     const roundsReq = Math.max(1, Math.min(Number(req.body?.rounds) || 10, 20));
 
-    // ✅ Just match classic type now (no snippetSize filter)
+    // Only classic for now
     const match = { type: 'classic' };
 
     const available = await Snippet.countDocuments(match).exec();
@@ -62,9 +57,10 @@ exports.startGame = async function startGame(req, res) {
       { $project: { _id: 1, audioUrl: 1, title: 1, artist: 1 } },
     ]).exec();
 
-    const answers = docs.map(d => ({
+    const answers = docs.map((d, i) => ({
       snippetId: d._id,
-      startedAt: null,
+      // Timer starts when round is delivered; scoring offset handles first playback.
+      startedAt: i === 0 ? now() : null,
       answeredAt: null,
       guesses: [],
       attempts: 0,
@@ -72,14 +68,14 @@ exports.startGame = async function startGame(req, res) {
       timeTaken: 0,
       pointsAwarded: 0,
       matched: { title: false, artist: false },
-      maxAttempts: 5,
+      maxAttempts: MAX_ATTEMPTS,
     }));
 
     const session = await GameSession.create({
       userId,
       mode: 'classic',
-      difficulty, // still stored
-      snippetSize, // still stored — frontend uses it
+      difficulty,
+      snippetSize,
       rounds: take,
       answers,
       currentRound: 0,
@@ -109,6 +105,7 @@ exports.startGame = async function startGame(req, res) {
 };
 
 // POST /api/gs/game/:sessionId/round/started
+// Kept for compatibility. With server-side start, this is effectively a no-op after start.
 exports.setRoundStarted = async function setRoundStarted(req, res) {
   try {
     const { sessionId } = req.params;
@@ -146,14 +143,13 @@ exports.submitGuess = async function submitGuess(req, res) {
 
     const ans = session.answers[roundIndex];
     if (ans.answeredAt) {
-      // round already concluded – return current scoreboard
       return res.json({
         correct: ans.correct,
         concluded: true,
         attempts: ans.attempts ?? ans.guesses?.length ?? 0,
         attemptsLeft: Math.max(
           0,
-          (ans.maxAttempts || 5) - (ans.attempts ?? ans.guesses?.length ?? 0)
+          (ans.maxAttempts || MAX_ATTEMPTS) - (ans.attempts ?? ans.guesses?.length ?? 0)
         ),
         timeMs: ans.timeTaken ?? 0,
         score: session.score,
@@ -186,32 +182,44 @@ exports.submitGuess = async function submitGuess(req, res) {
     ans.guesses.push(guessEntry);
     ans.attempts = (ans.attempts || 0) + 1;
 
-    // compute timing & points
     const nowMs = Date.now();
-    const startedAt = ans.startedAt ? new Date(ans.startedAt).getTime() : nowMs;
-    const timeMs = Math.max(0, nowMs - startedAt);
 
-    let base = 0,
-      timeBonus = 0,
-      penalty = 0,
-      total = 0;
+    // Defensive: ensure startedAt exists (rare)
+    if (!ans.startedAt) {
+      const firstGuessTime = ans.guesses?.[0]?.createdAt
+        ? new Date(ans.guesses[0].createdAt).getTime()
+        : nowMs;
+      ans.startedAt = new Date(firstGuessTime - 1); // avoid 0ms
+    }
+
+    // ---- playback-aware timing ----
+    const snippetSeconds = session.snippetSize || 5;
+    const startedAtMs = new Date(ans.startedAt).getTime();
+    const effectiveStartMs = startedAtMs + snippetSeconds * 1000; // why: bonus starts after first full playthrough
+    const timeMs = Math.max(0, nowMs - effectiveStartMs);
+
+    let base = 0;
+    let timeBonus = 0;
+    let penalty = 0;
+    let total = 0;
 
     if (correct) {
       ans.answeredAt = new Date();
       ans.correct = true;
-      ans.timeTaken = timeMs;
+      ans.timeTaken = timeMs; // measures time after playback completes
 
       base = 1000;
-      const snippetSeconds = session.snippetSize || 5;
-      timeBonus = Math.max(0, Math.round((snippetSeconds * 1000 - timeMs) / 20)); // ~ up to ~500
+      // Window length remains snippetSeconds; max bonus occurs right at playback end.
+      timeBonus = Math.max(0, Math.round((snippetSeconds * 1000 - timeMs) / 20));
       penalty = 0;
       total = base + timeBonus;
+
+      ans.pointsAwarded = total;
 
       session.score += total;
       session.streak = (session.streak || 0) + 1;
       session.timeBonusTotal = (session.timeBonusTotal || 0) + timeBonus;
 
-      // fastest time
       if (
         session.fastestTimeMs === undefined ||
         session.fastestTimeMs === null ||
@@ -220,12 +228,10 @@ exports.submitGuess = async function submitGuess(req, res) {
         session.fastestTimeMs = timeMs;
       }
     } else {
-      // wrong attempt
       penalty = 0;
       total = 0;
 
-      // if out of attempts, conclude the round
-      const maxAttempts = ans.maxAttempts || 5;
+      const maxAttempts = ans.maxAttempts || MAX_ATTEMPTS;
       if (ans.attempts >= maxAttempts) {
         ans.answeredAt = new Date();
         ans.correct = false;
@@ -237,7 +243,7 @@ exports.submitGuess = async function submitGuess(req, res) {
     await session.save();
 
     const concluded = !!ans.answeredAt;
-    const attemptsLeft = Math.max(0, (ans.maxAttempts || 5) - (ans.attempts || 0));
+    const attemptsLeft = Math.max(0, (ans.maxAttempts || MAX_ATTEMPTS) - (ans.attempts || 0));
 
     return res.json({
       correct,
@@ -267,9 +273,15 @@ exports.nextRound = async function nextRound(req, res) {
     }
 
     session.currentRound += 1;
+
+    // Start timer for the new current round as we deliver it
+    const ans = currentAnswer(session);
+    if (!ans.startedAt) {
+      ans.startedAt = now();
+    }
+
     await session.save();
 
-    const ans = currentAnswer(session);
     const snip = await loadSnippet(ans.snippetId);
 
     return res.json({
@@ -277,8 +289,8 @@ exports.nextRound = async function nextRound(req, res) {
       round: {
         snippetId: snip._id.toString(),
         audioUrl: snip.audioUrl,
-        title: snip.title, // add this
-        artist: snip.artist, // add this
+        title: snip.title,
+        artist: snip.artist,
       },
     });
   } catch (err) {
@@ -297,20 +309,17 @@ exports.finishGame = async function finishGame(req, res) {
     session.status = 'completed';
     await session.save();
 
-    // 🧠 Update user stats
+    // Update user stats
     if (session.userId) {
       const user = await User.findById(session.userId);
 
       if (user) {
-        // Update total games played
         user.totalGamesPlayed = (user.totalGamesPlayed || 0) + 1;
 
-        // Update highest score
         if (!user.highestScore || session.score > user.highestScore) {
           user.highestScore = session.score;
         }
 
-        // Count correct answers from this session
         const correctCount = session.answers.filter(a => a.correct).length;
         user.totalSnippetsGuessed = (user.totalSnippetsGuessed || 0) + correctCount;
 
@@ -318,7 +327,6 @@ exports.finishGame = async function finishGame(req, res) {
       }
     }
 
-    // For each answer, load snippet details for title/artist
     const songDetails = await Promise.all(
       session.answers.map(async ans => {
         const snippet = await Snippet.findById(ans.snippetId, {
