@@ -1,3 +1,4 @@
+// path: frontend/src/pages/EmailVerified.tsx
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -7,10 +8,23 @@ const EmailVerified: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // why: VITE_API_URL may be undefined in prod; prefer VITE_API_BASE or same-origin
+  function resolveApiBase(): string {
+    const raw =
+      (import.meta as any).env?.VITE_API_BASE ||
+      (import.meta as any).env?.VITE_API_URL ||
+      window.location.origin;
+    return String(raw).replace(/\/+$/, '');
+  }
+
+  async function tryJson(res: Response) {
+    try { return await res.json(); } catch { return {}; }
+  }
+
   useEffect(() => {
     let didCancel = false;
 
-    const verifyEmail = async () => {
+    (async () => {
       const params = new URLSearchParams(location.search);
       const token = params.get('token');
 
@@ -20,26 +34,48 @@ const EmailVerified: React.FC = () => {
         return;
       }
 
-      try {
-        const apiBase = import.meta.env.VITE_API_URL.replace(/\/$/, '');
-        const res = await fetch(`${apiBase}/api/auth/verify-email?token=${token}`);
-        if (!res.ok) throw new Error((await res.json()).message);
+      const apiBase = resolveApiBase();
+      const enc = encodeURIComponent(token);
 
-        const data = await res.json();
-        if (!didCancel) {
-          setStatus('success');
-          setMessage(data.message || 'Email verified successfully!');
+      // candidate endpoints to try in order
+      const attempts: Array<() => Promise<Response>> = [
+        () => fetch(`${apiBase}/api/auth/verify-email?token=${enc}`, { method: 'GET' }),
+        () => fetch(`${apiBase}/api/auth/verify?token=${enc}`, { method: 'GET' }),
+        () =>
+          fetch(`${apiBase}/api/auth/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token }),
+          }),
+      ];
+
+      try {
+        let lastErrMsg = 'Verification failed.';
+        for (const attempt of attempts) {
+          const res = await attempt();
+          const data = await tryJson(res);
+          if (res.ok) {
+            if (didCancel) return;
+            setStatus('success');
+            setMessage(data?.message || 'Email verified successfully!');
+            return;
+          }
+          // capture error and continue to next fallback
+          lastErrMsg = data?.message || `${res.status} ${res.statusText}`;
+          // only fallback on routing/method issues
+          if (![400, 404, 405].includes(res.status)) break;
         }
-      } catch (err: any) {
-        console.error(err);
         if (!didCancel) {
           setStatus('error');
-          setMessage(err.message || 'Verification failed.');
+          setMessage(lastErrMsg);
+        }
+      } catch (err: any) {
+        if (!didCancel) {
+          setStatus('error');
+          setMessage(err?.message || 'Verification failed.');
         }
       }
-    };
-
-    verifyEmail();
+    })();
 
     return () => {
       didCancel = true;

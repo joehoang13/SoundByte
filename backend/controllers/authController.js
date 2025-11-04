@@ -14,7 +14,11 @@ const EMAIL_SECRET = process.env.EMAIL_VERIFICATION_SECRET || 'another-secret';
 function getFrontendOrigin() {
   const raw = process.env.FRONTEND_URL;
   if (!raw) throw new Error('FRONTEND_URL is not set');
-  try { return new URL(raw).origin; } catch { throw new Error(`FRONTEND_URL invalid: ${raw}`); }
+  try {
+    return new URL(raw).origin;
+  } catch {
+    throw new Error(`FRONTEND_URL invalid: ${raw}`);
+  }
 }
 const FRONTEND_ORIGIN = getFrontendOrigin();
 
@@ -88,9 +92,11 @@ exports.signup = async (req, res) => {
     // If a verified account conflicts, return 409 with the exact field
     if (existing?.isVerified) {
       const conflict =
-        existing.emailLower === emailLC ? 'email' :
-        existing.usernameLower === usernameLC ? 'username' :
-        'email';
+        existing.emailLower === emailLC
+          ? 'email'
+          : existing.usernameLower === usernameLC
+            ? 'username'
+            : 'email';
       return res.status(409).json({ error: 'Already in use', conflict, verified: true });
     }
 
@@ -118,15 +124,12 @@ exports.signup = async (req, res) => {
 
     await sendVerifyEmail(user.email, user.username, verificationToken);
 
-    return res
-      .status(existing ? 200 : 201)
-      .json({
-        message: existing
-          ? 'Account exists but not verified. Verification email re-sent.'
-          : 'Signup successful. Please verify your email.',
-        resent: !!existing,
-      });
-
+    return res.status(existing ? 200 : 201).json({
+      message: existing
+        ? 'Account exists but not verified. Verification email re-sent.'
+        : 'Signup successful. Please verify your email.',
+      resent: !!existing,
+    });
   } catch (e) {
     console.error('[signup] error', {
       message: e?.message,
@@ -135,7 +138,9 @@ exports.signup = async (req, res) => {
       response: e?.response,
       stack: e?.stack,
     });
-    return res.status(500).json({ error: 'Unable to send verification email. Please try again later.' });
+    return res
+      .status(500)
+      .json({ error: 'Unable to send verification email. Please try again later.' });
   }
 };
 
@@ -158,7 +163,10 @@ exports.login = async (req, res) => {
     }
 
     const token = sign(user);
-    return res.json({ token, user: { id: String(user._id), email: user.email, username: user.username } });
+    return res.json({
+      token,
+      user: { id: String(user._id), email: user.email, username: user.username },
+    });
   } catch (e) {
     console.error('login error', e);
     return res.status(500).json({ error: 'Login failed' });
