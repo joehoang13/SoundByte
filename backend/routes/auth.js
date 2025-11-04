@@ -47,6 +47,7 @@ router.post('/request-password-reset', usersCtl.requestPasswordReset);
 router.post('/reset-password', usersCtl.resetPassword);
 
 router.get('/verify-email', authCtl.verifyEmail);
+router.get('/me', auth, authController.me);
 router.get('/verify', authCtl.verifyEmail);
 router.post('/verify', authCtl.verifyEmail);
 router.post('/logout', auth, authCtl.logout);
