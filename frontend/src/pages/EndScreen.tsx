@@ -176,13 +176,13 @@ const EndScreen = () => {
       return 'Great Game!';
     }
 
-    if (score >= 1000) {
+    if (score >= 8000) {
       return 'Outstanding!';
-    } else if (score >= 750) {
+    } else if (score >= 7500) {
       return 'Excellent Work!';
-    } else if (score >= 500) {
+    } else if (score >= 5000) {
       return 'Great Job!';
-    } else if (score >= 250) {
+    } else if (score >= 1500) {
       return 'Good Effort!';
     } else {
       return 'Keep Trying!';
