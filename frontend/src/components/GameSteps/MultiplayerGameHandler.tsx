@@ -4,7 +4,6 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Howl, Howler } from 'howler';
 import { useSocketStore } from '../../stores/SocketStore';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../stores/auth';
 import discdb from '../../assets/disc.svg';
 import needledb from '../../assets/needle.svg';
 import type { AuthUser } from '../../stores/auth';
@@ -43,9 +42,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     timeBonus,
     timeBonusTotal,
     fastestTime,
-    next,
     start,
-    submitGuess,
     setScore,
     setStreak,
     setCorrectAnswers,
@@ -62,7 +59,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const avatarUrl = user?.profilePicture;
   const userId = user?.id;
 
-  const [multiSongResults, setMultiSongResults] = useState<
+  const [_multiSongResults, setMultiSongResults] = useState<
     Array<{
       snippetId: string;
       songTitle: string;
@@ -104,7 +101,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const [isWaiting, setIsWaiting] = useState(false);
   const [lastResult, setLastResult] = useState<any>(null);
 
-  const { socket, connect, disconnect } = useSocketStore();
+  const { socket, disconnect } = useSocketStore();
 
   function formatInitials(fullString: string, revealedWords = 1): string {
     const words = (fullString || '').split(' ');

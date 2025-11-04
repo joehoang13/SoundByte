@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { ReactNode } from 'react';
 import { gsApi } from '../api/gs';
 import type { Difficulty, SnippetSize, GuessResp, FinishResp } from '../types/game';
@@ -20,8 +19,8 @@ interface LastResult {
 export interface RoundMeta {
   snippetId: string;
   audioUrl: string;
-  title: string;
-  artist: string;
+  title?: string;
+  artist?: string;
 }
 
 interface SongResult {

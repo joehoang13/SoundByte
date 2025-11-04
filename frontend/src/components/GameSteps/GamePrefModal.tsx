@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import useGameStore from '../../stores/GameSessionStore';
 import Background from '../Background';
 import type { SnippetSize } from '../../types/game';
-import { create } from 'zustand';
 
 interface GamePrefModalProps {
   onClose: () => void;

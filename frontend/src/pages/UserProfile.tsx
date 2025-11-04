@@ -1,17 +1,13 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../stores/auth';
-import { logout } from '../api/auth';
 import { getUserStats } from '../api/users';
-import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import NavBar from '../components/NavBar';
 import type { UserStats } from '../types/users';
 
 const UserProfile = () => {
-  const { user, token } = useAuth();
-  const isLoggedIn = !!(user && token);
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

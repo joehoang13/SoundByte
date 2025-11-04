@@ -1,5 +1,5 @@
 // src/screens/InferenceScreen.tsx
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Howler } from 'howler';
@@ -144,14 +144,6 @@ const InferenceScreen: React.FC = () => {
     setHistory([]);
     setConcluded(false);
     setGuess('');
-  };
-
-  const handleLogout = async () => {
-    await logout().catch(() => {});
-    try {
-      localStorage.removeItem('token');
-    } catch {}
-    navigate('/welcome');
   };
 
   const disableInput = concluded || attemptsLeft <= 0 || !current;

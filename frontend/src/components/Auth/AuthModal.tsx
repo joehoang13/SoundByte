@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AuthStepLogin from './AuthStepLogin';
 import AuthStepSignUp from './AuthStepSignUp';
 
-// ✅ Correct path from src/components/Auth/AuthModal.tsx → src/assets/vinyl.png
 import vinyl from '../../assets/vinyl.png';
 
 interface AuthModalProps {
@@ -169,7 +168,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
                 >
                   <AuthStepSignUp
                     hideClose
-                    onClose={onClose}
                     onSignUpSuccess={onAuthSuccess}
                     onSwitchToLogin={handleSwitchToLogin}
                   />
