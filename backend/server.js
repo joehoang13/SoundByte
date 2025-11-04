@@ -1,3 +1,6 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') }); // <- load from backend folder first
+
 // backend/server.js — Express + Socket.IO (rooms + lobby sync)
 const express = require('express');
 const http = require('http');
@@ -6,8 +9,6 @@ const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const setupSocket = require('./sockets/index');
-
-require('dotenv').config();
 
 //Models
 require('./models/Users');

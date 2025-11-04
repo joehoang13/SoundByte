@@ -1,3 +1,4 @@
+// path: frontend/src/pages/EmailVerified.tsx
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -7,42 +8,78 @@ const EmailVerified: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let didCancel = false;
+  // Why: VITE_API_URL may be undefined; VITE_API_BASE may be a path (/api)
+  function resolveApiRoot(): string {
+    const envBase =
+      (import.meta as any).env?.VITE_API_BASE ?? (import.meta as any).env?.VITE_API_URL ?? '';
+    const trimmed = String(envBase).trim();
+    if (trimmed.startsWith('http')) {
+      return trimmed.replace(/\/+$/, ''); // absolute URL provided
+    }
+    const path = (trimmed || '/api').replace(/\/+$/, ''); // default to /api
+    return `${window.location.origin}${path}`;
+  }
 
-    const verifyEmail = async () => {
+  async function jsonSafe(res: Response) {
+    try {
+      return await res.json();
+    } catch {
+      return {};
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
       const params = new URLSearchParams(location.search);
       const token = params.get('token');
-
       if (!token) {
         setStatus('error');
         setMessage('Missing verification token.');
         return;
       }
 
-      try {
-        const apiBase = import.meta.env.VITE_API_URL.replace(/\/$/, '');
-        const res = await fetch(`${apiBase}/api/auth/verify-email?token=${token}`);
-        if (!res.ok) throw new Error((await res.json()).message);
+      const root = resolveApiRoot();
+      const enc = encodeURIComponent(token);
 
-        const data = await res.json();
-        if (!didCancel) {
-          setStatus('success');
-          setMessage(data.message || 'Email verified successfully!');
+      const attempts: Array<() => Promise<Response>> = [
+        () => fetch(`${root}/auth/verify-email?token=${enc}`, { method: 'GET' }),
+        () => fetch(`${root}/auth/verify?token=${enc}`, { method: 'GET' }),
+        () =>
+          fetch(`${root}/auth/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token }),
+          }),
+      ];
+
+      try {
+        let lastMsg = 'Verification failed.';
+        for (const fn of attempts) {
+          const res = await fn();
+          const data = await jsonSafe(res);
+          if (res.ok) {
+            if (cancelled) return;
+            setStatus('success');
+            setMessage(data?.message || 'Email verified successfully!');
+            return;
+          }
+          lastMsg = data?.message || `${res.status} ${res.statusText}`;
+          if (![400, 404, 405].includes(res.status)) break; // don’t keep trying on real failures
         }
-      } catch (err: any) {
-        console.error(err);
-        if (!didCancel) {
+        if (!cancelled) {
           setStatus('error');
-          setMessage(err.message || 'Verification failed.');
+          setMessage(lastMsg);
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          setStatus('error');
+          setMessage(e?.message || 'Verification failed.');
         }
       }
-    };
-
-    verifyEmail();
-
+    })();
     return () => {
-      didCancel = true;
+      cancelled = true;
     };
   }, [location.search]);
 
@@ -55,7 +92,6 @@ const EmailVerified: React.FC = () => {
             <p>Please wait while we verify your email.</p>
           </div>
         )}
-
         {status === 'success' && (
           <div>
             <h1 className="text-3xl font-bold text-green-400 mb-2">Success 🎉</h1>
@@ -76,7 +112,6 @@ const EmailVerified: React.FC = () => {
             </div>
           </div>
         )}
-
         {status === 'error' && (
           <div>
             <h1 className="text-3xl font-bold text-red-400 mb-2">Oops 😓</h1>
