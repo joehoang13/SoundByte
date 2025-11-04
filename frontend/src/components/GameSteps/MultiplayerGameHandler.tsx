@@ -62,6 +62,14 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const avatarUrl = user?.profilePicture;
   const userId = user?.id;
 
+  const [multiSongResults, setMultiSongResults] = useState<Array<{
+    snippetId: string;
+    songTitle: string;
+    artistName: string;
+    correct: boolean;
+  }>>([]);
+
+
   const [hintsUnlocked, setHintsUnlocked] = useState(0);
   const [current, setCurrent] = useState<RoundMeta>();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -150,9 +158,58 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             if (Math.round((elapsedMs / 1000) * 100) / 100 < fastestTime) {
               setFastestTime(elapedSeconds);
             }
+
+            setMultiSongResults(prev => {
+              // looks to see if song is tracked already
+              const exists = prev.findIndex(r => r.snippetId === current.snippetId);
+
+              // if already exists, update it in case user got correct after previous wrong attempts
+              if (exists >= 0) {
+                const updated = [...prev];
+                updated[exists] = {
+                  snippetId: current.snippetId,
+                  songTitle: current.title || 'Unknown Song',
+                  artistName: current.artist || 'Unknown Artist',
+                  correct: true,
+                };
+                return updated;
+              } else {
+                return [ // add new entry
+                  ...prev,
+                  {
+                    snippetId: current.snippetId,
+                    songTitle: current.title || 'Unknown Song',
+                    artistName: current.artist || 'Unknown Artist',
+                    correct: true,
+                  },
+                ];
+              }
+            });
           } else {
             setStreak(0);
             setHintsUnlocked(prev => Math.min(prev + 1, 3)); // hints cap at 3 levels
+
+            if (res.concluded) {
+              setMultiSongResults(prev => {
+                // looks to see if song is tracked already
+                const exists = prev.findIndex(r => r.snippetId === current.snippetId);
+
+                // if already exists, do nothing
+                if (exists >= 0) {
+                  return prev; 
+                } else { // add new entry
+                  return [
+                    ...prev,
+                    {
+                      snippetId: current.snippetId,
+                      songTitle: current.title || 'Unknown Song',
+                      artistName: current.artist || 'Unknown Artist',
+                      correct: false,
+                    },
+                  ];
+                }
+              });
+            }
           }
 
           if (res.concluded || guessHistory.length > 4) {
@@ -190,6 +247,15 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   };
 
   const finish = async () => {
+    const songResults = multiplayerQuestions.map((question) => ({
+      snippetId: question.snippetId,
+      songTitle: question.title || 'Unknown Song',
+      artistName: question.artist || 'Unknown Artist',
+      correct: false,
+    }));
+
+    useGameStore.setState({ songResults });
+
     socket?.emit('endGame', { roomCode, userId: user?.id }, (res: any) => {
       if (res.allDone) {
         setIsWaiting(false);
@@ -500,13 +566,12 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
-                    lastResult?.concluded ||
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
-                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                  }`}
+                    ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                    }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||

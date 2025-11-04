@@ -164,7 +164,7 @@ const EndScreen = () => {
 
       if (isComplete) {
         if (playerRank === 1) {
-          return `${playerRank} Place!`;
+          return `${playerRank}st  Place!`;
         } else if (playerRank === 2) {
           return `${playerRank}nd Place!`;
         } else if (playerRank === 3) {
