@@ -2,11 +2,12 @@ const { Server } = require('socket.io');
 const socketState = new Map();
 const { multiplayerRoomHandler } = require('./roomHandlers');
 const Room = require('../models/Room');
+const dotenv = require('dotenv').config();
 
 function setupSocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],
+      origin: [process.env.CORS_ORIGIN],
       methods: ['GET', 'POST'],
       credentials: true,
     },
