@@ -7,7 +7,7 @@ interface SocketState {
   disconnect: () => void;
 }
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 
 export const useSocketStore = create<SocketState>((set, get) => ({
   socket: null,
