@@ -76,11 +76,6 @@ const GameScreen: React.FC = () => {
     ease: 'easeInOut' as const,
   };
 
-  // Add this near the top of your component
-  useEffect(() => {
-    console.log('📊 Attempts Left:', attemptsLeft);
-  }, [attemptsLeft]);
-
   useEffect(() => {
     if (!sessionId || !current) start(user?.id || '');
   }, [sessionId, current, start, user?.id]);

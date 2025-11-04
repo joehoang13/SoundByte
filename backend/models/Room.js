@@ -174,20 +174,32 @@ RoomSchema.statics.joinByCode = async function ({ code, userId, userSocketId, pa
 };
 
 RoomSchema.statics.leaveByCode = async function ({ code, userId }) {
-  const room = await this.findOne({ code: code.toUpperCase() });
-  if (!room) return null;
+  const upper = code.toUpperCase();
 
-  const changed = room.removePlayer(userId);
+  const room = await this.findOneAndUpdate(
+    { code: upper },
+    { $pull: { players: { user: userId } } },
+    { new: true }
+  );
 
-  if (!changed) return room;
+  if (!room) return null; // Room was deleted or never existed
 
+  // If the host left and there are still players, promote the first remaining
+  if (room.status === 'lobby' && String(room.host) === String(userId)) {
+    if (room.players.length > 0) {
+      room.host = room.players[0].user;
+      await room.save();
+    }
+  }
+
+  // If no players left, delete the room
   if (room.players.length === 0) {
     await this.deleteOne({ _id: room._id });
     return null;
   }
 
-  await room.save();
   return room;
 };
+
 
 module.exports = mongoose.model('Room', RoomSchema);

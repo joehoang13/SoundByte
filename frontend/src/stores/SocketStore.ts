@@ -16,9 +16,6 @@ export const useSocketStore = create<SocketState>((set, get) => ({
 
     const s = io(url, { transports: ['websocket'], withCredentials: true });
     set({ socket: s });
-
-    s.on('connect', () => console.log('[socket] connected:', s.id));
-    s.on('disconnect', () => console.log('[socket] disconnected'));
   },
 
   disconnect: () => {
