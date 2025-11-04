@@ -124,9 +124,11 @@ const GroupLobby: React.FC = () => {
       setRoomStatus(summary.status);
     });
     socket.on('game:start', (questions: string) => {
-      useGameStore.getState().setMultiplayerQuestions(JSON.parse(questions).snippets);
-      setRoomStatus('in-game');
-      navigateGame();
+      if (questions) {
+        useGameStore.getState().setMultiplayerQuestions(JSON.parse(questions).snippets);
+        setRoomStatus('in-game');
+        navigateGame();
+      }
     });
 
     return () => {

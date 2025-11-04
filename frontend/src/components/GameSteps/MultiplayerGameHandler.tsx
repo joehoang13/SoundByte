@@ -242,6 +242,13 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
   const handleQuitGame = async () => {
     await finish();
+    socket?.emit('endGame', { roomCode, userId: user?.id }, (res: any) => {
+      if (res.allDone) {
+        setIsWaiting(false);
+      } else {
+        setIsWaiting(true);
+      }
+    });
     disconnect();
     navigate('/endscreen');
   };
