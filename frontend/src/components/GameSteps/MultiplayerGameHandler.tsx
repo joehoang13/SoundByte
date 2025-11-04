@@ -62,13 +62,14 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const avatarUrl = user?.profilePicture;
   const userId = user?.id;
 
-  const [multiSongResults, setMultiSongResults] = useState<Array<{
-    snippetId: string;
-    songTitle: string;
-    artistName: string;
-    correct: boolean;
-  }>>([]);
-
+  const [multiSongResults, setMultiSongResults] = useState<
+    Array<{
+      snippetId: string;
+      songTitle: string;
+      artistName: string;
+      correct: boolean;
+    }>
+  >([]);
 
   const [hintsUnlocked, setHintsUnlocked] = useState(0);
   const [current, setCurrent] = useState<RoundMeta>();
@@ -174,7 +175,8 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                 };
                 return updated;
               } else {
-                return [ // add new entry
+                return [
+                  // add new entry
                   ...prev,
                   {
                     snippetId: current.snippetId,
@@ -196,8 +198,9 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
                 // if already exists, do nothing
                 if (exists >= 0) {
-                  return prev; 
-                } else { // add new entry
+                  return prev;
+                } else {
+                  // add new entry
                   return [
                     ...prev,
                     {
@@ -247,7 +250,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   };
 
   const finish = async () => {
-    const songResults = multiplayerQuestions.map((question) => ({
+    const songResults = multiplayerQuestions.map(question => ({
       snippetId: question.snippetId,
       songTitle: question.title || 'Unknown Song',
       artistName: question.artist || 'Unknown Artist',
@@ -566,12 +569,13 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    lastResult?.concluded ||
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
-                    ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
+                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                  }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||
