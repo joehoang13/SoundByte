@@ -9,7 +9,6 @@ export default function Signup() {
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md space-y-3">
         <AuthStepSignUp
-          onClose={() => navigate('/')} // back to landing
           onSwitchToLogin={() => navigate('/login')}
           onSignUpSuccess={() => {
             // If the inner component already persists auth, just navigate.
