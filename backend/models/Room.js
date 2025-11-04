@@ -201,5 +201,4 @@ RoomSchema.statics.leaveByCode = async function ({ code, userId }) {
   return room;
 };
 
-
 module.exports = mongoose.model('Room', RoomSchema);
