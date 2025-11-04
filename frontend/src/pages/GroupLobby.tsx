@@ -31,7 +31,6 @@ export interface LobbySummary {
   updatedAt: string; // ISO date string from MongoDB
 }
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 
 const GroupLobby: React.FC = () => {
   const navigate = useNavigate();
