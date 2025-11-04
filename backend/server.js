@@ -10,7 +10,6 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const setupSocket = require('./sockets/index');
 
-
 //Models
 require('./models/Users');
 require('./models/Snippet');

@@ -11,9 +11,7 @@ const EmailVerified: React.FC = () => {
   // Why: VITE_API_URL may be undefined; VITE_API_BASE may be a path (/api)
   function resolveApiRoot(): string {
     const envBase =
-      (import.meta as any).env?.VITE_API_BASE ??
-      (import.meta as any).env?.VITE_API_URL ??
-      '';
+      (import.meta as any).env?.VITE_API_BASE ?? (import.meta as any).env?.VITE_API_URL ?? '';
     const trimmed = String(envBase).trim();
     if (trimmed.startsWith('http')) {
       return trimmed.replace(/\/+$/, ''); // absolute URL provided
@@ -23,7 +21,11 @@ const EmailVerified: React.FC = () => {
   }
 
   async function jsonSafe(res: Response) {
-    try { return await res.json(); } catch { return {}; }
+    try {
+      return await res.json();
+    } catch {
+      return {};
+    }
   }
 
   useEffect(() => {
@@ -76,7 +78,9 @@ const EmailVerified: React.FC = () => {
         }
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [location.search]);
 
   return (
@@ -93,8 +97,18 @@ const EmailVerified: React.FC = () => {
             <h1 className="text-3xl font-bold text-green-400 mb-2">Success 🎉</h1>
             <p>{message}</p>
             <div className="mt-6 space-x-4">
-              <button onClick={() => navigate('/')} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg font-semibold">Go to Homepage</button>
-              <button onClick={() => navigate('/login')} className="px-4 py-2 bg-white text-black hover:bg-gray-200 rounded-lg font-semibold">Sign In</button>
+              <button
+                onClick={() => navigate('/')}
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg font-semibold"
+              >
+                Go to Homepage
+              </button>
+              <button
+                onClick={() => navigate('/login')}
+                className="px-4 py-2 bg-white text-black hover:bg-gray-200 rounded-lg font-semibold"
+              >
+                Sign In
+              </button>
             </div>
           </div>
         )}
@@ -103,8 +117,18 @@ const EmailVerified: React.FC = () => {
             <h1 className="text-3xl font-bold text-red-400 mb-2">Oops 😓</h1>
             <p>{message}</p>
             <div className="mt-6 space-x-4">
-              <button onClick={() => navigate('/')} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg font-semibold">Return Home</button>
-              <button onClick={() => navigate('/signup')} className="px-4 py-2 bg-white text-black hover:bg-gray-200 rounded-lg font-semibold">Try Again</button>
+              <button
+                onClick={() => navigate('/')}
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg font-semibold"
+              >
+                Return Home
+              </button>
+              <button
+                onClick={() => navigate('/signup')}
+                className="px-4 py-2 bg-white text-black hover:bg-gray-200 rounded-lg font-semibold"
+              >
+                Try Again
+              </button>
             </div>
           </div>
         )}
