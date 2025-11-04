@@ -45,7 +45,7 @@ const ENV_ORIGINS = (
   .filter(Boolean);
 
 const normalize = o => (o || '').replace(/\/$/, '');
-const ORIGINS = Array.from(new Set([...DEFAULT_ORIGINS, ...ENV_ORIGINS])).map(normalize);
+const ORIGINS = Array.from(new Set([...ENV_ORIGINS])).map(normalize);
 
 const corsOptions = {
   origin(origin, cb) {
