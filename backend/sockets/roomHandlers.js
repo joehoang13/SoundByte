@@ -174,7 +174,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       room.currentRound = 1;
       await room.save();
 
-      const gameData = await generateGameQuestions(1); // or pull rounds from settings
+      const gameData = await generateGameQuestions(2); // or pull rounds from settings
       await redis.set(`room:${room.code}:questions`, JSON.stringify(gameData), 'EX', 3600); // TTL 1h
 
       await redis.set(

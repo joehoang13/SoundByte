@@ -103,6 +103,9 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
   const { socket, disconnect } = useSocketStore();
 
+  const roundConcluded = lastResult?.concluded || guessHistory.length >= 5;
+
+
   function formatInitials(fullString: string, revealedWords = 1): string {
     const words = (fullString || '').split(' ');
     return words
@@ -212,7 +215,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             }
           }
 
-          if (res.concluded || guessHistory.length > 4) {
+          if (res.concluded || guessHistory.length >= 4) {
             setTimeout(async () => {
               await handleNext();
             }, 400);
@@ -440,7 +443,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             <div
               className="h-full rounded-full"
               style={{
-                width: `${((currentRound + (lastResult?.concluded ? 1 : 0)) / rounds) * 100}%`,
+                width: `${((currentRound + (roundConcluded ? 1 : 0)) / rounds) * 100}%`,
                 background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
                 transition: 'width 0.5s ease-in-out',
               }}
@@ -551,23 +554,23 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     }
                   }}
                   placeholder={
-                    lastResult?.concluded ? 'Round concluded' : ' Enter your answer here'
+                    roundConcluded ? 'Round concluded' : ' Enter your answer here'
                   }
                   className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
                   disabled={
-                    lastResult?.concluded || (attemptsLeft !== undefined && attemptsLeft <= 0)
+                    roundConcluded || (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
                   autoFocus
                 />
                 <motion.button
                   type="submit"
                   disabled={
-                    lastResult?.concluded ||
+                    roundConcluded ||
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
                   className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
-                    lastResult?.concluded ||
+                    roundConcluded ||
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                       ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
@@ -575,7 +578,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                   }`}
                   whileHover={
                     !(
-                      lastResult?.concluded ||
+                      roundConcluded ||
                       !guess.trim() ||
                       (attemptsLeft !== undefined && attemptsLeft <= 0)
                     )
@@ -584,7 +587,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                   }
                   whileTap={
                     !(
-                      lastResult?.concluded ||
+                      roundConcluded ||
                       !guess.trim() ||
                       (attemptsLeft !== undefined && attemptsLeft <= 0)
                     )
