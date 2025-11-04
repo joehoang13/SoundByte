@@ -105,7 +105,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
   const roundConcluded = lastResult?.concluded || guessHistory.length >= 5;
 
-
   function formatInitials(fullString: string, revealedWords = 1): string {
     const words = (fullString || '').split(' ');
     return words
@@ -553,13 +552,9 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                       handleGuessSubmit(e as any);
                     }
                   }}
-                  placeholder={
-                    roundConcluded ? 'Round concluded' : ' Enter your answer here'
-                  }
+                  placeholder={roundConcluded ? 'Round concluded' : ' Enter your answer here'}
                   className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
-                  disabled={
-                    roundConcluded || (attemptsLeft !== undefined && attemptsLeft <= 0)
-                  }
+                  disabled={roundConcluded || (attemptsLeft !== undefined && attemptsLeft <= 0)}
                   autoFocus
                 />
                 <motion.button

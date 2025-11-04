@@ -228,14 +228,14 @@ const Dashboard = () => {
         'Identify tracks from audio snippets. Test your music knowledge with timed challenges.',
     },
     {
-      id: 'inference',
-      title: 'INFERENCE MODE',
-      description: 'Guess songs from lyrics.',
-    },
-    {
       id: 'multiplayer',
       title: 'MULTIPLAYER',
       description: 'Compete against friends in real-time music battles.',
+    },
+    {
+      id: 'inference',
+      title: 'INFERENCE MODE',
+      description: 'Guess songs from lyrics.',
     },
     {
       id: 'other',
