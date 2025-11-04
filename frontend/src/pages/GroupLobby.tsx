@@ -31,7 +31,6 @@ export interface LobbySummary {
   updatedAt: string; // ISO date string from MongoDB
 }
 
-
 const GroupLobby: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,7 +72,7 @@ const GroupLobby: React.FC = () => {
   );
 
   useEffect(() => {
-    connect(SOCKET_URL);
+    connect();
   }, [connect]);
 
   useEffect(() => {

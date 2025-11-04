@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 
 interface SocketState {
   socket: Socket | null;
-  connect: (url: string) => void;
+  connect: () => void;
   disconnect: () => void;
 }
 
