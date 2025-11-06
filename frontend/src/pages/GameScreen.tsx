@@ -1,3 +1,4 @@
+// frontend/src/pages/GameScreen.tsx
 import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Howl, Howler } from 'howler';
@@ -29,6 +30,7 @@ const GameScreen: React.FC = () => {
 
   const {
     start,
+    resume,
     sessionId,
     current,
     snippetSize,
@@ -70,20 +72,25 @@ const GameScreen: React.FC = () => {
   const discTransition = shouldSpin
     ? { repeat: Infinity, repeatType: 'loop' as const, ease: [0, 0, 1, 1] as const, duration: 10 }
     : { duration: 0.2 };
-  const needleTransition = {
-    repeat: Infinity,
-    duration: 2,
-    ease: 'easeInOut' as const,
-  };
+  const needleTransition = { repeat: Infinity, duration: 2, ease: 'easeInOut' as const };
 
-  // Add this near the top of your component
+  // Boot: if we have a session in localStorage, resume; else start a new one.
   useEffect(() => {
-    console.log('📊 Attempts Left:', attemptsLeft);
-  }, [attemptsLeft]);
+    (async () => {
+      if (sessionId && !current) {
+        await resume();
+      } else if (!sessionId || !current) {
+        await start(user?.id || '');
+      }
+    })();
+    // Resume on reconnect
+    const onOnline = () => {
+      if (sessionId) resume().catch(() => { });
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [sessionId, current, start, resume, user?.id]);
 
-  useEffect(() => {
-    if (!sessionId || !current) start(user?.id || '');
-  }, [sessionId, current, start, user?.id]);
   // Volume effect
   useEffect(() => {
     Howler.volume(volume / 100);
@@ -92,30 +99,24 @@ const GameScreen: React.FC = () => {
 
   const startSnippetPlayback = () => {
     if (!audioRef.current || playbackCount >= 2) return;
-
     audioRef.current.stop();
     audioRef.current.seek(0);
     audioRef.current.play();
     setIsPlaying(true);
     setGuessStartTime(Date.now());
     setPlaybackCount(count => count + 1);
-
-    timerRef.current = window.setTimeout(
-      () => {
-        audioRef.current?.stop();
-        setIsPlaying(false);
-      },
-      (snippetSize || 0) * 1000
-    );
+    timerRef.current = window.setTimeout(() => {
+      audioRef.current?.stop();
+      setIsPlaying(false);
+    }, (snippetSize || 0) * 1000);
   };
 
   const onDiscClick = () => {
     if (playbackCount >= 2) return;
-
     if (isPlaying) {
       audioRef.current?.stop();
       setIsPlaying(false);
-      clearTimeout(timerRef.current!);
+      if (timerRef.current) clearTimeout(timerRef.current);
     } else {
       startSnippetPlayback();
     }
@@ -129,7 +130,7 @@ const GameScreen: React.FC = () => {
     const elapsedMs = Date.now() - (guessStartTime ?? Date.now());
     const res = await submitGuess(g);
     if (!res?.correct) {
-      setHintsUnlocked(prev => Math.min(prev + 1, 3)); // hints cap at 3 levels
+      setHintsUnlocked(prev => Math.min(prev + 1, 3));
     }
 
     setGuessHistory(prev => [
@@ -159,15 +160,11 @@ const GameScreen: React.FC = () => {
   useEffect(() => {
     if (current?.audioUrl) {
       audioRef.current?.unload();
-      audioRef.current = new Howl({
-        src: [current.audioUrl],
-        html5: true,
-        volume: 1.0,
-      });
+      audioRef.current = new Howl({ src: [current.audioUrl], html5: true, volume: 1.0 });
     }
     return () => {
       audioRef.current?.unload();
-      clearTimeout(timerRef.current!);
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [current?.audioUrl]);
 
@@ -238,27 +235,12 @@ const GameScreen: React.FC = () => {
               <div className="text-xl font-extrabold" style={{ color: '#E6F6FA' }}>
                 {username}
               </div>
-              {/* <button
-                type="button"
-                className="text-xs font-semibold hover:underline"
-                style={{ color: 'rgba(15,193,233,0.9)' }}
-              >
-                Friends
-              </button>
-              <button
-                type="button"
-                className="text-xs font-semibold hover:underline"
-                style={{ color: 'rgba(15,193,233,0.9)' }}
-              >
-                Stats
-              </button> */}
             </div>
             <div className="text-xs" style={{ color: COLORS.grayblue }}>
               online
             </div>
           </div>
 
-          {/* Settings button */}
           <motion.button
             type="button"
             className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors ml-2"
@@ -272,20 +254,6 @@ const GameScreen: React.FC = () => {
           </motion.button>
         </div>
       )}
-
-      {/* Solo / Group Switch – placeholder 
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[60]">
-        <div
-          className="flex items-center gap-1 rounded-full px-1 py-1"
-          style={{
-            backgroundColor: 'rgba(20, 61, 77, 0.7)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            backdropFilter: 'blur(6px)',
-          }}
-        >
-          toggle buttons here 
-        </div>
-      </div> */}
 
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <motion.div
@@ -392,9 +360,7 @@ const GameScreen: React.FC = () => {
               </motion.div>
             ) : (
               <div className="text-sm text-center text-grayblue">
-                {playbackCount >= 2
-                  ? 'No more replays for this round'
-                  : 'Ready — Click the Record to Play'}
+                {playbackCount >= 2 ? 'No more replays for this round' : 'Ready — Click the Record to Play'}
               </div>
             )}
           </div>
@@ -408,17 +374,11 @@ const GameScreen: React.FC = () => {
                   value={guess}
                   onChange={e => setGuess(e.target.value)}
                   onKeyDown={e => {
-                    if (e.key === 'Enter' && guess.trim()) {
-                      onSubmit(e as any);
-                    }
+                    if (e.key === 'Enter' && guess.trim()) onSubmit(e as any);
                   }}
-                  placeholder={
-                    lastResult?.concluded ? 'Round concluded' : ' Enter your answer here'
-                  }
+                  placeholder={lastResult?.concluded ? 'Round concluded' : ' Enter your answer here'}
                   className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
-                  disabled={
-                    lastResult?.concluded || (attemptsLeft !== undefined && attemptsLeft <= 0)
-                  }
+                  disabled={lastResult?.concluded || (typeof attemptsLeft === 'number' && attemptsLeft <= 0)}
                   autoFocus
                 />
                 <motion.button
@@ -426,30 +386,21 @@ const GameScreen: React.FC = () => {
                   disabled={
                     lastResult?.concluded ||
                     !guess.trim() ||
-                    (attemptsLeft !== undefined && attemptsLeft <= 0)
+                    (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
-                    lastResult?.concluded ||
-                    !guess.trim() ||
-                    (attemptsLeft !== undefined && attemptsLeft <= 0)
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
+                      !guess.trim() ||
+                      (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
                       ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                       : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                  }`}
+                    }`}
                   whileHover={
-                    !(
-                      lastResult?.concluded ||
-                      !guess.trim() ||
-                      (attemptsLeft !== undefined && attemptsLeft <= 0)
-                    )
+                    !(lastResult?.concluded || !guess.trim() || (typeof attemptsLeft === 'number' && attemptsLeft <= 0))
                       ? { scale: 1.02 }
                       : {}
                   }
                   whileTap={
-                    !(
-                      lastResult?.concluded ||
-                      !guess.trim() ||
-                      (attemptsLeft !== undefined && attemptsLeft <= 0)
-                    )
+                    !(lastResult?.concluded || !guess.trim() || (typeof attemptsLeft === 'number' && attemptsLeft <= 0))
                       ? { scale: 0.98 }
                       : {}
                   }
@@ -464,9 +415,7 @@ const GameScreen: React.FC = () => {
             <div className="mt-2 mb-4 text-center text-cyan-300 text-sm sm:text-base font-semibold">
               <p className="mb-1"> Hint Unlocked:</p>
               {hintsUnlocked >= 1 && <p> Title: {formatInitials(current.title, hintsUnlocked)}</p>}
-              {hintsUnlocked >= 2 && (
-                <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>
-              )}
+              {hintsUnlocked >= 2 && <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>}
             </div>
           )}
 
@@ -528,7 +477,6 @@ const GameScreen: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-              {/* Volume & Controls Section */}
               <section
                 className="rounded-2xl p-5 max-w-2xl mx-auto w-full"
                 style={{
@@ -538,9 +486,7 @@ const GameScreen: React.FC = () => {
               >
                 <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm" style={{ color: COLORS.grayblue }}>
-                    0
-                  </span>
+                  <span className="text-sm" style={{ color: COLORS.grayblue }}>0</span>
                   <input
                     type="range"
                     min={0}
@@ -574,10 +520,7 @@ const GameScreen: React.FC = () => {
                     type="button"
                     onClick={handleQuitGame}
                     className="w-full px-4 py-2 rounded-xl font-semibold"
-                    style={{
-                      background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)',
-                      color: '#fff',
-                    }}
+                    style={{ background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)', color: '#fff' }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >

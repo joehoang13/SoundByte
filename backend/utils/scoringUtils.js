@@ -1,10 +1,11 @@
+// backend/utils/scoringUtils.js
 function normalize(str) {
   return (str || '')
     .trim()
     .toLowerCase()
-    .normalize('NFD') // normalize unicode (á → a)
-    .replace(/[\u0300-\u036f]/g, '') // strip accents
-    .replace(/[^a-z0-9\s]/g, '') // remove punctuation
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
     .replace(/\s+/g, ' ');
 }
 
@@ -12,14 +13,12 @@ function levenshtein(a, b) {
   const dp = Array.from({ length: b.length + 1 }, (_, i) =>
     Array.from({ length: a.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
   );
-
   for (let i = 1; i <= b.length; i++) {
     for (let j = 1; j <= a.length; j++) {
       const cost = a[j - 1] === b[i - 1] ? 0 : 1;
       dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
     }
   }
-
   return dp[b.length][a.length];
 }
 
@@ -37,10 +36,10 @@ function hasSharedWords(g, target) {
 function strictMatch(guessRaw, answerRaw) {
   const g = normalize(guessRaw);
   const a = normalize(answerRaw);
-
-  if (g.length < Math.ceil(a.length * 0.4)) return false; // too short
-  if (!hasSharedWords(g, a)) return false; // no overlap
-  if (similarity(g, a) < 0.75) return false; // not close enough
+  if (!g || !a) return false;
+  if (g.length < Math.ceil(a.length * 0.4)) return false;
+  if (!hasSharedWords(g, a)) return false;
+  if (similarity(g, a) < 0.75) return false;
   return true;
 }
 
