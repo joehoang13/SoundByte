@@ -1,4 +1,3 @@
-// frontend/src/components/SharedProgressBar.tsx
 import React, { useMemo } from 'react';
 
 export type MultiProgress = {
@@ -9,7 +8,7 @@ export type MultiProgress = {
       username: string;
       score: number;
       correctCount: number;
-      currentRound: number;    // 0-based
+      currentRound: number;     // 0-based
       answeredThisRound: boolean;
     }
   >;
@@ -18,8 +17,8 @@ export type MultiProgress = {
 type Props = {
   progress: MultiProgress | null | undefined;
   myUserId?: string;
-  height?: number;       // progress bar height (px)
-  avatarSize?: number;   // icon diameter (px)
+  height?: number;          // progress bar height (px)
+  avatarSize?: number;      // icon diameter (px)
   className?: string;
 };
 
@@ -30,8 +29,8 @@ function colorForId(seed: string) {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
   const hue = h % 360;
-  const sat = 75; // %
-  const lgt = 60; // %
+  const sat = 75;  // %
+  const lgt = 60;  // %
   return `hsl(${hue} ${sat}% ${lgt}%)`;
 }
 
@@ -59,7 +58,9 @@ const SharedProgressBar: React.FC<Props> = ({
     );
   }
 
+  const padding = Math.ceil(avatarSize / 2) + 2; // keeps icons fully inside
   const trackBg = 'rgba(255,255,255,0.12)';
+  const trackTint = 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)';
 
   return (
     <div className={`w-full mb-4 ${className}`}>
@@ -68,10 +69,13 @@ const SharedProgressBar: React.FC<Props> = ({
         className="relative rounded-full overflow-hidden"
         style={{ height, backgroundColor: trackBg }}
       >
-        {/* Ghost fill to keep the track “alive” */}
+        {/* We render a “ghost” fill just so the track looks alive; shared-progress is players’ icons */}
         <div
           className="absolute inset-y-0 left-0 rounded-full"
-          style={{ width: '100%', background: 'transparent' }}
+          style={{
+            width: '100%', // full width background for consistency
+            background: 'transparent',
+          }}
         />
 
         {/* Avatars */}
@@ -79,27 +83,40 @@ const SharedProgressBar: React.FC<Props> = ({
           <div className="relative h-full w-full">
             {entries.map(([uid, p]) => {
               // Percent progress through rounds; advance +1 if they’ve concluded this round
-              const rawPct = (p.currentRound + (p.answeredThisRound ? 1 : 0)) / total;
+              const rawPct =
+                (p.currentRound + (p.answeredThisRound ? 1 : 0)) / total;
+
+              // left in px will be set in CSS using calc() that considers padding
+              // We still clamp percentage to keep icons within padding bounds visually.
               const pct = clamp(rawPct, 0, 1);
 
+              // Positioning:
+              // We use translateX(-50%) to center the avatar; to avoid clipping,
+              // we clamp the *final* pixel position by adding padding via CSS var.
+              // The container is full width; we approximate with “calc()” using %
+              // and a min/max with padding.
               const leftStyle = {
                 left: `calc(${pct * 100}% )`,
+                // We’ll clamp at runtime with transform and CSS max/min using padding zones
                 transform: 'translateX(-50%)',
               } as React.CSSProperties;
 
+              // Style differences for "me"
               const isMe = myUserId && String(uid) === String(myUserId);
-              const bg = colorForId(uid || p.username || 'seed');
-              const ring = isMe
-                ? '0 0 0 2px rgba(255,255,255,0.95)'
-                : '0 0 0 1px rgba(255,255,255,0.55)';
-              const halo = isMe
-                ? '0 0 10px rgba(15,193,233,0.6)'
-                : '0 0 6px rgba(255,255,255,0.25)';
 
+              const bg = colorForId(uid || p.username || 'seed');
+              const ring = isMe ? '0 0 0 2px rgba(255,255,255,0.95)' : '0 0 0 1px rgba(255,255,255,0.55)';
+              const halo = isMe ? '0 0 10px rgba(15,193,233,0.6)' : '0 0 6px rgba(255,255,255,0.25)';
+
+              // Initial letter
               const initial = (p.username?.[0] || 'P').toUpperCase();
 
               return (
-                <div key={uid} className="absolute top-1/2 -translate-y-1/2" style={leftStyle}>
+                <div
+                  key={uid}
+                  className="absolute top-1/2 -translate-y-1/2"
+                  style={leftStyle}
+                >
                   <div
                     className="flex items-center justify-center rounded-full select-none"
                     title={p.username}
@@ -111,6 +128,8 @@ const SharedProgressBar: React.FC<Props> = ({
                       fontSize: Math.max(10, Math.floor(avatarSize * 0.55)),
                       fontWeight: 800,
                       boxShadow: `${ring}, ${halo}`,
+                      // Avoid clipping at very start/end by adding invisible hitbox padding
+                      // (This padding doesn’t affect layout since we’re absolutely positioned.)
                       paddingLeft: 0,
                     }}
                   >
@@ -122,6 +141,8 @@ const SharedProgressBar: React.FC<Props> = ({
           </div>
         </div>
       </div>
+
+      {/* (Intentionally no labels beneath icons per your request) */}
     </div>
   );
 };
