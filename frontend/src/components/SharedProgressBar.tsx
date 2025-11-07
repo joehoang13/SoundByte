@@ -8,7 +8,7 @@ export type MultiProgress = {
       username: string;
       score: number;
       correctCount: number;
-      currentRound: number; // 0-based
+      currentRound: number;     // 0-based
       answeredThisRound: boolean;
     }
   >;
@@ -17,8 +17,8 @@ export type MultiProgress = {
 type Props = {
   progress: MultiProgress | null | undefined;
   myUserId?: string;
-  height?: number; // progress bar height (px)
-  avatarSize?: number; // icon diameter (px)
+  height?: number;          // progress bar height (px)
+  avatarSize?: number;      // icon diameter (px)
   className?: string;
 };
 
@@ -29,8 +29,8 @@ function colorForId(seed: string) {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
   const hue = h % 360;
-  const sat = 75; // %
-  const lgt = 60; // %
+  const sat = 75;  // %
+  const lgt = 60;  // %
   return `hsl(${hue} ${sat}% ${lgt}%)`;
 }
 
@@ -83,7 +83,8 @@ const SharedProgressBar: React.FC<Props> = ({
           <div className="relative h-full w-full">
             {entries.map(([uid, p]) => {
               // Percent progress through rounds; advance +1 if they’ve concluded this round
-              const rawPct = (p.currentRound + (p.answeredThisRound ? 1 : 0)) / total;
+              const rawPct =
+                (p.currentRound + (p.answeredThisRound ? 1 : 0)) / total;
 
               // left in px will be set in CSS using calc() that considers padding
               // We still clamp percentage to keep icons within padding bounds visually.
@@ -104,18 +105,18 @@ const SharedProgressBar: React.FC<Props> = ({
               const isMe = myUserId && String(uid) === String(myUserId);
 
               const bg = colorForId(uid || p.username || 'seed');
-              const ring = isMe
-                ? '0 0 0 2px rgba(255,255,255,0.95)'
-                : '0 0 0 1px rgba(255,255,255,0.55)';
-              const halo = isMe
-                ? '0 0 10px rgba(15,193,233,0.6)'
-                : '0 0 6px rgba(255,255,255,0.25)';
+              const ring = isMe ? '0 0 0 2px rgba(255,255,255,0.95)' : '0 0 0 1px rgba(255,255,255,0.55)';
+              const halo = isMe ? '0 0 10px rgba(15,193,233,0.6)' : '0 0 6px rgba(255,255,255,0.25)';
 
               // Initial letter
               const initial = (p.username?.[0] || 'P').toUpperCase();
 
               return (
-                <div key={uid} className="absolute top-1/2 -translate-y-1/2" style={leftStyle}>
+                <div
+                  key={uid}
+                  className="absolute top-1/2 -translate-y-1/2"
+                  style={leftStyle}
+                >
                   <div
                     className="flex items-center justify-center rounded-full select-none"
                     title={p.username}
