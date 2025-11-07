@@ -40,11 +40,11 @@ function toResumePayload(session, snip) {
     rounds: session.rounds,
     round: snip
       ? {
-        snippetId: snip._id.toString(),
-        audioUrl: snip.audioUrl,
-        title: snip.title,
-        artist: snip.artist,
-      }
+          snippetId: snip._id.toString(),
+          audioUrl: snip.audioUrl,
+          title: snip.title,
+          artist: snip.artist,
+        }
       : null,
     score: session.score,
     streak: session.streak,
@@ -349,7 +349,8 @@ exports.finishGame = async function finishGame(req, res) {
       const user = await User.findById(session.userId);
       if (user) {
         user.totalGamesPlayed = (user.totalGamesPlayed || 0) + 1;
-        if (!user.highestScore || session.score > user.highestScore) user.highestScore = session.score;
+        if (!user.highestScore || session.score > user.highestScore)
+          user.highestScore = session.score;
         const correctCount = session.answers.filter(a => a.correct).length;
         user.totalSnippetsGuessed = (user.totalSnippetsGuessed || 0) + correctCount;
         await user.save();

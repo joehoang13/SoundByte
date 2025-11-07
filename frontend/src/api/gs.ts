@@ -34,7 +34,13 @@ async function get<T>(path: string, timeoutMs = DEFAULT_TIMEOUT): Promise<T> {
   try {
     const res = await fetch(
       url,
-      withAuth({ method: 'GET', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal, mode: 'cors', cache: 'no-store' })
+      withAuth({
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: ctrl.signal,
+        mode: 'cors',
+        cache: 'no-store',
+      })
     );
     return json<T>(res);
   } finally {

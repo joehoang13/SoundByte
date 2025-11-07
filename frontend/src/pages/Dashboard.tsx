@@ -115,10 +115,11 @@ const GamePreferences: React.FC<GamePreferencesProps> = ({ mode, onPlay, onClose
                       setDifficulty(diff.id);
                       setSnippetLength(diff.length);
                     }}
-                    className={`p-4 rounded-xl border transition-all ${difficulty === diff.id
-                      ? 'bg-teal/20 text-white border-teal'
-                      : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
-                      }`}
+                    className={`p-4 rounded-xl border transition-all ${
+                      difficulty === diff.id
+                        ? 'bg-teal/20 text-white border-teal'
+                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
+                    }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -148,10 +149,11 @@ const GamePreferences: React.FC<GamePreferencesProps> = ({ mode, onPlay, onClose
                     onClick={() => {
                       setRoomOption(options.id);
                     }}
-                    className={`p-4 rounded-xl border transition-all ${roomOption === options.id
-                      ? 'bg-teal/20 text-white border-teal'
-                      : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
-                      }`}
+                    className={`p-4 rounded-xl border transition-all ${
+                      roomOption === options.id
+                        ? 'bg-teal/20 text-white border-teal'
+                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
+                    }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -174,10 +176,11 @@ const GamePreferences: React.FC<GamePreferencesProps> = ({ mode, onPlay, onClose
                           setDifficulty(diff.id);
                           setSnippetLength(diff.length);
                         }}
-                        className={`p-4 rounded-xl border transition-all ${difficulty === diff.id
-                          ? 'bg-teal/20 text-white border-teal'
-                          : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
-                          }`}
+                        className={`p-4 rounded-xl border transition-all ${
+                          difficulty === diff.id
+                            ? 'bg-teal/20 text-white border-teal'
+                            : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
+                        }`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -340,10 +343,11 @@ const Dashboard = () => {
                     {/* Mode Card */}
                     {!isExpanded ? (
                       <div
-                        className={`rounded-2xl overflow-hidden h-[600px] transition-all hover:shadow-lg backdrop-blur-sm bg-darkblue/50 ${selectedMode === mode.id
-                          ? 'border-2 border-teal shadow-teal/20'
-                          : 'border border-white/10'
-                          }`}
+                        className={`rounded-2xl overflow-hidden h-[600px] transition-all hover:shadow-lg backdrop-blur-sm bg-darkblue/50 ${
+                          selectedMode === mode.id
+                            ? 'border-2 border-teal shadow-teal/20'
+                            : 'border border-white/10'
+                        }`}
                       >
                         <div>
                           <h2 className="absolute top-2 left-2 text-xl font-bold text-white px-2 py-1 rounded-full z-10">
@@ -363,7 +367,7 @@ const Dashboard = () => {
                               playsInline
                               className="w-full h-full object-cover opacity-30"
                             >
-                              <source src={mode.videoUrl} type="video/mp4" /> 
+                              <source src={mode.videoUrl} type="video/mp4" />
                             </video>
                             <div className="absolute inset-0 bg-darkblue/60" />
                           </div>
@@ -474,7 +478,7 @@ const Dashboard = () => {
               <h3 className="text-lg font-bold text-white mb-4 tracking-wide">LAST GAME'S SONGS</h3>
               <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-teal">
                 {songResults.length > 0 ? (
-                  songResults.map((song) => (
+                  songResults.map(song => (
                     <div
                       key={song.snippetId}
                       className="flex items-start justify-between text-sm text-white p-2 rounded-lg hover:bg-white/5 transition-colors border-b border-cyan-400/40 hover:border-b-cyan-400/60 hover:shadow-md"

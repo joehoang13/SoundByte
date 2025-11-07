@@ -37,7 +37,7 @@ if (!isDisabled) {
           ...common,
         });
 
-    client.on('error', (e) => {
+    client.on('error', e => {
       if (process.env.NODE_ENV !== 'test') {
         console.warn('[redis] disabled (connect error):', e?.message || e);
       }
@@ -50,7 +50,8 @@ if (!isDisabled) {
       },
       () => {
         enabled = false;
-        if (process.env.NODE_ENV !== 'test') console.warn('[redis] not connected; using no-op cache');
+        if (process.env.NODE_ENV !== 'test')
+          console.warn('[redis] not connected; using no-op cache');
       }
     );
   } catch (e) {
@@ -99,9 +100,15 @@ async function cacheDelSession(sessionId) {
 // Some code may do: const redis = require('./redisClient'); redis.get(...)
 // Provide a no-op client with get/set/del when Redis is off.
 const noopClient = {
-  async get() { return null; },
-  async set() { return 'OK'; },
-  async del() { return 0; },
+  async get() {
+    return null;
+  },
+  async set() {
+    return 'OK';
+  },
+  async del() {
+    return 0;
+  },
 };
 
 const defaultExport = client || noopClient;
@@ -111,7 +118,7 @@ module.exports = defaultExport;
 
 // And also expose helpers/flags on the same object.
 Object.assign(module.exports, {
-  client: defaultExport,         // always something callable
+  client: defaultExport, // always something callable
   enabled,
   TTL_SECONDS,
   cacheSetSession,

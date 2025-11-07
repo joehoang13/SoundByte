@@ -362,14 +362,12 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
         <motion.div
           className="w-20 h-20 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full"
           animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
         />
 
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-2">Game Complete!</h2>
-          <p className="text-xl text-grayblue">
-            Waiting for other players to finish...
-          </p>
+          <p className="text-xl text-grayblue">Waiting for other players to finish...</p>
         </div>
       </motion.div>
     </div>
@@ -590,12 +588,13 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
-                      !guess.trim() ||
-                      (attemptsLeft !== undefined && attemptsLeft <= 0)
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    lastResult?.concluded ||
+                    !guess.trim() ||
+                    (attemptsLeft !== undefined && attemptsLeft <= 0)
                       ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                       : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
+                  }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||

@@ -58,17 +58,17 @@ const Landing = () => {
               className="w-32 h-32 select-none cursor-pointer"
               draggable={false}
               onDragStart={e => e.preventDefault()}
-              onMouseDown={handleScratch}    
-              onMouseUp={handleStop}        
+              onMouseDown={handleScratch}
+              onMouseUp={handleStop}
               onMouseLeave={handleStop}
               initial={{ rotate: 0 }}
-              animate={{ 
-                rotate: isDragging ? undefined : 360 
+              animate={{
+                rotate: isDragging ? undefined : 360,
               }}
-              transition={{ 
-                repeat: isDragging ? 0 : Infinity, 
-                ease: 'linear', 
-                duration: 10 
+              transition={{
+                repeat: isDragging ? 0 : Infinity,
+                ease: 'linear',
+                duration: 10,
               }}
             />
             <motion.img

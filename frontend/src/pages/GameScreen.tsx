@@ -85,7 +85,7 @@ const GameScreen: React.FC = () => {
     })();
     // Resume on reconnect
     const onOnline = () => {
-      if (sessionId) resume().catch(() => { });
+      if (sessionId) resume().catch(() => {});
     };
     window.addEventListener('online', onOnline);
     return () => window.removeEventListener('online', onOnline);
@@ -105,10 +105,13 @@ const GameScreen: React.FC = () => {
     setIsPlaying(true);
     setGuessStartTime(Date.now());
     setPlaybackCount(count => count + 1);
-    timerRef.current = window.setTimeout(() => {
-      audioRef.current?.stop();
-      setIsPlaying(false);
-    }, (snippetSize || 0) * 1000);
+    timerRef.current = window.setTimeout(
+      () => {
+        audioRef.current?.stop();
+        setIsPlaying(false);
+      },
+      (snippetSize || 0) * 1000
+    );
   };
 
   const onDiscClick = () => {
@@ -360,7 +363,9 @@ const GameScreen: React.FC = () => {
               </motion.div>
             ) : (
               <div className="text-sm text-center text-grayblue">
-                {playbackCount >= 2 ? 'No more replays for this round' : 'Ready — Click the Record to Play'}
+                {playbackCount >= 2
+                  ? 'No more replays for this round'
+                  : 'Ready — Click the Record to Play'}
               </div>
             )}
           </div>
@@ -376,9 +381,13 @@ const GameScreen: React.FC = () => {
                   onKeyDown={e => {
                     if (e.key === 'Enter' && guess.trim()) onSubmit(e as any);
                   }}
-                  placeholder={lastResult?.concluded ? 'Round concluded' : ' Enter your answer here'}
+                  placeholder={
+                    lastResult?.concluded ? 'Round concluded' : ' Enter your answer here'
+                  }
                   className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
-                  disabled={lastResult?.concluded || (typeof attemptsLeft === 'number' && attemptsLeft <= 0)}
+                  disabled={
+                    lastResult?.concluded || (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
+                  }
                   autoFocus
                 />
                 <motion.button
@@ -388,19 +397,28 @@ const GameScreen: React.FC = () => {
                     !guess.trim() ||
                     (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
-                      !guess.trim() ||
-                      (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    lastResult?.concluded ||
+                    !guess.trim() ||
+                    (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
                       ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                       : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
+                  }`}
                   whileHover={
-                    !(lastResult?.concluded || !guess.trim() || (typeof attemptsLeft === 'number' && attemptsLeft <= 0))
+                    !(
+                      lastResult?.concluded ||
+                      !guess.trim() ||
+                      (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
+                    )
                       ? { scale: 1.02 }
                       : {}
                   }
                   whileTap={
-                    !(lastResult?.concluded || !guess.trim() || (typeof attemptsLeft === 'number' && attemptsLeft <= 0))
+                    !(
+                      lastResult?.concluded ||
+                      !guess.trim() ||
+                      (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
+                    )
                       ? { scale: 0.98 }
                       : {}
                   }
@@ -415,7 +433,9 @@ const GameScreen: React.FC = () => {
             <div className="mt-2 mb-4 text-center text-cyan-300 text-sm sm:text-base font-semibold">
               <p className="mb-1"> Hint Unlocked:</p>
               {hintsUnlocked >= 1 && <p> Title: {formatInitials(current.title, hintsUnlocked)}</p>}
-              {hintsUnlocked >= 2 && <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>}
+              {hintsUnlocked >= 2 && (
+                <p> Artist: {formatInitials(current.artist, hintsUnlocked - 1)}</p>
+              )}
             </div>
           )}
 
@@ -486,7 +506,9 @@ const GameScreen: React.FC = () => {
               >
                 <h3 className="text-base sm:text-lg font-semibold mb-3">Volume</h3>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm" style={{ color: COLORS.grayblue }}>0</span>
+                  <span className="text-sm" style={{ color: COLORS.grayblue }}>
+                    0
+                  </span>
                   <input
                     type="range"
                     min={0}
@@ -520,7 +542,10 @@ const GameScreen: React.FC = () => {
                     type="button"
                     onClick={handleQuitGame}
                     className="w-full px-4 py-2 rounded-xl font-semibold"
-                    style={{ background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)', color: '#fff' }}
+                    style={{
+                      background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)',
+                      color: '#fff',
+                    }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >

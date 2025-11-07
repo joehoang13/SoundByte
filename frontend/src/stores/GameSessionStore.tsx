@@ -7,7 +7,10 @@ import type { ReactNode } from 'react';
 import { gsApi } from '../api/gs';
 import type { Difficulty, SnippetSize, GuessResp, FinishResp } from '../types/game';
 
-export interface Placing { score: number; name: string; }
+export interface Placing {
+  score: number;
+  name: string;
+}
 
 interface LastResult {
   correct: boolean;
@@ -17,7 +20,12 @@ interface LastResult {
   timeMs?: number;
 }
 
-export interface RoundMeta { snippetId: string; audioUrl: string; title: string; artist: string; }
+export interface RoundMeta {
+  snippetId: string;
+  audioUrl: string;
+  title: string;
+  artist: string;
+}
 
 interface SongResult {
   snippetId: string;
@@ -53,7 +61,9 @@ interface GameState {
   starting: boolean;
   error?: string;
   leaderboard: Placing[];
-  setConfig: (p: Partial<Pick<GameState, 'mode' | 'difficulty' | 'snippetSize' | 'rounds'>>) => void;
+  setConfig: (
+    p: Partial<Pick<GameState, 'mode' | 'difficulty' | 'snippetSize' | 'rounds'>>
+  ) => void;
   start: (userId?: string) => Promise<void>;
   resume: () => Promise<void>;
   markRoundStarted: () => Promise<void>;
@@ -171,7 +181,7 @@ export const useGameStore = create<GameState>()(
         if (!sessionId) return;
         try {
           await gsApi.setStarted(sessionId, currentRound);
-        } catch { }
+        } catch {}
       },
 
       submitGuess: async (guess: string) => {
@@ -269,7 +279,7 @@ export const useGameStore = create<GameState>()(
       },
 
       reset: () =>
-        set(s => ({ 
+        set(s => ({
           mode: 'classic',
           difficulty: 'easy',
           snippetSize: 5,
@@ -286,7 +296,7 @@ export const useGameStore = create<GameState>()(
           timeBonusTotal: 0,
           attemptsLeft: undefined,
           lastResult: undefined,
-          songResults: s.songResults, 
+          songResults: s.songResults,
           loading: false,
           starting: false,
           roomCode: null,
@@ -307,7 +317,7 @@ export const useGameStore = create<GameState>()(
     {
       name: STORAGE_KEY,
       version: 3,
-      partialize: (s) => ({
+      partialize: s => ({
         sessionId: s.sessionId,
         currentRound: s.currentRound,
         current: s.current,
