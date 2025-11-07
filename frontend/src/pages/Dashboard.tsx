@@ -14,6 +14,7 @@ import Background from '../components/Background';
 import useGameStore from '../stores/GameSessionStore';
 import GamePrefModal from '../components/GameSteps/GamePrefModal';
 import NavBar from '../components/NavBar';
+import { audio } from 'framer-motion/client';
 
 interface GameMode {
   id: string;
@@ -114,11 +115,10 @@ const GamePreferences: React.FC<GamePreferencesProps> = ({ mode, onPlay, onClose
                       setDifficulty(diff.id);
                       setSnippetLength(diff.length);
                     }}
-                    className={`p-4 rounded-xl border transition-all ${
-                      difficulty === diff.id
-                        ? 'bg-teal/20 text-white border-teal'
-                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
-                    }`}
+                    className={`p-4 rounded-xl border transition-all ${difficulty === diff.id
+                      ? 'bg-teal/20 text-white border-teal'
+                      : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
+                      }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -148,11 +148,10 @@ const GamePreferences: React.FC<GamePreferencesProps> = ({ mode, onPlay, onClose
                     onClick={() => {
                       setRoomOption(options.id);
                     }}
-                    className={`p-4 rounded-xl border transition-all ${
-                      roomOption === options.id
-                        ? 'bg-teal/20 text-white border-teal'
-                        : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
-                    }`}
+                    className={`p-4 rounded-xl border transition-all ${roomOption === options.id
+                      ? 'bg-teal/20 text-white border-teal'
+                      : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
+                      }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -175,11 +174,10 @@ const GamePreferences: React.FC<GamePreferencesProps> = ({ mode, onPlay, onClose
                           setDifficulty(diff.id);
                           setSnippetLength(diff.length);
                         }}
-                        className={`p-4 rounded-xl border transition-all ${
-                          difficulty === diff.id
-                            ? 'bg-teal/20 text-white border-teal'
-                            : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
-                        }`}
+                        className={`p-4 rounded-xl border transition-all ${difficulty === diff.id
+                          ? 'bg-teal/20 text-white border-teal'
+                          : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 border-white/20'
+                          }`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -215,6 +213,7 @@ const Dashboard = () => {
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [showGamePrefs, setShowGamePrefs] = useState(false);
+  const { songResults } = useGameStore();
 
   const containerRef = useRef(null);
   const { scrollXProgress } = useScroll({ container: containerRef });
@@ -226,16 +225,22 @@ const Dashboard = () => {
       title: 'CLASSIC MODE',
       description:
         'Identify tracks from audio snippets. Test your music knowledge with timed challenges.',
+      videoUrl:
+        'https://res.cloudinary.com/dqyszqny2/video/upload/v1762496579/3403453-uhd_2160_4096_25fps_cpunzs.mp4',
     },
     {
       id: 'inference',
       title: 'INFERENCE MODE',
       description: 'Guess songs from lyrics.',
+      videoUrl:
+        'https://res.cloudinary.com/dqyszqny2/video/upload/v1762496559/14651995_1080_1920_30fps_wpemv6.mp4',
     },
     {
       id: 'multiplayer',
       title: 'MULTIPLAYER',
       description: 'Compete against friends in real-time music battles.',
+      videoUrl:
+        'https://res.cloudinary.com/dqyszqny2/video/upload/v1762496511/8382686-uhd_2160_4096_25fps_vuoghm.mp4',
     },
     {
       id: 'other',
@@ -252,13 +257,6 @@ const Dashboard = () => {
     { id: 2, action: 'Won Multiplayer Match', score: 920, time: '4 hours ago' },
     { id: 3, action: 'Lost Multiplayer Match', score: 650, time: '1 day ago' },
     { id: 4, action: 'Completed Inference Mode', score: 780, time: '2 days ago' },
-  ];
-
-  const friends = [
-    { id: 1, name: 'Ryan23', status: 'online', lastScore: 890 },
-    { id: 2, name: 'MusicLover5', status: 'in-game', lastScore: 1200 },
-    { id: 3, name: 'Sophia3', status: 'offline', lastScore: 750 },
-    { id: 4, name: 'Melody777', status: 'online', lastScore: 980 },
   ];
 
   const handleCardClick = (mode: { id: string; title: string; description: string }) => {
@@ -342,11 +340,10 @@ const Dashboard = () => {
                     {/* Mode Card */}
                     {!isExpanded ? (
                       <div
-                        className={`rounded-2xl overflow-hidden h-[600px] transition-all hover:shadow-lg backdrop-blur-sm bg-darkblue/50 ${
-                          selectedMode === mode.id
-                            ? 'border-2 border-teal shadow-teal/20'
-                            : 'border border-white/10'
-                        }`}
+                        className={`rounded-2xl overflow-hidden h-[600px] transition-all hover:shadow-lg backdrop-blur-sm bg-darkblue/50 ${selectedMode === mode.id
+                          ? 'border-2 border-teal shadow-teal/20'
+                          : 'border border-white/10'
+                          }`}
                       >
                         <div>
                           <h2 className="absolute top-2 left-2 text-xl font-bold text-white px-2 py-1 rounded-full z-10">
@@ -358,7 +355,19 @@ const Dashboard = () => {
                           className="relative h-[450px] flex items-center justify-center"
                           style={{ backgroundColor: 'rgba(20, 61, 77, 0.65)' }}
                         >
-                          <motion.img
+                          <div className="absolute inset-0 overflow-hidden">
+                            <video
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              className="w-full h-full object-cover opacity-30"
+                            >
+                              <source src={mode.videoUrl} type="video/mp4" /> 
+                            </video>
+                            <div className="absolute inset-0 bg-darkblue/60" />
+                          </div>
+                          {/* <motion.img
                             src={needle}
                             alt={`${mode.title} Needle`}
                             className="absolute w-24 h-24 z-10 select-none pointer-events-none"
@@ -397,7 +406,7 @@ const Dashboard = () => {
                               ease: 'linear',
                               duration: selectedMode === mode.id ? 5 : 0,
                             }}
-                          />
+                          /> */}
                         </div>
 
                         {/* Content */}
@@ -432,7 +441,7 @@ const Dashboard = () => {
             </motion.div>
           </div>
 
-          <div className="w-1/3 p-10 space-y-6">
+          <div className="w-1/3 p-10 space-y-3">
             {/* Recent Activity */}
             <motion.div
               className="bg-darkblue/80 backdrop-blur-sm rounded-2xl p-4"
@@ -441,7 +450,7 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <h3 className="text-lg font-bold text-white mb-4">Recent Activity</h3>
+              <h3 className="text-lg font-bold text-white mb-4 tracking-wide">RECENT ACTIVITY</h3>
               <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-teal">
                 {recentActivity.map(activity => (
                   <div key={activity.id} className="text-sm text-white">
@@ -454,7 +463,7 @@ const Dashboard = () => {
               </div>
             </motion.div>
 
-            {/* Friends List */}
+            {/* Last Game's Songs */}
             <motion.div
               className="bg-darkblue/80 backdrop-blur-sm rounded-2xl p-4"
               style={{ border: '1px solid rgba(255,255,255,0.10)' }}
@@ -462,22 +471,33 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
-              <h3 className="text-lg font-bold text-white mb-4">Friends</h3>
+              <h3 className="text-lg font-bold text-white mb-4 tracking-wide">LAST GAME'S SONGS</h3>
               <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-teal">
-                {friends.map(friend => (
-                  <div
-                    key={friend.id}
-                    className="flex items-center justify-between text-sm text-white"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`w-3 h-3 rounded-full ${friend.status === 'online' ? 'bg-green-400' : friend.status === 'in-game' ? 'bg-yellow-400' : 'bg-gray-500'}`}
-                      ></div>
-                      <span>{friend.name}</span>
+                {songResults.length > 0 ? (
+                  songResults.map((song) => (
+                    <div
+                      key={song.snippetId}
+                      className="flex items-start justify-between text-sm text-white p-2 rounded-lg hover:bg-white/5 transition-colors border-b border-cyan-400/40 hover:border-b-cyan-400/60 hover:shadow-md"
+                    >
+                      <div className="flex-1">
+                        <div className="text-base text-white tracking-wide">{song.songTitle}</div>
+                        <div className="text-xs text-white/50">{song.artistName}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {song.correct ? (
+                          <span className="text-green-400 text-lg">✓</span>
+                        ) : (
+                          <span className="text-red-400 text-lg">✗</span>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-xs text-white/70">Last Score: {friend.lastScore}</span>
+                  ))
+                ) : (
+                  <div className="text-center text-white/50 py-8">
+                    <p className="text-sm">No recent games played</p>
+                    <p className="text-xs mt-1">Play a game to see your song history!</p>
                   </div>
-                ))}
+                )}
               </div>
             </motion.div>
           </div>

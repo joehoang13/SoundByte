@@ -351,7 +351,28 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   if (!current) return <div>Loading round...</div>;
 
   return isWaiting ? (
-    <motion.button>Waiting!</motion.button>
+    <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
+      <motion.div
+        className="flex flex-col items-center gap-6 bg-darkblue/80 backdrop-blur-sm rounded-2xl p-12 shadow-lg text-white"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        {/* loading spinner */}
+        <motion.div
+          className="w-20 h-20 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
+
+        <div className="text-center">
+          <h2 className="text-3xl font-bold mb-2">Game Complete!</h2>
+          <p className="text-xl text-grayblue">
+            Waiting for other players to finish...
+          </p>
+        </div>
+      </motion.div>
+    </div>
   ) : (
     <>
       {/* Username Badge */}
@@ -569,13 +590,12 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
-                    lastResult?.concluded ||
-                    !guess.trim() ||
-                    (attemptsLeft !== undefined && attemptsLeft <= 0)
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
+                      !guess.trim() ||
+                      (attemptsLeft !== undefined && attemptsLeft <= 0)
                       ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                       : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                  }`}
+                    }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||

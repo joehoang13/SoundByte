@@ -269,7 +269,7 @@ export const useGameStore = create<GameState>()(
       },
 
       reset: () =>
-        set({
+        set(s => ({ 
           mode: 'classic',
           difficulty: 'easy',
           snippetSize: 5,
@@ -286,14 +286,14 @@ export const useGameStore = create<GameState>()(
           timeBonusTotal: 0,
           attemptsLeft: undefined,
           lastResult: undefined,
-          songResults: [],
+          songResults: s.songResults, 
           loading: false,
           starting: false,
           roomCode: null,
           multiplayerQuestions: [],
           leaderboard: [],
           error: undefined,
-        }),
+        })),
 
       setScore: (n: number) => set({ score: n }),
       setStreak: (n: number) => set({ streak: n }),
@@ -306,7 +306,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 2,
+      version: 3,
       partialize: (s) => ({
         sessionId: s.sessionId,
         currentRound: s.currentRound,
@@ -319,6 +319,7 @@ export const useGameStore = create<GameState>()(
         timeBonus: s.timeBonus,
         timeBonusTotal: s.timeBonusTotal,
         correctAnswers: s.correctAnswers, // NEW: persist this
+        songResults: s.songResults,
       }),
     }
   )

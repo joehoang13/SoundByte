@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import disc from '../assets/disc.svg';
 import needle from '../assets/needle.svg';
 import AuthModal from '../components/Auth/AuthModal';
+import { useVinylScratch } from '../hooks/useVinylScratch';
 import { useAuth } from '../stores/auth';
 
 const Landing = () => {
@@ -12,6 +13,19 @@ const Landing = () => {
 
   const { user, token } = useAuth();
   const isLoggedIn = !!(user && token);
+
+  const [isDragging, setIsDragging] = useState(false);
+  const { startScratch, stopScratch } = useVinylScratch();
+
+  const handleScratch = () => {
+    setIsDragging(true);
+    startScratch();
+  };
+
+  const handleStop = () => {
+    setIsDragging(false);
+    stopScratch();
+  };
 
   const handlePlay = () => {
     if (isLoggedIn) {
@@ -44,9 +58,18 @@ const Landing = () => {
               className="w-32 h-32 select-none cursor-pointer"
               draggable={false}
               onDragStart={e => e.preventDefault()}
+              onMouseDown={handleScratch}    
+              onMouseUp={handleStop}        
+              onMouseLeave={handleStop}
               initial={{ rotate: 0 }}
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, ease: 'linear', duration: 10 }}
+              animate={{ 
+                rotate: isDragging ? undefined : 360 
+              }}
+              transition={{ 
+                repeat: isDragging ? 0 : Infinity, 
+                ease: 'linear', 
+                duration: 10 
+              }}
             />
             <motion.img
               src={needle}
