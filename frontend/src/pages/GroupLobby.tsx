@@ -104,33 +104,61 @@ const GroupLobby: React.FC = () => {
       disconnect();
     });
 
-    // room created / joined / updates
     socket.on('room:created', (summary: LobbySummary) => {
       setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
       setRoomStatus(summary.status);
     });
+
     socket.on('room:joined', (summary: LobbySummary) => {
       setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
       setRoomStatus(summary.status);
     });
+
     socket.on('room:left', () => {
       setRoomId('');
       setLobbyPlayers([]);
     });
+
     socket.on('room:update', (summary: LobbySummary) => {
-      if (summary) setRoomId(summary.code);
+      if (!summary) return; // guard against null payloads
+      setRoomId(summary.code);
       useGameStore.getState().setRoomCode(summary.code);
       setLobbyPlayers(summary.players || []);
       setRoomStatus(summary.status);
     });
-    socket.on('game:start', (questions: string) => {
-      useGameStore.getState().setMultiplayerQuestions(JSON.parse(questions).snippets);
-      setRoomStatus('in-game');
-      navigateGame();
+
+    // GroupLobby.tsx — inside your socket registrations
+    socket.on('game:start', (questions: string | { snippets?: unknown; rounds?: number }) => {
+      try {
+        const parsed = typeof questions === 'string' ? JSON.parse(questions) : questions;
+        const snippets = (parsed as any)?.snippets;
+        const rounds = (parsed as any)?.rounds ?? (Array.isArray(snippets) ? snippets.length : 0);
+        if (!Array.isArray(snippets)) {
+          console.error('game:start payload missing `snippets` array', parsed);
+          return;
+        }
+        useGameStore.getState().setMultiplayerQuestions(snippets);
+        useGameStore.getState().setConfig?.({ mode: 'multiplayer', rounds }); // <-- add this
+        setRoomStatus('in-game');
+        navigateGame();
+      } catch (e) {
+        console.error('Failed to parse game:start payload', e, questions);
+      }
     });
 
+    // GroupLobby.tsx — alongside the other socket.on(...) calls
+    socket.on('game:end', (data?: any) => {
+      setRoomStatus('ended');
+
+      const leaderboard = Array.isArray(data) ? data : data?.leaderboard || [];
+      const code = Array.isArray(data) ? roomId : data?.roomCode || roomId;
+
+      navigate('/endscreen', { state: { roomCode: code, leaderboard } });
+    });
+
+    // Keep your existing cleanup:
     return () => {
       handleLeave();
     };
