@@ -1,7 +1,7 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') }); // <- load from backend folder first
+require('dotenv').config({ path: path.join(__dirname, '.env') }); // load from backend folder
 
-// backend/server.js — Express + Socket.IO (rooms + lobby sync)
+// Express + Socket.IO server setup
 const express = require('express');
 const http = require('http');
 const mongoose = require('mongoose');
@@ -10,13 +10,13 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const setupSocket = require('./sockets/index');
 
-//Models
+// Models
 require('./models/Users');
 require('./models/Snippet');
 require('./models/GameSession');
 require('./models/PlayerStats');
 require('./models/Questions');
-const Room = require('./models/Room'); // <- new Rooms model
+const Room = require('./models/Room');
 
 // Rate limiter
 const { authLimiter } = require('./middleware/rateLimit');
@@ -34,7 +34,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS
+// CORS setup
 const DEFAULT_ORIGINS = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
@@ -96,9 +96,9 @@ if (!process.env.JWT_SECRET) {
 
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
+  .then(() => console.log('✅ MongoDB connected'))
   .catch(err => {
-    console.error('MongoDB error:', err);
+    console.error('❌ MongoDB error:', err);
     process.exit(1);
   });
 
@@ -107,19 +107,22 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const createGsRouter = require('./routes/gs');
 const snipRoutes = require('./routes/snip');
+const questionRoutes = require('./routes/question'); // ✅ added inference/questions route
 
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/gs', createGsRouter());
 app.use('/api/snip', snipRoutes);
 app.use('/api/snippets', snipRoutes);
+app.use('/api/questions', questionRoutes); // ✅ mounted new inference route
 
 // 404 (keep last)
 app.use((req, res) => res.status(404).json({ error: 'Not Found' }));
 
+/* ------------------------------- Startup ------------------------------ */
 const server = http.createServer(app);
 setupSocket(server);
-/* ------------------------------- Startup ------------------------------ */
+
 const PORT = Number(process.env.PORT || 3001);
 server.listen(PORT, () => {
   console.log(`Server on :${PORT} (CORS: ${ORIGINS.join(', ')})`);
