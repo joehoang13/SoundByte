@@ -4,10 +4,9 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Howl, Howler } from 'howler';
 import { useSocketStore } from '../../stores/SocketStore';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../stores/auth';
+import type { AuthUser } from '../../stores/auth';
 import discdb from '../../assets/disc.svg';
 import needledb from '../../assets/needle.svg';
-import type { AuthUser } from '../../stores/auth';
 import type { Placing, RoundMeta } from '../../stores/GameSessionStore';
 
 interface Props {
@@ -36,16 +35,11 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     multiplayerQuestions,
     currentRound,
     snippetSize,
-    sessionId,
-    rounds,
     attemptsLeft,
     correctAnswers,
     timeBonus,
     timeBonusTotal,
     fastestTime,
-    next,
-    start,
-    submitGuess,
     setScore,
     setStreak,
     setCorrectAnswers,
@@ -61,14 +55,11 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const username = user?.username ?? 'Player';
   const avatarUrl = user?.profilePicture;
   const userId = user?.id;
+  const { disconnect } = useSocketStore();
+
 
   const [multiSongResults, setMultiSongResults] = useState<
-    Array<{
-      snippetId: string;
-      songTitle: string;
-      artistName: string;
-      correct: boolean;
-    }>
+    Array<{ snippetId: string; songTitle: string; artistName: string; correct: boolean }>
   >([]);
 
   const [hintsUnlocked, setHintsUnlocked] = useState(0);
@@ -84,8 +75,20 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     return initial;
   });
 
+  const [guess, setGuess] = useState('');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [lastResult, setLastResult] = useState<{
+    correct: boolean;
+    concluded: boolean;
+    attempts: number;
+    attemptsLeft: number;
+    timeMs?: number;
+  } | null>(null);
+
   const audioRef = useRef<Howl | null>(null);
   const timerRef = useRef<number | null>(null);
+  const { socket } = useSocketStore();
 
   const TEAL_TINT_FILTER =
     'brightness(0) saturate(100%) invert(76%) sepia(63%) saturate(6240%) hue-rotate(157deg) brightness(101%) contrast(97%)';
@@ -93,18 +96,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const discTransition = shouldSpin
     ? { repeat: Infinity, repeatType: 'loop' as const, ease: [0, 0, 1, 1] as const, duration: 10 }
     : { duration: 0.2 };
-  const needleTransition = {
-    repeat: Infinity,
-    duration: 2,
-    ease: 'easeInOut' as const,
-  };
-
-  const [guess, setGuess] = useState('');
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [isWaiting, setIsWaiting] = useState(false);
-  const [lastResult, setLastResult] = useState<any>(null);
-
-  const { socket, connect, disconnect } = useSocketStore();
+  const needleTransition = { repeat: Infinity, duration: 2, ease: 'easeInOut' as const };
 
   function formatInitials(fullString: string, revealedWords = 1): string {
     const words = (fullString || '').split(' ');
@@ -120,13 +112,14 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const handleGuessSubmit = useCallback(
     (e?: React.FormEvent) => {
       e?.preventDefault();
-
       if (!roomCode || !current?.snippetId || !guess || !socket) return;
+
       const g = guess.trim();
       if (!g) return;
 
       const elapsedMs = Date.now() - (guessStartTime ?? Date.now());
-      const elapedSeconds = Math.round((elapsedMs / 1000) * 100) / 100;
+      const elapsedSeconds = Math.round((elapsedMs / 1000) * 100) / 100;
+
       socket.emit(
         'game:answer',
         {
@@ -139,97 +132,112 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
         },
         (res: any) => {
           if (!res) return;
-          setLastResult(res);
+
+          const attemptsNow = (guessHistory.length ?? 0) + 1;
+          const attemptsLeftNow =
+            typeof res.attemptsLeft === 'number' ? res.attemptsLeft : Math.max(0, 5 - attemptsNow);
+
+          const lr = {
+            correct: !!res.correct,
+            concluded: !!res.concluded,
+            attempts: attemptsNow,
+            attemptsLeft: attemptsLeftNow,
+            timeMs: res.timeMs,
+          };
+          setLastResult(lr);
+          useGameStore.setState({ attemptsLeft: lr.attemptsLeft, lastResult: lr });
+
+          if (!res.correct) setHintsUnlocked(prev => Math.min(prev + 1, 3));
+
           setGuessHistory(prev => [
             ...prev,
             {
               guessNum: prev.length + 1,
               userGuess: g,
-              isCorrect: res.correct,
-              timeTakenSec: elapedSeconds,
+              isCorrect: !!res.correct,
+              timeTakenSec: elapsedSeconds,
             },
           ]);
           setGuess('');
+
           if (res.correct) {
-            setScore(res.score);
             setCorrectAnswers(correctAnswers + 1);
-            setStreak(streak + 1);
-            setTimeBonus(timeBonus + (res.breakdown?.timeBonus || 0));
-            setTimeBonusTotal(timeBonusTotal + (res.breakdown?.timeBonus || 0));
-            if (Math.round((elapsedMs / 1000) * 100) / 100 < fastestTime) {
-              setFastestTime(elapedSeconds);
-            }
+
+            const tb = res.breakdown?.timeBonus || 0;
+            setTimeBonus(timeBonus + tb);
+            setTimeBonusTotal(timeBonusTotal + tb);
+
+            if (elapsedSeconds < fastestTime) setFastestTime(elapsedSeconds);
 
             setMultiSongResults(prev => {
-              // looks to see if song is tracked already
-              const exists = prev.findIndex(r => r.snippetId === current.snippetId);
-
-              // if already exists, update it in case user got correct after previous wrong attempts
-              if (exists >= 0) {
-                const updated = [...prev];
-                updated[exists] = {
+              const idx = prev.findIndex(r => r.snippetId === current.snippetId);
+              const row = {
+                snippetId: current.snippetId,
+                songTitle: current.title || 'Unknown Song',
+                artistName: current.artist || 'Unknown Artist',
+                correct: true,
+              };
+              if (idx >= 0) {
+                const copy = [...prev];
+                copy[idx] = row;
+                return copy;
+              }
+              return [...prev, row];
+            });
+          } else if (res.concluded) {
+            setStreak(0); // UI smoothing
+            setMultiSongResults(prev => {
+              const exists = prev.some(r => r.snippetId === current.snippetId);
+              if (exists) return prev;
+              return [
+                ...prev,
+                {
                   snippetId: current.snippetId,
                   songTitle: current.title || 'Unknown Song',
                   artistName: current.artist || 'Unknown Artist',
-                  correct: true,
-                };
-                return updated;
-              } else {
-                return [
-                  // add new entry
-                  ...prev,
-                  {
-                    snippetId: current.snippetId,
-                    songTitle: current.title || 'Unknown Song',
-                    artistName: current.artist || 'Unknown Artist',
-                    correct: true,
-                  },
-                ];
-              }
+                  correct: false,
+                },
+              ];
             });
-          } else {
-            setStreak(0);
-            setHintsUnlocked(prev => Math.min(prev + 1, 3)); // hints cap at 3 levels
-
-            if (res.concluded) {
-              setMultiSongResults(prev => {
-                // looks to see if song is tracked already
-                const exists = prev.findIndex(r => r.snippetId === current.snippetId);
-
-                // if already exists, do nothing
-                if (exists >= 0) {
-                  return prev;
-                } else {
-                  // add new entry
-                  return [
-                    ...prev,
-                    {
-                      snippetId: current.snippetId,
-                      songTitle: current.title || 'Unknown Song',
-                      artistName: current.artist || 'Unknown Artist',
-                      correct: false,
-                    },
-                  ];
-                }
-              });
-            }
           }
 
-          if (res.concluded || guessHistory.length > 4) {
-            setTimeout(async () => {
-              await handleNext();
+          if (res.concluded || res.attemptsLeft === 0) {
+            setTimeout(() => {
+              handleNext();
             }, 400);
           }
         }
       );
     },
-    [guess, roomCode, current?.snippetId, currentRound, userId]
+    [
+      guess,
+      roomCode,
+      current?.snippetId,
+      currentRound,
+      userId,
+      snippetSize,
+      guessStartTime,
+      guessHistory.length,
+      correctAnswers,
+      timeBonus,
+      timeBonusTotal,
+      fastestTime,
+      current,
+      setCorrectAnswers,
+      setTimeBonus,
+      setTimeBonusTotal,
+      setFastestTime,
+      setStreak,
+      socket,
+    ]
   );
 
   const handleNext = () => {
     const totalRounds = multiplayerQuestions.length;
     if (currentRound + 1 >= totalRounds) {
-      finish();
+      // Wait for host to end the room.
+      setIsWaiting(true);
+      useGameStore.setState({ songResults: multiSongResults });
     } else {
       useGameStore.setState({
         currentRound: currentRound + 1,
@@ -240,54 +248,101 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       setGuessHistory([]);
       setPlaybackCount(0);
       setLastResult(null);
+      setHintsUnlocked(0);
     }
   };
 
-  const handleQuitGame = async () => {
-    await finish();
-    disconnect();
-    navigate('/endscreen');
-  };
+  // Host/non-host use the same Quit. Host's quit will broadcast game:end.
+  // IMPORTANT: don't navigate/disconnect here; wait for `game:end` so
+  // everyone (including host) gets the leaderboard payload.
+  const handleQuitGame = () => {
+  // persist local results for EndScreen
+  useGameStore.setState({ songResults: multiSongResults });
 
-  const finish = async () => {
-    const songResults = multiplayerQuestions.map(question => ({
-      snippetId: question.snippetId,
-      songTitle: question.title || 'Unknown Song',
-      artistName: question.artist || 'Unknown Artist',
-      correct: false,
-    }));
+  if (socket && roomCode && userId) {
+    socket.emit('leaveRoom', { roomId: roomCode, userId });          // non-host: just leave
+    socket.emit('endGame', { roomCode, userId }, () => {});           // host: ends for all; non-host: ignored
+  }
 
-    useGameStore.setState({ songResults });
+  disconnect();
+  navigate('/endscreen', {
+    state: {
+      roomCode,
+      leaderboard: useGameStore.getState().leaderboard || [],
+    },
+  });
+};
 
-    socket?.emit('endGame', { roomCode, userId: user?.id }, (res: any) => {
-      if (res.allDone) {
-        setIsWaiting(false);
-      } else {
-        setIsWaiting(true);
-      }
-    });
-  };
-
+  // Socket listeners
   useEffect(() => {
-    socket?.on('game:end', (players: Placing[]) => {
-      setLeaderboard(players);
-      disconnect();
-      navigate('/endscreen');
-    });
-  }, [socket]);
+    if (!socket) return;
 
-  useEffect(() => {
-    if (!sessionId || !current) start(user?.id || '');
-  }, [sessionId, current, start, user?.id]);
-  // Volume effect
+    // Server emits { roomCode, leaderboard } when host ends.
+    const onEnd = (payload: any) => {
+      const leaderboard: Placing[] = Array.isArray(payload)
+        ? payload
+        : payload?.leaderboard || [];
 
+      // ✅ ensure everyone's Song Results make it to EndScreen (non-host too)
+      useGameStore.setState({ songResults: multiSongResults });
+
+      setLeaderboard(leaderboard);
+      navigate('/endscreen', {
+        state: {
+          roomCode: (payload && payload.roomCode) || roomCode,
+          leaderboard,
+        },
+      });
+    };
+
+    // Authoritative score/streak for THIS player
+    const onScoreUpdate = (u: any) => {
+      if (!u) return;
+      if (userId && u.userId !== userId) return;
+      setScore(u.score);
+      setStreak(u.streak);
+    };
+
+    // Track per-round result (server-authoritative)
+    const onRoundResult = (r: any) => {
+      if (!r || r.userId !== userId) return;
+      const row = {
+        snippetId: r.snippetId,
+        songTitle: r.title || 'Unknown Song',
+        artistName: r.artist || 'Unknown Artist',
+        correct: !!r.correct,
+      };
+      setMultiSongResults(prev => {
+        const idx = prev.findIndex(x => x.snippetId === row.snippetId);
+        if (idx >= 0) {
+          const copy = [...prev];
+          copy[idx] = row;
+          return copy;
+        }
+        return [...prev, row];
+      });
+    };
+
+    socket.on('game:end', onEnd);
+    socket.on('game:scoreUpdate', onScoreUpdate);
+    socket.on('game:roundResult', onRoundResult);
+
+    return () => {
+      socket.off('game:end', onEnd);
+      socket.off('game:scoreUpdate', onScoreUpdate);
+      socket.off('game:roundResult', onRoundResult);
+    };
+  }, [socket, userId, roomCode, setScore, setStreak, setLeaderboard, navigate, multiSongResults]);
+
+  // Volume
   useEffect(() => {
     Howler.volume(volume / 100);
     localStorage.setItem('sb_volume', String(volume));
   }, [volume]);
 
+  // Load audio
   useEffect(() => {
-    if (current?.audioUrl) {
+    if (multiplayerQuestions[currentRound]?.audioUrl) {
       audioRef.current?.unload();
       audioRef.current = new Howl({
         src: [multiplayerQuestions[currentRound].audioUrl],
@@ -297,42 +352,40 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     }
     return () => {
       audioRef.current?.unload();
-      clearTimeout(timerRef.current!);
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [current?.audioUrl]);
+  }, [multiplayerQuestions, currentRound]);
 
+  // Round switch/UI resets
   useEffect(() => {
     setCurrent(multiplayerQuestions[currentRound]);
     setPlaybackCount(0);
     setHintsUnlocked(0);
-  }, [currentRound]);
+    useGameStore.setState({ attemptsLeft: undefined, lastResult: undefined });
+    setLastResult(null);
+    setGuessHistory([]);
+  }, [currentRound, multiplayerQuestions]);
 
   const startSnippetPlayback = () => {
     if (!audioRef.current || playbackCount >= 2) return;
-
     audioRef.current.stop();
     audioRef.current.seek(0);
     audioRef.current.play();
     setIsPlaying(true);
     setGuessStartTime(Date.now());
-    setPlaybackCount(count => count + 1);
-
-    timerRef.current = window.setTimeout(
-      () => {
-        audioRef.current?.stop();
-        setIsPlaying(false);
-      },
-      (snippetSize || 0) * 1000
-    );
+    setPlaybackCount(c => c + 1);
+    timerRef.current = window.setTimeout(() => {
+      audioRef.current?.stop();
+      setIsPlaying(false);
+    }, (snippetSize || 0) * 1000);
   };
 
   const onDiscClick = () => {
     if (playbackCount >= 2) return;
-
     if (isPlaying) {
       audioRef.current?.stop();
       setIsPlaying(false);
-      clearTimeout(timerRef.current!);
+      if (timerRef.current) clearTimeout(timerRef.current);
     } else {
       startSnippetPlayback();
     }
@@ -346,7 +399,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
         roundIndex: currentRound,
       });
     }
-  }, [currentRound, current?.snippetId, roomCode, userId]);
+  }, [currentRound, current?.snippetId, roomCode, userId, socket]);
 
   if (!current) return <div>Loading round...</div>;
 
@@ -358,7 +411,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        {/* loading spinner */}
         <motion.div
           className="w-20 h-20 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full"
           animate={{ rotate: 360 }}
@@ -398,20 +450,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
               <div className="text-xl font-extrabold" style={{ color: '#E6F6FA' }}>
                 {username}
               </div>
-              {/* <button
-                type="button"
-                className="text-xs font-semibold hover:underline"
-                style={{ color: 'rgba(15,193,233,0.9)' }}
-              >
-                Friends
-              </button>
-              <button
-                type="button"
-                className="text-xs font-semibold hover:underline"
-                style={{ color: 'rgba(15,193,233,0.9)' }}
-              >
-                Stats
-              </button> */}
             </div>
             <div className="text-xs" style={{ color: COLORS.grayblue }}>
               online
@@ -433,20 +471,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
         </div>
       )}
 
-      {/* Solo / Group Switch – placeholder
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[60]">
-        <div
-          className="flex items-center gap-1 rounded-full px-1 py-1"
-          style={{
-            backgroundColor: 'rgba(20, 61, 77, 0.7)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            backdropFilter: 'blur(6px)',
-          }}
-        >
-          toggle buttons here 
-        </div>
-      </div> */}
-
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <motion.div
           className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[900px] min-h-[90dvh] sm:min-h-[500px] h-auto shadow-lg relative text-white p-4 sm:p-10"
@@ -454,7 +478,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
         >
-          {/*Progress Bar */}
+          {/* Progress Bar */}
           <div
             className="w-full h-3 rounded-full mb-6 overflow-hidden"
             style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
@@ -462,7 +486,8 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             <div
               className="h-full rounded-full"
               style={{
-                width: `${((currentRound + (lastResult?.concluded ? 1 : 0)) / rounds) * 100}%`,
+                width: `${((currentRound + (lastResult?.concluded ? 1 : 0)) / multiplayerQuestions.length) * 100
+                  }%`,
                 background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
                 transition: 'width 0.5s ease-in-out',
               }}
@@ -568,17 +593,13 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                   value={guess}
                   onChange={e => setGuess(e.target.value)}
                   onKeyDown={e => {
-                    if (e.key === 'Enter' && guess.trim()) {
-                      handleGuessSubmit(e as any);
-                    }
+                    if (e.key === 'Enter' && guess.trim()) handleGuessSubmit(e as any);
                   }}
                   placeholder={
                     lastResult?.concluded ? 'Round concluded' : ' Enter your answer here'
                   }
                   className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
-                  disabled={
-                    lastResult?.concluded || (attemptsLeft !== undefined && attemptsLeft <= 0)
-                  }
+                  disabled={lastResult?.concluded || (attemptsLeft !== undefined && attemptsLeft <= 0)}
                   autoFocus
                 />
                 <motion.button
@@ -588,13 +609,12 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
-                    lastResult?.concluded ||
-                    !guess.trim() ||
-                    (attemptsLeft !== undefined && attemptsLeft <= 0)
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
+                      !guess.trim() ||
+                      (attemptsLeft !== undefined && attemptsLeft <= 0)
                       ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                       : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                  }`}
+                    }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||
@@ -680,6 +700,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             >
               ×
             </button>
+
             <div className="mb-6">
               <h2 className="text-2xl sm:text-3xl font-bold">Game Settings</h2>
               <p className="text-sm mt-1" style={{ color: COLORS.grayblue }}>
@@ -688,7 +709,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-              {/* Volume & Controls Section */}
               <section
                 className="rounded-2xl p-5 max-w-2xl mx-auto w-full"
                 style={{

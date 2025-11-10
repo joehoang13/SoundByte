@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import useGameStore from '../stores/GameSessionStore';
@@ -7,16 +7,15 @@ import { useAuth } from '../stores/auth';
 const allTabs = [
   { id: 'overview', label: 'Overview', showInModes: ['classic', 'inference', 'multiplayer'] },
   { id: 'leaderboard', label: 'Leaderboard', showInModes: ['multiplayer'] },
-  {
-    id: 'songresults',
-    label: 'Song Results',
-    showInModes: ['classic', 'inference', 'multiplayer'],
-  },
+  { id: 'songresults', label: 'Song Results', showInModes: ['classic', 'inference', 'multiplayer'] },
 ];
 
 const EndScreen = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
+  // Store-derived stats (kept as-is)
   const score = useGameStore(s => s.score);
   const correctAnswers = useGameStore(s => s.correctAnswers);
   const streak = useGameStore(s => s.streak);
@@ -28,14 +27,30 @@ const EndScreen = () => {
 
   const currentRound = useGameStore(s => s.currentRound);
   const rounds = useGameStore(s => s.rounds);
-  const leaderboard = useGameStore(s => s.leaderboard);
+  const storeLeaderboard = useGameStore(s => s.leaderboard);
+
   const isComplete = currentRound + 1 >= rounds;
+
+  // Prefer leaderboard coming from navigation payload (server-driven)
+  const navState = (location.state || {}) as {
+    roomCode?: string;
+    leaderboard?: Array<{ name: string; score: number }>;
+  };
+
+  const effectiveLeaderboard =
+    (Array.isArray(navState.leaderboard) && navState.leaderboard.length > 0
+      ? navState.leaderboard
+      : storeLeaderboard) || [];
+
+  // Ensure the Leaderboard tab appears when multiplayer data is present
+  const effectiveMode = mode || (effectiveLeaderboard.length > 0 ? 'multiplayer' : 'classic');
+
+  const tabs = allTabs.filter(tab => tab.showInModes.includes(effectiveMode));
+  const [activeTab, setActiveTab] = useState<string>(tabs[0]?.id || 'overview');
 
   const [showEarlyQuitModal, setShowEarlyQuitModal] = useState(!isComplete);
 
-  const tabs = allTabs.filter(tab => tab.showInModes.includes(mode));
-  const [activeTab, setActiveTab] = useState(tabs[0].id);
-
+  // Animated counters
   const animatedScore = useSpring(0, { duration: 2000 });
   const animatedCorrectAnswers = useSpring(0, { duration: 1000 });
   const animatedStreak = useSpring(0, { duration: 1000 });
@@ -46,7 +61,7 @@ const EndScreen = () => {
     animatedCorrectAnswers.set(correctAnswers);
     animatedStreak.set(streak);
     animatedTimeBonus.set(timeBonus);
-  }, [score, correctAnswers, streak, timeBonus]);
+  }, [score, correctAnswers, streak, timeBonus, animatedScore, animatedCorrectAnswers, animatedStreak, animatedTimeBonus]);
 
   const displayScore = useTransform(animatedScore, value => Math.floor(value));
   const displayCorrectAnswers = useTransform(animatedCorrectAnswers, value => Math.floor(value));
@@ -65,9 +80,7 @@ const EndScreen = () => {
 
             <div className="flex flex-row justify-between items-center gap-4 w-full">
               <div className="flex flex-col items-center justify-center bg-darkestblue rounded-xl px-6 py-4 w-1/2 h-20 mb-3">
-                <motion.span className="text-xl font-bold text-center">
-                  {displayCorrectAnswers}
-                </motion.span>
+                <motion.span className="text-xl font-bold text-center">{displayCorrectAnswers}</motion.span>
                 <span className="text-sm text-center">Correct Answers</span>
               </div>
               <div className="flex flex-col items-center justify-center bg-darkestblue rounded-xl px-6 py-4 w-1/2 h-20 mb-3">
@@ -84,9 +97,7 @@ const EndScreen = () => {
                 <span className="text-sm text-center">Fastest Time</span>
               </div>
               <div className="flex flex-col items-center justify-center bg-darkestblue rounded-xl px-6 py-4 w-1/2 h-20 mb-3">
-                <motion.span className="text-xl font-bold text-center">
-                  {displayTimeBonus}
-                </motion.span>
+                <motion.span className="text-xl font-bold text-center">{displayTimeBonus}</motion.span>
                 <span className="text-sm text-center">Time Bonus</span>
               </div>
             </div>
@@ -94,26 +105,20 @@ const EndScreen = () => {
         );
 
       case 'leaderboard':
-        return leaderboard.length < 1 ? (
-          <h3>Nothing to see here! </h3> //Replace with actual thing
+        return effectiveLeaderboard.length < 1 ? (
+          <h3>Nothing to see here!</h3>
         ) : (
           <div className="flex flex-col items-center w-full space-y-3">
             <h3 className="text-lg font-semibold mb-2">Top Players</h3>
-            {/* Placeholder for leaderboard data */}
-            {leaderboard.map((player, index) => (
+            {effectiveLeaderboard.map((player, index) => (
               <div
                 key={index + 1}
-                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
-                  player.name === user?.username
-                    ? 'bg-teal/20 border border-teal'
-                    : 'bg-darkestblue'
-                }`}
+                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${player.name === user?.username ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{index + 1}</span>
-                  <span className={player.name === user?.username ? 'font-semibold' : ''}>
-                    {player.name}
-                  </span>
+                  <span className={player.name === user?.username ? 'font-semibold' : ''}>{player.name}</span>
                 </div>
                 <span className="font-bold">{player.score}</span>
               </div>
@@ -140,9 +145,8 @@ const EndScreen = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                        song.correct ? 'bg-green-500' : 'bg-red-500'
-                      }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${song.correct ? 'bg-green-500' : 'bg-red-500'
+                        }`}
                     >
                       {song.correct ? '✓' : '✗'}
                     </span>
@@ -159,45 +163,30 @@ const EndScreen = () => {
   };
 
   const getMessage = () => {
-    if (mode === 'multiplayer') {
-      const playerRank = leaderboard.findIndex(player => player.name === user?.username) + 1;
+    if (effectiveMode === 'multiplayer') {
+      const playerRank = effectiveLeaderboard.findIndex(p => p.name === user?.username) + 1;
 
       if (isComplete) {
-        if (playerRank === 1) {
-          return `${playerRank}st  Place!`;
-        } else if (playerRank === 2) {
-          return `${playerRank}nd Place!`;
-        } else if (playerRank === 3) {
-          return '3rd Place!';
-        } else {
-          return `${playerRank}th Place!`;
-        }
+        if (playerRank === 1) return `${playerRank}st  Place!`;
+        if (playerRank === 2) return `${playerRank}nd Place!`;
+        if (playerRank === 3) return '3rd Place!';
+        return playerRank > 0 ? `${playerRank}th Place!` : 'Great Game!';
       }
       return 'Great Game!';
     }
 
-    if (score >= 8000) {
-      return 'Outstanding!';
-    } else if (score >= 7500) {
-      return 'Excellent Work!';
-    } else if (score >= 5000) {
-      return 'Great Job!';
-    } else if (score >= 1500) {
-      return 'Good Effort!';
-    } else {
-      return 'Keep Trying!';
-    }
+    if (score >= 8000) return 'Outstanding!';
+    if (score >= 7500) return 'Excellent Work!';
+    if (score >= 5000) return 'Great Job!';
+    if (score >= 1500) return 'Good Effort!';
+    return 'Keep Trying!';
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
       <motion.div
         className="backdrop-blur-sm bg-darkblue/80 rounded-xl shadow-lg relative text-white overflow-hidden"
-        style={{
-          width: '100%',
-          maxWidth: '600px',
-          height: '600px',
-        }}
+        style={{ width: '100%', maxWidth: '600px', height: '600px' }}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -230,12 +219,9 @@ const EndScreen = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${
-                    activeTab === tab.id ? '' : 'hover:text-white/60'
-                  } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
-                  style={{
-                    WebkitTapHighlightColor: 'transparent',
-                  }}
+                  className={`${activeTab === tab.id ? '' : 'hover:text-white/60'
+                    } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   {activeTab === tab.id && (
                     <motion.span
@@ -295,17 +281,14 @@ const EndScreen = () => {
             animate={{ scale: 1, y: 0 }}
             transition={{ type: 'spring', duration: 0.5 }}
           >
-            {/* Icon */}
             <div className="flex justify-center mb-4">
               <div className="w-16 h-16 rounded-full bg-teal/20 flex items-center justify-center">
                 <span className="text-white text-4xl">☹</span>
               </div>
             </div>
 
-            {/* Title */}
             <h2 className="text-2xl font-bold text-center text-white mb-3">Game Ended Early</h2>
 
-            {/* Message */}
             <p className="text-center text-white/90 mb-2">
               You completed <span className="font-bold text-teal">{currentRound + 1}</span> of{' '}
               <span className="font-bold text-teal">{rounds}</span> rounds.
@@ -314,7 +297,6 @@ const EndScreen = () => {
               These are your stats from the rounds you completed.
             </p>
 
-            {/* Okay Button */}
             <motion.button
               onClick={() => setShowEarlyQuitModal(false)}
               className="w-full px-6 py-3 bg-teal hover:bg-teal/80 text-white rounded-xl font-bold transition-colors shadow-lg"

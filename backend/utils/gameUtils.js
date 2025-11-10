@@ -20,7 +20,8 @@ async function generateGameQuestions(rounds = 10) {
   const docs = await Snippet.aggregate([
     { $match: match },
     { $sample: { size: take } },
-    { $project: { _id: 1, audioUrl: 1, title: 1, artist: 1 } },
+    // include snippetSize so difficultyFromSize has consistent input
+    { $project: { _id: 1, audioUrl: 1, title: 1, artist: 1, snippetSize: 1 } },
   ]).exec();
 
   return {
