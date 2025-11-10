@@ -7,7 +7,11 @@ import { useAuth } from '../stores/auth';
 const allTabs = [
   { id: 'overview', label: 'Overview', showInModes: ['classic', 'inference', 'multiplayer'] },
   { id: 'leaderboard', label: 'Leaderboard', showInModes: ['multiplayer'] },
-  { id: 'songresults', label: 'Song Results', showInModes: ['classic', 'inference', 'multiplayer'] },
+  {
+    id: 'songresults',
+    label: 'Song Results',
+    showInModes: ['classic', 'inference', 'multiplayer'],
+  },
 ];
 
 const EndScreen = () => {
@@ -61,7 +65,16 @@ const EndScreen = () => {
     animatedCorrectAnswers.set(correctAnswers);
     animatedStreak.set(streak);
     animatedTimeBonus.set(timeBonus);
-  }, [score, correctAnswers, streak, timeBonus, animatedScore, animatedCorrectAnswers, animatedStreak, animatedTimeBonus]);
+  }, [
+    score,
+    correctAnswers,
+    streak,
+    timeBonus,
+    animatedScore,
+    animatedCorrectAnswers,
+    animatedStreak,
+    animatedTimeBonus,
+  ]);
 
   const displayScore = useTransform(animatedScore, value => Math.floor(value));
   const displayCorrectAnswers = useTransform(animatedCorrectAnswers, value => Math.floor(value));
@@ -80,7 +93,9 @@ const EndScreen = () => {
 
             <div className="flex flex-row justify-between items-center gap-4 w-full">
               <div className="flex flex-col items-center justify-center bg-darkestblue rounded-xl px-6 py-4 w-1/2 h-20 mb-3">
-                <motion.span className="text-xl font-bold text-center">{displayCorrectAnswers}</motion.span>
+                <motion.span className="text-xl font-bold text-center">
+                  {displayCorrectAnswers}
+                </motion.span>
                 <span className="text-sm text-center">Correct Answers</span>
               </div>
               <div className="flex flex-col items-center justify-center bg-darkestblue rounded-xl px-6 py-4 w-1/2 h-20 mb-3">
@@ -97,7 +112,9 @@ const EndScreen = () => {
                 <span className="text-sm text-center">Fastest Time</span>
               </div>
               <div className="flex flex-col items-center justify-center bg-darkestblue rounded-xl px-6 py-4 w-1/2 h-20 mb-3">
-                <motion.span className="text-xl font-bold text-center">{displayTimeBonus}</motion.span>
+                <motion.span className="text-xl font-bold text-center">
+                  {displayTimeBonus}
+                </motion.span>
                 <span className="text-sm text-center">Time Bonus</span>
               </div>
             </div>
@@ -113,12 +130,17 @@ const EndScreen = () => {
             {effectiveLeaderboard.map((player, index) => (
               <div
                 key={index + 1}
-                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${player.name === user?.username ? 'bg-teal/20 border border-teal' : 'bg-darkestblue'
-                  }`}
+                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
+                  player.name === user?.username
+                    ? 'bg-teal/20 border border-teal'
+                    : 'bg-darkestblue'
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{index + 1}</span>
-                  <span className={player.name === user?.username ? 'font-semibold' : ''}>{player.name}</span>
+                  <span className={player.name === user?.username ? 'font-semibold' : ''}>
+                    {player.name}
+                  </span>
                 </div>
                 <span className="font-bold">{player.score}</span>
               </div>
@@ -145,8 +167,9 @@ const EndScreen = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${song.correct ? 'bg-green-500' : 'bg-red-500'
-                        }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                        song.correct ? 'bg-green-500' : 'bg-red-500'
+                      }`}
                     >
                       {song.correct ? '✓' : '✗'}
                     </span>
@@ -219,8 +242,9 @@ const EndScreen = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${activeTab === tab.id ? '' : 'hover:text-white/60'
-                    } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
+                  className={`${
+                    activeTab === tab.id ? '' : 'hover:text-white/60'
+                  } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   {activeTab === tab.id && (

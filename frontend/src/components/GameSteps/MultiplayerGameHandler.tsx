@@ -57,7 +57,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const userId = user?.id;
   const { disconnect } = useSocketStore();
 
-
   const [multiSongResults, setMultiSongResults] = useState<
     Array<{ snippetId: string; songTitle: string; artistName: string; correct: boolean }>
   >([]);
@@ -256,22 +255,22 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   // IMPORTANT: don't navigate/disconnect here; wait for `game:end` so
   // everyone (including host) gets the leaderboard payload.
   const handleQuitGame = () => {
-  // persist local results for EndScreen
-  useGameStore.setState({ songResults: multiSongResults });
+    // persist local results for EndScreen
+    useGameStore.setState({ songResults: multiSongResults });
 
-  if (socket && roomCode && userId) {
-    socket.emit('leaveRoom', { roomId: roomCode, userId });          // non-host: just leave
-    socket.emit('endGame', { roomCode, userId }, () => {});           // host: ends for all; non-host: ignored
-  }
+    if (socket && roomCode && userId) {
+      socket.emit('leaveRoom', { roomId: roomCode, userId }); // non-host: just leave
+      socket.emit('endGame', { roomCode, userId }, () => {}); // host: ends for all; non-host: ignored
+    }
 
-  disconnect();
-  navigate('/endscreen', {
-    state: {
-      roomCode,
-      leaderboard: useGameStore.getState().leaderboard || [],
-    },
-  });
-};
+    disconnect();
+    navigate('/endscreen', {
+      state: {
+        roomCode,
+        leaderboard: useGameStore.getState().leaderboard || [],
+      },
+    });
+  };
 
   // Socket listeners
   useEffect(() => {
@@ -279,9 +278,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
     // Server emits { roomCode, leaderboard } when host ends.
     const onEnd = (payload: any) => {
-      const leaderboard: Placing[] = Array.isArray(payload)
-        ? payload
-        : payload?.leaderboard || [];
+      const leaderboard: Placing[] = Array.isArray(payload) ? payload : payload?.leaderboard || [];
 
       // ✅ ensure everyone's Song Results make it to EndScreen (non-host too)
       useGameStore.setState({ songResults: multiSongResults });
@@ -374,10 +371,13 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     setIsPlaying(true);
     setGuessStartTime(Date.now());
     setPlaybackCount(c => c + 1);
-    timerRef.current = window.setTimeout(() => {
-      audioRef.current?.stop();
-      setIsPlaying(false);
-    }, (snippetSize || 0) * 1000);
+    timerRef.current = window.setTimeout(
+      () => {
+        audioRef.current?.stop();
+        setIsPlaying(false);
+      },
+      (snippetSize || 0) * 1000
+    );
   };
 
   const onDiscClick = () => {
@@ -486,8 +486,10 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             <div
               className="h-full rounded-full"
               style={{
-                width: `${((currentRound + (lastResult?.concluded ? 1 : 0)) / multiplayerQuestions.length) * 100
-                  }%`,
+                width: `${
+                  ((currentRound + (lastResult?.concluded ? 1 : 0)) / multiplayerQuestions.length) *
+                  100
+                }%`,
                 background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
                 transition: 'width 0.5s ease-in-out',
               }}
@@ -599,7 +601,9 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     lastResult?.concluded ? 'Round concluded' : ' Enter your answer here'
                   }
                   className="flex-1 p-5 text-base sm:text-lg bg-transparent text-white placeholder-gray-300 text-center focus:outline-none transition-all duration-300 focus:placeholder-transparent disabled:opacity-60"
-                  disabled={lastResult?.concluded || (attemptsLeft !== undefined && attemptsLeft <= 0)}
+                  disabled={
+                    lastResult?.concluded || (attemptsLeft !== undefined && attemptsLeft <= 0)
+                  }
                   autoFocus
                 />
                 <motion.button
@@ -609,12 +613,13 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
-                      !guess.trim() ||
-                      (attemptsLeft !== undefined && attemptsLeft <= 0)
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    lastResult?.concluded ||
+                    !guess.trim() ||
+                    (attemptsLeft !== undefined && attemptsLeft <= 0)
                       ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                       : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
+                  }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||

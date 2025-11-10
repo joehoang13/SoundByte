@@ -148,18 +148,15 @@ const GroupLobby: React.FC = () => {
       }
     });
 
-
-
     // GroupLobby.tsx — alongside the other socket.on(...) calls
     socket.on('game:end', (data?: any) => {
       setRoomStatus('ended');
 
       const leaderboard = Array.isArray(data) ? data : data?.leaderboard || [];
-      const code = Array.isArray(data) ? roomId : (data?.roomCode || roomId);
+      const code = Array.isArray(data) ? roomId : data?.roomCode || roomId;
 
       navigate('/endscreen', { state: { roomCode: code, leaderboard } });
     });
-
 
     // Keep your existing cleanup:
     return () => {
@@ -407,10 +404,11 @@ const GroupLobby: React.FC = () => {
                 <motion.button
                   onClick={handleStartGame}
                   disabled={lobbyPlayers.length + 1 < 2}
-                  className={`px-8 py-3 rounded-xl font-semibold ${lobbyPlayers.length + 1 >= 2
-                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                    : 'bg-gray-600/50 cursor-not-allowed text-gray-400'
-                    }`}
+                  className={`px-8 py-3 rounded-xl font-semibold ${
+                    lobbyPlayers.length + 1 >= 2
+                      ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                      : 'bg-gray-600/50 cursor-not-allowed text-gray-400'
+                  }`}
                   whileHover={lobbyPlayers.length + 1 >= 2 ? { scale: 1.02 } : {}}
                   whileTap={lobbyPlayers.length + 1 >= 2 ? { scale: 0.98 } : {}}
                 >

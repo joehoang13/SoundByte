@@ -5,7 +5,6 @@ const redis = require('../utils/redisClient');
 const { normalize, titleArtistMatch } = require('../utils/scoringUtils');
 const Snippet = require('../models/Snippet');
 
-
 function ensureHost(room, userId) {
   if (!room?.host || room.host.toString() !== userId) {
     const err = new Error('Only host can perform this action');
@@ -15,11 +14,10 @@ function ensureHost(room, userId) {
 }
 
 function multiplayerRoomHandler(io, socket, socketState) {
-  const memQuestions = multiplayerRoomHandler.__q ||= new Map(); // code -> gameData
-  const memAttempts = multiplayerRoomHandler.__a ||= new Map(); // `${code}|${round}|${user}` -> count
-  const memScores = multiplayerRoomHandler.__s ||= new Map(); // code -> { [userId]: {...} }
+  const memQuestions = (multiplayerRoomHandler.__q ||= new Map()); // code -> gameData
+  const memAttempts = (multiplayerRoomHandler.__a ||= new Map()); // `${code}|${round}|${user}` -> count
+  const memScores = (multiplayerRoomHandler.__s ||= new Map()); // code -> { [userId]: {...} }
   const memEnded = (multiplayerRoomHandler.__ended ||= new Set());
-
 
   const attemptKey = (code, roundIndex, userId) => `${code}|${roundIndex}|${userId}`;
 
@@ -29,7 +27,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       try {
         const raw = await redis.get(`room:${roomCode}:scores`);
         if (raw) return JSON.parse(raw);
-      } catch { }
+      } catch {}
     }
     // fallback to memory
     return memScores.get(roomCode) || {};
@@ -42,7 +40,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
     if (redis.enabled) {
       try {
         await redis.set(`room:${roomCode}:scores`, JSON.stringify(map), 'EX', 3600);
-      } catch { }
+      } catch {}
     }
   }
 
@@ -55,7 +53,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
     }
   }
 
-  const clearRoomMem = (code) => {
+  const clearRoomMem = code => {
     memQuestions.delete(code);
     memScores.delete(code);
     for (const k of memAttempts.keys()) if (k.startsWith(`${code}|`)) memAttempts.delete(k);
@@ -231,7 +229,9 @@ function multiplayerRoomHandler(io, socket, socketState) {
       const scoresKey = `room:${room.code}:scores`;
       const payloadStr = JSON.stringify(gameData);
 
-      try { await redis.set(questionsKey, payloadStr, 'EX', 3600); } catch { }
+      try {
+        await redis.set(questionsKey, payloadStr, 'EX', 3600);
+      } catch {}
       memQuestions.set(room.code, gameData);
 
       const players = room.players || [];
@@ -250,17 +250,27 @@ function multiplayerRoomHandler(io, socket, socketState) {
       // include host too (some models don’t duplicate host in players array)
       const hostPid = (room.host || '').toString?.() || room.host;
       if (hostPid && !initialScores[hostPid]) {
-        initialScores[hostPid] = { score: 0, correct: 0, finished: false, streak: 0, name: await resolveUsername(hostPid), };
+        initialScores[hostPid] = {
+          score: 0,
+          correct: 0,
+          finished: false,
+          streak: 0,
+          name: await resolveUsername(hostPid),
+        };
       }
 
-      try { await redis.set(scoresKey, JSON.stringify(initialScores), 'EX', 3600); } catch { }
+      try {
+        await redis.set(scoresKey, JSON.stringify(initialScores), 'EX', 3600);
+      } catch {}
       memScores.set(room.code, initialScores); // ← in-memory fallback
 
       const summary = await room.toLobbySummary();
       io.to(room.code).emit('room:update', summary);
 
       let cached = null;
-      try { cached = await redis.get(questionsKey); } catch { }
+      try {
+        cached = await redis.get(questionsKey);
+      } catch {}
       io.to(room.code).emit('game:start', cached ?? payloadStr);
 
       cb?.({ ok: true, room: summary });
@@ -270,8 +280,6 @@ function multiplayerRoomHandler(io, socket, socketState) {
       socket.emit('room:error', err.message);
     }
   });
-
-
 
   socket.on('endGame', async (payload, cb) => {
     try {
@@ -289,7 +297,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       let scores = {};
       try {
         const scoreRaw = await redis.get(`room:${roomCode}:scores`);
-        scores = scoreRaw ? JSON.parse(scoreRaw) : (memScores.get(roomCode) || {});
+        scores = scoreRaw ? JSON.parse(scoreRaw) : memScores.get(roomCode) || {};
       } catch {
         scores = memScores.get(roomCode) || {};
       }
@@ -344,7 +352,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       try {
         await redis.del(`room:${roomCode}:questions`);
         await redis.del(`room:${roomCode}:scores`);
-      } catch { }
+      } catch {}
       memQuestions.delete(roomCode);
       for (const k of memAttempts.keys()) if (k.startsWith(`${roomCode}|`)) memAttempts.delete(k);
       // keep memScores until next game or clear if you prefer:
@@ -362,9 +370,6 @@ function multiplayerRoomHandler(io, socket, socketState) {
     }
   });
 
-
-
-
   socket.on('game:answer', async (payload, cb) => {
     try {
       const { code, userId, roundIndex, guess, snippetSize, elapsedMs } = payload || {};
@@ -374,7 +379,9 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       // Load questions (Redis → memory fallback)
       const questionsRaw = await redis.get(`room:${roomCode}:questions`);
-      const questions = questionsRaw ? JSON.parse(questionsRaw) : (memQuestions.get(roomCode) || null);
+      const questions = questionsRaw
+        ? JSON.parse(questionsRaw)
+        : memQuestions.get(roomCode) || null;
       if (!questions) throw new Error('No questions found for this room');
 
       const snippetMeta = questions.snippets[roundIndex];
@@ -412,10 +419,16 @@ function multiplayerRoomHandler(io, socket, socketState) {
       // Scores map (Redis + memory fallback)
       const scoreKey = `room:${roomCode}:scores`;
       const scoreRaw = await redis.get(scoreKey);
-      const scoreMap = scoreRaw ? JSON.parse(scoreRaw) : (memScores.get(roomCode) || {});
+      const scoreMap = scoreRaw ? JSON.parse(scoreRaw) : memScores.get(roomCode) || {};
 
       // Ensure entry + name
-      let entry = scoreMap[userId] || { score: 0, correct: 0, finished: false, streak: 0, name: undefined };
+      let entry = scoreMap[userId] || {
+        score: 0,
+        correct: 0,
+        finished: false,
+        streak: 0,
+        name: undefined,
+      };
       if (!entry.name) {
         // Prefer room snapshot
         let nameFromRoom;
@@ -430,7 +443,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
               }
             }
           }
-        } catch { }
+        } catch {}
         entry.name = nameFromRoom || (await resolveUsername(userId)) || 'Player';
       }
 
@@ -444,7 +457,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       const newCorrect = (entry.correct || 0) + (correct ? 1 : 0);
 
       // Mark finished if this was their last round and the round concluded
-      const isLastRoundForPlayer = roundIndex >= (questions.snippets.length - 1);
+      const isLastRoundForPlayer = roundIndex >= questions.snippets.length - 1;
       const finishedNow = concluded && isLastRoundForPlayer;
 
       scoreMap[userId] = {
@@ -455,7 +468,9 @@ function multiplayerRoomHandler(io, socket, socketState) {
         finished: finishedNow ? true : !!entry.finished,
       };
 
-      try { await redis.set(scoreKey, JSON.stringify(scoreMap), 'EX', 3600); } catch { }
+      try {
+        await redis.set(scoreKey, JSON.stringify(scoreMap), 'EX', 3600);
+      } catch {}
       memScores.set(roomCode, scoreMap); // keep memory in sync
 
       // Live updates (per guess)
@@ -482,7 +497,8 @@ function multiplayerRoomHandler(io, socket, socketState) {
       // ---- AUTO END: if everyone in the score map is finished, end the game ----
       if (!memEnded.has(roomCode)) {
         const participants = Object.keys(scoreMap);
-        const allFinished = participants.length > 0 && participants.every(uid => scoreMap[uid]?.finished === true);
+        const allFinished =
+          participants.length > 0 && participants.every(uid => scoreMap[uid]?.finished === true);
 
         if (allFinished) {
           memEnded.add(roomCode);
@@ -500,7 +516,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
                 if (pid && !idToName[pid]) idToName[pid] = p.username || p.name;
               }
             }
-          } catch { }
+          } catch {}
           const missing = participants.filter(uid => !idToName[uid]);
           if (missing.length) {
             try {
@@ -508,7 +524,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
                 .select('_id username')
                 .lean();
               for (const u of users || []) idToName[u._id.toString()] = u.username || 'Player';
-            } catch { }
+            } catch {}
           }
           let leaderboard = participants.map(uid => ({
             userId: uid,
@@ -523,7 +539,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
           try {
             await redis.del(`room:${roomCode}:questions`);
             await redis.del(`room:${roomCode}:scores`);
-          } catch { }
+          } catch {}
           clearRoomMem(roomCode);
 
           // Optional: update lobby summary
@@ -535,7 +551,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
               const summary = await room.toLobbySummary();
               io.to(roomCode).emit('room:update', summary);
             }
-          } catch { }
+          } catch {}
         }
       }
 
@@ -554,9 +570,6 @@ function multiplayerRoomHandler(io, socket, socketState) {
       socket.emit('game:error', err.message);
     }
   });
-
-
-
 
   socket.on('guess', payload => {
     try {
