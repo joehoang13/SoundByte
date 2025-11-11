@@ -1,6 +1,5 @@
 // frontend/src/stores/GameSessionStore.tsx
-// Persists `correctAnswers`; sets from resume.correctSoFar and recomputes on finish.
-
+// + persist roomCode & multiplayerQuestions so refresh can restore multiplayer.
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { ReactNode } from 'react';
@@ -44,6 +43,8 @@ interface GameState {
   sessionId?: string;
   currentRound: number;
   current?: RoundMeta;
+  isHost: boolean;
+  setIsHost: (v: boolean) => void;
   score: number;
   streak: number;
   correctAnswers: number;
@@ -94,6 +95,7 @@ export const useGameStore = create<GameState>()(
       currentRound: 0,
       current: undefined,
       score: 0,
+      isHost: false,  
       streak: 0,
       correctAnswers: 0,
       fastestTimeMs: undefined,
@@ -111,6 +113,7 @@ export const useGameStore = create<GameState>()(
       setTimeBonusTotal: (n: number) => set({ timeBonusTotal: n }),
 
       setConfig: p => set(s => ({ ...s, ...p })),
+      setIsHost: (v: boolean) => set({ isHost: v }),
 
       start: async (userId?: string) => {
         const { difficulty, snippetSize, rounds, starting, sessionId } = get();
@@ -122,7 +125,7 @@ export const useGameStore = create<GameState>()(
           lastResult: undefined,
           attemptsLeft: undefined,
           songResults: [],
-          correctAnswers: 0, // reset
+          correctAnswers: 0,
         });
         try {
           const data = await gsApi.start({ userId: userId ?? '', difficulty, snippetSize, rounds });
@@ -151,7 +154,6 @@ export const useGameStore = create<GameState>()(
         }
       },
 
-      // set correctAnswers based on server authoritative value
       resume: async () => {
         const { sessionId } = get();
         if (!sessionId) return;
@@ -181,7 +183,7 @@ export const useGameStore = create<GameState>()(
         if (!sessionId) return;
         try {
           await gsApi.setStarted(sessionId, currentRound);
-        } catch {}
+        } catch { }
       },
 
       submitGuess: async (guess: string) => {
@@ -192,7 +194,7 @@ export const useGameStore = create<GameState>()(
           set(s => ({
             score: r.score,
             streak: r.streak,
-            correctAnswers: s.correctAnswers + (r.correct ? 1 : 0), // keep tally live
+            correctAnswers: s.correctAnswers + (r.correct ? 1 : 0),
             timeBonus: s.timeBonus + (r.breakdown?.timeBonus || 0),
             timeBonusTotal: (s.timeBonusTotal ?? 0) + (r.breakdown?.timeBonus || 0),
             fastestTimeMs: r.correct
@@ -256,7 +258,6 @@ export const useGameStore = create<GameState>()(
             userGuess: undefined,
           }));
 
-          // Recompute correct answers from authoritative finish payload
           const correctCount = f.answers.filter(a => a.correct).length;
 
           set(s => ({
@@ -316,7 +317,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 3,
+      version: 4,
       partialize: s => ({
         sessionId: s.sessionId,
         currentRound: s.currentRound,
@@ -328,8 +329,12 @@ export const useGameStore = create<GameState>()(
         fastestTime: s.fastestTime,
         timeBonus: s.timeBonus,
         timeBonusTotal: s.timeBonusTotal,
-        correctAnswers: s.correctAnswers, // NEW: persist this
+        correctAnswers: s.correctAnswers,
         songResults: s.songResults,
+        // NEW: persist multiplayer bits to survive refresh
+        roomCode: s.roomCode,
+        multiplayerQuestions: s.multiplayerQuestions,
+        isHost: s.isHost,
       }),
     }
   )

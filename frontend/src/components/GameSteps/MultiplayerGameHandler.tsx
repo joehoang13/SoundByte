@@ -9,6 +9,8 @@ import discdb from '../../assets/disc.svg';
 import needledb from '../../assets/needle.svg';
 import type { Placing, RoundMeta } from '../../stores/GameSessionStore';
 
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+
 interface Props {
   user: AuthUser | undefined;
 }
@@ -18,6 +20,13 @@ type GuessRow = {
   userGuess: string;
   isCorrect: boolean;
   timeTakenSec: number;
+};
+
+type SongResultRow = {
+  snippetId: string;
+  songTitle: string;
+  artistName: string;
+  correct: boolean;
 };
 
 const COLORS = {
@@ -47,6 +56,8 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     setTimeBonusTotal,
     setFastestTime,
     setLeaderboard,
+    setMultiplayerQuestions,
+    setConfig,
   } = useGameStore();
 
   const navigate = useNavigate();
@@ -55,7 +66,15 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const username = user?.username ?? 'Player';
   const avatarUrl = user?.profilePicture;
   const userId = user?.id;
-  const { disconnect } = useSocketStore();
+  const audioUrl = multiplayerQuestions?.[currentRound]?.audioUrl;
+  const lastResumeRef = useRef(0);
+  const skipResetOnceRef = useRef(false);
+
+  // CHANGE #1: ensure the socket is connected even after a hard refresh on /gamescreen
+  const { socket, connect, ensure, disconnect } = useSocketStore();
+  useEffect(() => {
+    ensure(SOCKET_URL);
+  }, [ensure]);
 
   const [multiSongResults, setMultiSongResults] = useState<
     Array<{ snippetId: string; songTitle: string; artistName: string; correct: boolean }>
@@ -87,7 +106,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
   const audioRef = useRef<Howl | null>(null);
   const timerRef = useRef<number | null>(null);
-  const { socket } = useSocketStore();
+  const { isHost } = useGameStore();
 
   const TEAL_TINT_FILTER =
     'brightness(0) saturate(100%) invert(76%) sepia(63%) saturate(6240%) hue-rotate(157deg) brightness(101%) contrast(97%)';
@@ -111,7 +130,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const handleGuessSubmit = useCallback(
     (e?: React.FormEvent) => {
       e?.preventDefault();
-      if (!roomCode || !current?.snippetId || !guess || !socket) return;
+      if (!roomCode || !current?.snippetId || !guess || !socket) return; // why: don’t fire without a live socket
 
       const g = guess.trim();
       if (!g) return;
@@ -131,6 +150,11 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
         },
         (res: any) => {
           if (!res) return;
+
+          if (res.ok === false) {
+            console.warn('game:answer failed:', res.error);
+            return;
+          }
 
           const attemptsNow = (guessHistory.length ?? 0) + 1;
           const attemptsLeftNow =
@@ -184,7 +208,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
               return [...prev, row];
             });
           } else if (res.concluded) {
-            setStreak(0); // UI smoothing
+            setStreak(0);
             setMultiSongResults(prev => {
               const exists = prev.some(r => r.snippetId === current.snippetId);
               if (exists) return prev;
@@ -234,7 +258,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const handleNext = () => {
     const totalRounds = multiplayerQuestions.length;
     if (currentRound + 1 >= totalRounds) {
-      // Wait for host to end the room.
       setIsWaiting(true);
       useGameStore.setState({ songResults: multiSongResults });
     } else {
@@ -251,39 +274,47 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     }
   };
 
-  // Host/non-host use the same Quit. Host's quit will broadcast game:end.
-  // IMPORTANT: don't navigate/disconnect here; wait for `game:end` so
-  // everyone (including host) gets the leaderboard payload.
   const handleQuitGame = () => {
-    // persist local results for EndScreen
     useGameStore.setState({ songResults: multiSongResults });
 
-    if (socket && roomCode && userId) {
-      socket.emit('leaveRoom', { roomId: roomCode, userId }); // non-host: just leave
-      socket.emit('endGame', { roomCode, userId }, () => {}); // host: ends for all; non-host: ignored
+    const goEnd = () =>
+      navigate('/endscreen', {
+        state: { roomCode, leaderboard: useGameStore.getState().leaderboard || [] },
+      });
+
+    if (!socket || !roomCode || !userId) {
+      goEnd();
+      return;
     }
 
-    disconnect();
-    navigate('/endscreen', {
-      state: {
-        roomCode,
-        leaderboard: useGameStore.getState().leaderboard || [],
-      },
-    });
+    if (isHost) {
+      socket.emit('endGame', { roomCode, userId }, () => {
+        disconnect();
+        goEnd();
+      });
+    } else {
+      socket.emit('leaveRoom', { roomId: roomCode, userId }, () => {
+        disconnect();
+        goEnd();
+      });
+    }
   };
+
+
+
 
   // Socket listeners
   useEffect(() => {
     if (!socket) return;
 
-    // Server emits { roomCode, leaderboard } when host ends.
     const onEnd = (payload: any) => {
       const leaderboard: Placing[] = Array.isArray(payload) ? payload : payload?.leaderboard || [];
 
-      // ✅ ensure everyone's Song Results make it to EndScreen (non-host too)
       useGameStore.setState({ songResults: multiSongResults });
 
       setLeaderboard(leaderboard);
+      // ensure UI shows multiplayer tabs
+      setConfig({ mode: 'multiplayer' as const });
       navigate('/endscreen', {
         state: {
           roomCode: (payload && payload.roomCode) || roomCode,
@@ -292,7 +323,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       });
     };
 
-    // Authoritative score/streak for THIS player
     const onScoreUpdate = (u: any) => {
       if (!u) return;
       if (userId && u.userId !== userId) return;
@@ -300,7 +330,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       setStreak(u.streak);
     };
 
-    // Track per-round result (server-authoritative)
     const onRoundResult = (r: any) => {
       if (!r || r.userId !== userId) return;
       const row = {
@@ -329,7 +358,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       socket.off('game:scoreUpdate', onScoreUpdate);
       socket.off('game:roundResult', onRoundResult);
     };
-  }, [socket, userId, roomCode, setScore, setStreak, setLeaderboard, navigate, multiSongResults]);
+  }, [socket, userId, roomCode, setScore, setStreak, setLeaderboard, navigate, multiSongResults, setConfig]);
 
   // Volume
   useEffect(() => {
@@ -337,31 +366,35 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     localStorage.setItem('sb_volume', String(volume));
   }, [volume]);
 
-  // Load audio
   useEffect(() => {
-    if (multiplayerQuestions[currentRound]?.audioUrl) {
+    if (audioUrl) {
       audioRef.current?.unload();
       audioRef.current = new Howl({
-        src: [multiplayerQuestions[currentRound].audioUrl],
+        src: [audioUrl],
         html5: true,
         volume: 1.0,
+        preload: false, // don't fetch until play()
       });
     }
     return () => {
       audioRef.current?.unload();
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [multiplayerQuestions, currentRound]);
+  }, [audioUrl]);
+
+
 
   // Round switch/UI resets
   useEffect(() => {
     setCurrent(multiplayerQuestions[currentRound]);
     setPlaybackCount(0);
     setHintsUnlocked(0);
-    useGameStore.setState({ attemptsLeft: undefined, lastResult: undefined });
     setLastResult(null);
     setGuessHistory([]);
+    // IMPORTANT: don't clear attemptsLeft here; resume just set it for this round
   }, [currentRound, multiplayerQuestions]);
+
+
 
   const startSnippetPlayback = () => {
     if (!audioRef.current || playbackCount >= 2) return;
@@ -391,6 +424,132 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     }
   };
 
+  // --- RESUME AFTER REFRESH / RECONNECT ---
+  useEffect(() => {
+    if (!socket || !roomCode || !userId) return;
+
+    const doResume = () => {
+      const now = Date.now();
+      if (now - lastResumeRef.current < 1200) return;
+      lastResumeRef.current = now;
+
+      socket.emit(
+        'game:resume',
+        { code: roomCode, userId },
+        (res: any) => {
+          if (!res?.ok) return;
+          const snap = res.snapshot || {};
+          const snippets = snap.questions?.snippets;
+          const rounds = snap.questions?.rounds;
+
+          if (snap.hostId && userId) {
+            useGameStore.getState().setIsHost(String(snap.hostId) === String(userId));
+          }
+
+          if (Array.isArray(snippets) && snippets.length) {
+            const existing = useGameStore.getState().multiplayerQuestions || [];
+            const same =
+              existing.length === snippets.length &&
+              existing.every((s, i) =>
+                s?.snippetId === snippets[i]?.snippetId && s?.audioUrl === snippets[i]?.audioUrl
+              );
+            if (!same) setMultiplayerQuestions(snippets);
+            if (typeof rounds === 'number') setConfig({ rounds, mode: 'multiplayer' as const });
+          }
+
+          if (typeof snap.nextRoundIndex === 'number') {
+            const cr = useGameStore.getState().currentRound;
+            if (cr !== snap.nextRoundIndex) {
+              skipResetOnceRef.current = true;
+              useGameStore.setState({ currentRound: snap.nextRoundIndex, lastResult: undefined });
+            }
+          }
+
+          if (snap.me) {
+            setScore(snap.me.score || 0);
+            setStreak(snap.me.streak || 0);
+          }
+
+          if (typeof snap.attemptsLeft === 'number') {
+            useGameStore.setState({ attemptsLeft: snap.attemptsLeft });
+          }
+
+          if (Array.isArray(snap.results)) {
+            const rows: SongResultRow[] = snap.results.map((r: any) => ({
+              snippetId: r.snippetId,
+              songTitle: r.title || 'Unknown Song',
+              artistName: r.artist || 'Unknown Artist',
+              correct: !!r.correct,
+            }));
+            setMultiSongResults(prev => {
+              const seen = new Set(rows.map(x => x.snippetId));
+              const rest = prev.filter(x => !seen.has(x.snippetId));
+              return [...rows, ...rest];
+            });
+          }
+
+          if (snap.status === 'ended') {
+            const leaderboard =
+              Object.entries(snap.scores || {}).map(([uid, v]: any) => ({
+                userId: uid,
+                name: v?.name || 'Player',
+                score: Number(v?.score || 0),
+              })) || [];
+            leaderboard.sort((a, b) => b.score - a.score);
+
+            setLeaderboard(leaderboard);
+            setConfig({ mode: 'multiplayer' as const });
+            const finalRows: SongResultRow[] = Array.isArray(snap.results)
+              ? snap.results.map((r: any) => ({
+                snippetId: r.snippetId,
+                songTitle: r.title || 'Unknown Song',
+                artistName: r.artist || 'Unknown Artist',
+                correct: !!r.correct,
+              }))
+              : [];
+            useGameStore.setState({ songResults: finalRows });
+
+            navigate('/endscreen', { state: { roomCode, leaderboard } });
+          }
+
+          if (!useGameStore.getState().roomCode && roomCode) {
+            useGameStore.getState().setRoomCode(roomCode);
+          }
+        }
+      );
+
+      // diagnostics (keep)
+      socket.emit('debug:whoami', {}, (x: any) => console.log('whoami', x));
+      socket.emit('debug:roomMembers', { code: roomCode }, (x: any) => console.log('roomMembers', x));
+      socket.emit('requestRoom', { code: roomCode }, (x: any) => console.log('requestRoom:', x));
+    };
+
+    const onConnect = () => doResume();
+    const onConnectError = (err: any) => console.warn('connect_error', err);
+    const onDisconnect = (reason: string) => console.info('disconnect', reason);
+
+    if (socket.connected) doResume();
+    socket.on('connect', onConnect);
+    socket.on('connect_error', onConnectError);
+    socket.on('disconnect', onDisconnect);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('connect_error', onConnectError);
+      socket.off('disconnect', onDisconnect);
+    };
+  }, [
+    socket,
+    roomCode,
+    userId,
+    setMultiplayerQuestions,
+    setConfig,
+    setScore,
+    setStreak,
+    setLeaderboard,
+    navigate,
+  ]);
+
   useEffect(() => {
     if (current?.snippetId) {
       socket?.emit('game:roundStarted', {
@@ -400,6 +559,17 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       });
     }
   }, [currentRound, current?.snippetId, roomCode, userId, socket]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onErr = (m: unknown) => console.warn('game:error', m);
+    socket.on('game:error', onErr);
+    return () => {
+      socket.off('game:error', onErr);
+    };
+  }, [socket]);
+
+
 
   if (!current) return <div>Loading round...</div>;
 
@@ -486,10 +656,9 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             <div
               className="h-full rounded-full"
               style={{
-                width: `${
-                  ((currentRound + (lastResult?.concluded ? 1 : 0)) / multiplayerQuestions.length) *
+                width: `${((currentRound + (lastResult?.concluded ? 1 : 0)) / multiplayerQuestions.length) *
                   100
-                }%`,
+                  }%`,
                 background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
                 transition: 'width 0.5s ease-in-out',
               }}
@@ -613,13 +782,12 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
-                    lastResult?.concluded ||
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
-                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                  }`}
+                    ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                    }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||

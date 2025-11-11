@@ -1,3 +1,4 @@
+// backend/sockets/index.js
 const { Server } = require('socket.io');
 const socketState = new Map();
 const { multiplayerRoomHandler } = require('./roomHandlers');
@@ -17,26 +18,43 @@ function setupSocket(server) {
 
     socket.emit('welcome', { message: 'Hello from server!' });
 
-    socket.on('disconnect', () => {
-      console.log('Socket disconnected:', socket.id);
-    });
-
     multiplayerRoomHandler(io, socket, socketState);
 
-    // Cleanup on disconnect
+    // Single disconnect handler with in-game grace (don't remove players mid-game)
     socket.on('disconnect', async () => {
       try {
         const tracked = socketState.get(socket.id);
-        if (!tracked) return;
-        const { code, userId } = tracked;
+        if (!tracked) {
+          console.log(`Socket disconnected (untracked): ${socket.id}`);
+          return;
+        }
 
-        const room = await Room.leaveByCode({ code, userId });
+        const { code, userId } = tracked;
+        const upper = (code || '').toUpperCase();
         socketState.delete(socket.id);
 
-        if (room) {
-          io.to(code).emit('room:update', await room.toLobbySummary());
+        const room = await Room.findOne({ code: upper });
+        if (!room) {
+          console.log(`Socket disconnected: ${socket.id} (room not found)`);
+          return;
+        }
+
+        // If the game is ongoing, keep the player enrolled; just clear socketId
+        if (room.status === 'in-game') {
+          const idx = room.players.findIndex(p => String(p.user) === String(userId));
+          if (idx !== -1) {
+            room.players[idx].socketId = undefined;
+            await room.save();
+            io.to(upper).emit('room:update', await room.toLobbySummary());
+          }
         } else {
-          io.to(code).emit('room:deleted');
+          // Lobby/ended → remove normally
+          const updated = await Room.leaveByCode({ code: upper, userId });
+          if (updated) {
+            io.to(upper).emit('room:update', await updated.toLobbySummary());
+          } else {
+            io.to(upper).emit('room:deleted');
+          }
         }
       } catch (err) {
         console.error('disconnect cleanup error:', err.message);
@@ -46,7 +64,7 @@ function setupSocket(server) {
     });
   });
 
-  return io; // optional if you want to use io elsewhere
+  return io;
 }
 
 module.exports = setupSocket;
