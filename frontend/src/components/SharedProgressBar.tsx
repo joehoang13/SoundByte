@@ -8,7 +8,11 @@ export type MultiProgress = {
       username: string;
       score: number;
       correctCount: number;
+<<<<<<< HEAD
       currentRound: number;     // 0-based
+=======
+      currentRound: number; // 0-based
+>>>>>>> cb40b1d (fix(mp-persistence): ensure socket reconnect on game screen; rebind socketId on resume)
       answeredThisRound: boolean;
     }
   >;
@@ -17,8 +21,13 @@ export type MultiProgress = {
 type Props = {
   progress: MultiProgress | null | undefined;
   myUserId?: string;
+<<<<<<< HEAD
   height?: number;          // progress bar height (px)
   avatarSize?: number;      // icon diameter (px)
+=======
+  height?: number; // progress bar height (px)
+  avatarSize?: number; // icon diameter (px)
+>>>>>>> cb40b1d (fix(mp-persistence): ensure socket reconnect on game screen; rebind socketId on resume)
   className?: string;
 };
 

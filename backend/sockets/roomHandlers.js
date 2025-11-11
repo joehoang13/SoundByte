@@ -32,7 +32,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       try {
         const raw = await redis.get(`room:${roomCode}:scores`);
         if (raw) return JSON.parse(raw);
-      } catch { }
+      } catch {}
     }
     return memScores.get(roomCode) || {};
   }
@@ -42,7 +42,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
     if (redis.enabled) {
       try {
         await redis.set(`room:${roomCode}:scores`, JSON.stringify(map), 'EX', 3600);
-      } catch { }
+      } catch {}
     }
   }
 
@@ -50,14 +50,13 @@ function multiplayerRoomHandler(io, socket, socketState) {
     try {
       const questionsRaw = await redis.get(`room:${roomCode}:questions`);
       if (questionsRaw) return JSON.parse(questionsRaw);
-    } catch { }
+    } catch {}
     return memQuestions.get(roomCode) || null;
   }
 
   function getCtxFromSocket(payload = {}) {
     const tracked = socketState.get(socket.id) || {};
-    const code =
-      (payload.code || payload.roomCode || tracked.code || '').toUpperCase();
+    const code = (payload.code || payload.roomCode || tracked.code || '').toUpperCase();
     const userId = payload.userId || tracked.userId;
     return { code, userId };
   }
@@ -69,7 +68,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       try {
         const raw = await redis.get(resultsKey(roomCode, userId));
         if (raw) return JSON.parse(raw);
-      } catch { }
+      } catch {}
     }
     const roomMap = memRoundResults.get(roomCode) || {};
     return roomMap[userId] || {};
@@ -86,7 +85,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
     if (redis.enabled) {
       try {
         await redis.set(resultsKey(roomCode, userId), JSON.stringify(userMap), 'EX', 3600);
-      } catch { }
+      } catch {}
     }
   }
 
@@ -289,7 +288,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       try {
         await redis.set(questionsKey, payloadStr, 'EX', 3600);
-      } catch { }
+      } catch {}
       memQuestions.set(room.code, gameData);
 
       const players = room.players || [];
@@ -318,7 +317,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       try {
         await redis.set(scoresKey, JSON.stringify(initialScores), 'EX', 3600);
-      } catch { }
+      } catch {}
       memScores.set(room.code, initialScores);
 
       const summary = await room.toLobbySummary();
@@ -327,7 +326,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       let cached = null;
       try {
         cached = await redis.get(questionsKey);
-      } catch { }
+      } catch {}
       io.to(room.code).emit('game:start', cached ?? payloadStr);
 
       cb?.({ ok: true, room: summary });
@@ -374,7 +373,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       try {
         await redis.del(`room:${roomCode}:questions`);
         await redis.del(`room:${roomCode}:scores`);
-      } catch { }
+      } catch {}
       clearRoomMem(roomCode);
 
       const summary = await room.toLobbySummary();
@@ -388,7 +387,6 @@ function multiplayerRoomHandler(io, socket, socketState) {
     }
   });
 
-
   socket.on('game:answer', async (payload, cb) => {
     try {
       const { code: roomCode, userId } = getCtxFromSocket(payload);
@@ -400,9 +398,15 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       // If roundIndex wasn't sent or is out of range, derive it from results
       let roundIndex = Number.isFinite(ri) ? Number(ri) : 0;
-      if (!Number.isFinite(roundIndex) || roundIndex < 0 || roundIndex >= questions.snippets.length) {
+      if (
+        !Number.isFinite(roundIndex) ||
+        roundIndex < 0 ||
+        roundIndex >= questions.snippets.length
+      ) {
         const myResults = await loadUserResults(roomCode, userId);
-        const finished = Object.keys(myResults).map(n => +n).filter(n => !Number.isNaN(n));
+        const finished = Object.keys(myResults)
+          .map(n => +n)
+          .filter(n => !Number.isNaN(n));
         roundIndex = finished.length
           ? Math.min(Math.max(...finished) + 1, questions.snippets.length - 1)
           : 0;
@@ -435,34 +439,57 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       let scoreMap = await loadScores(roomCode);
       let entry = scoreMap[userId] || {
-        score: 0, correct: 0, finished: false, streak: 0, name: undefined,
+        score: 0,
+        correct: 0,
+        finished: false,
+        streak: 0,
+        name: undefined,
       };
       if (!entry.name) entry.name = await resolveUsername(userId);
 
       const concluded = correct || attemptsLeft === 0;
-      const newStreak = correct ? (entry.streak || 0) + 1 : (concluded ? 0 : (entry.streak || 0));
+      const newStreak = correct ? (entry.streak || 0) + 1 : concluded ? 0 : entry.streak || 0;
       const newScore = (entry.score || 0) + delta;
       const newCorrect = (entry.correct || 0) + (correct ? 1 : 0);
       const isLast = roundIndex >= questions.snippets.length - 1;
       const finishedNow = concluded && isLast;
 
-      scoreMap[userId] = { ...entry, score: newScore, correct: newCorrect, streak: newStreak, finished: finishedNow ? true : !!entry.finished };
+      scoreMap[userId] = {
+        ...entry,
+        score: newScore,
+        correct: newCorrect,
+        streak: newStreak,
+        finished: finishedNow ? true : !!entry.finished,
+      };
       await saveScores(roomCode, scoreMap);
 
       io.to(roomCode).emit('game:scoreUpdate', {
-        userId, roundIndex, correct, score: newScore, streak: newStreak,
+        userId,
+        roundIndex,
+        correct,
+        score: newScore,
+        streak: newStreak,
         breakdown: { base, timeBonus, total: delta },
       });
 
       const roundResult = {
-        userId, roundIndex, correct, timeMs,
-        snippetId: snippet.id, title: snippet.title || 'Unknown Song', artist: snippet.artist || 'Unknown Artist',
+        userId,
+        roundIndex,
+        correct,
+        timeMs,
+        snippetId: snippet.id,
+        title: snippet.title || 'Unknown Song',
+        artist: snippet.artist || 'Unknown Artist',
       };
       io.to(roomCode).emit('game:roundResult', roundResult);
 
       if (concluded) {
         await saveUserResult(roomCode, userId, roundIndex, {
-          snippetId: snippet.id, title: snippet.title || 'Unknown Song', artist: snippet.artist || 'Unknown Artist', correct, timeMs,
+          snippetId: snippet.id,
+          title: snippet.title || 'Unknown Song',
+          artist: snippet.artist || 'Unknown Artist',
+          correct,
+          timeMs,
         });
       }
 
@@ -483,7 +510,6 @@ function multiplayerRoomHandler(io, socket, socketState) {
       socket.emit('game:error', err.message);
     }
   });
-
 
   // --- NEW: resume API used after refresh to rebuild client state ---
   socket.on('game:resume', async (payload, cb) => {
@@ -527,13 +553,12 @@ function multiplayerRoomHandler(io, socket, socketState) {
         .filter(n => !Number.isNaN(n));
       let nextRoundIndex = 0;
       if (finishedIndices.length) {
-        nextRoundIndex = Math.min(
-          Math.max(...finishedIndices) + 1,
-          questions.snippets.length - 1
-        );
+        nextRoundIndex = Math.min(Math.max(...finishedIndices) + 1, questions.snippets.length - 1);
       }
 
-      const roomDocLite = await Room.findOne({ code: roomCode }).lean().catch(() => null);
+      const roomDocLite = await Room.findOne({ code: roomCode })
+        .lean()
+        .catch(() => null);
       const hostId = roomDocLite?.host?.toString?.() || String(roomDocLite?.host || '');
 
       const MAX_ATTEMPTS = 5;
@@ -544,7 +569,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       try {
         const room = await Room.findOne({ code: roomCode }).lean();
         if (room?.status === 'ended') status = 'ended';
-      } catch { }
+      } catch {}
 
       cb?.({
         ok: true,

@@ -34,9 +34,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     s.on('connect', () => console.log('[socket] connected:', s.id));
     s.on('reconnect', attempt => console.log('[socket] reconnected', attempt));
     s.on('connect_error', err => console.warn('[socket] connect_error:', err?.message || err));
-    s.on('reconnect_error', err =>
-      console.warn('[socket] reconnect_error:', err?.message || err)
-    );
+    s.on('reconnect_error', err => console.warn('[socket] reconnect_error:', err?.message || err));
     s.on('disconnect', reason => console.log('[socket] disconnected:', reason));
   },
 

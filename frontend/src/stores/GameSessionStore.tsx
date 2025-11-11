@@ -95,7 +95,7 @@ export const useGameStore = create<GameState>()(
       currentRound: 0,
       current: undefined,
       score: 0,
-      isHost: false,  
+      isHost: false,
       streak: 0,
       correctAnswers: 0,
       fastestTimeMs: undefined,
@@ -183,7 +183,7 @@ export const useGameStore = create<GameState>()(
         if (!sessionId) return;
         try {
           await gsApi.setStarted(sessionId, currentRound);
-        } catch { }
+        } catch {}
       },
 
       submitGuess: async (guess: string) => {

@@ -300,9 +300,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     }
   };
 
-
-
-
   // Socket listeners
   useEffect(() => {
     if (!socket) return;
@@ -358,7 +355,17 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       socket.off('game:scoreUpdate', onScoreUpdate);
       socket.off('game:roundResult', onRoundResult);
     };
-  }, [socket, userId, roomCode, setScore, setStreak, setLeaderboard, navigate, multiSongResults, setConfig]);
+  }, [
+    socket,
+    userId,
+    roomCode,
+    setScore,
+    setStreak,
+    setLeaderboard,
+    navigate,
+    multiSongResults,
+    setConfig,
+  ]);
 
   // Volume
   useEffect(() => {
@@ -382,8 +389,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     };
   }, [audioUrl]);
 
-
-
   // Round switch/UI resets
   useEffect(() => {
     setCurrent(multiplayerQuestions[currentRound]);
@@ -393,8 +398,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     setGuessHistory([]);
     // IMPORTANT: don't clear attemptsLeft here; resume just set it for this round
   }, [currentRound, multiplayerQuestions]);
-
-
 
   const startSnippetPlayback = () => {
     if (!audioRef.current || playbackCount >= 2) return;
@@ -433,94 +436,93 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       if (now - lastResumeRef.current < 1200) return;
       lastResumeRef.current = now;
 
-      socket.emit(
-        'game:resume',
-        { code: roomCode, userId },
-        (res: any) => {
-          if (!res?.ok) return;
-          const snap = res.snapshot || {};
-          const snippets = snap.questions?.snippets;
-          const rounds = snap.questions?.rounds;
+      socket.emit('game:resume', { code: roomCode, userId }, (res: any) => {
+        if (!res?.ok) return;
+        const snap = res.snapshot || {};
+        const snippets = snap.questions?.snippets;
+        const rounds = snap.questions?.rounds;
 
-          if (snap.hostId && userId) {
-            useGameStore.getState().setIsHost(String(snap.hostId) === String(userId));
-          }
+        if (snap.hostId && userId) {
+          useGameStore.getState().setIsHost(String(snap.hostId) === String(userId));
+        }
 
-          if (Array.isArray(snippets) && snippets.length) {
-            const existing = useGameStore.getState().multiplayerQuestions || [];
-            const same =
-              existing.length === snippets.length &&
-              existing.every((s, i) =>
+        if (Array.isArray(snippets) && snippets.length) {
+          const existing = useGameStore.getState().multiplayerQuestions || [];
+          const same =
+            existing.length === snippets.length &&
+            existing.every(
+              (s, i) =>
                 s?.snippetId === snippets[i]?.snippetId && s?.audioUrl === snippets[i]?.audioUrl
-              );
-            if (!same) setMultiplayerQuestions(snippets);
-            if (typeof rounds === 'number') setConfig({ rounds, mode: 'multiplayer' as const });
+            );
+          if (!same) setMultiplayerQuestions(snippets);
+          if (typeof rounds === 'number') setConfig({ rounds, mode: 'multiplayer' as const });
+        }
+
+        if (typeof snap.nextRoundIndex === 'number') {
+          const cr = useGameStore.getState().currentRound;
+          if (cr !== snap.nextRoundIndex) {
+            skipResetOnceRef.current = true;
+            useGameStore.setState({ currentRound: snap.nextRoundIndex, lastResult: undefined });
           }
+        }
 
-          if (typeof snap.nextRoundIndex === 'number') {
-            const cr = useGameStore.getState().currentRound;
-            if (cr !== snap.nextRoundIndex) {
-              skipResetOnceRef.current = true;
-              useGameStore.setState({ currentRound: snap.nextRoundIndex, lastResult: undefined });
-            }
-          }
+        if (snap.me) {
+          setScore(snap.me.score || 0);
+          setStreak(snap.me.streak || 0);
+        }
 
-          if (snap.me) {
-            setScore(snap.me.score || 0);
-            setStreak(snap.me.streak || 0);
-          }
+        if (typeof snap.attemptsLeft === 'number') {
+          useGameStore.setState({ attemptsLeft: snap.attemptsLeft });
+        }
 
-          if (typeof snap.attemptsLeft === 'number') {
-            useGameStore.setState({ attemptsLeft: snap.attemptsLeft });
-          }
+        if (Array.isArray(snap.results)) {
+          const rows: SongResultRow[] = snap.results.map((r: any) => ({
+            snippetId: r.snippetId,
+            songTitle: r.title || 'Unknown Song',
+            artistName: r.artist || 'Unknown Artist',
+            correct: !!r.correct,
+          }));
+          setMultiSongResults(prev => {
+            const seen = new Set(rows.map(x => x.snippetId));
+            const rest = prev.filter(x => !seen.has(x.snippetId));
+            return [...rows, ...rest];
+          });
+        }
 
-          if (Array.isArray(snap.results)) {
-            const rows: SongResultRow[] = snap.results.map((r: any) => ({
-              snippetId: r.snippetId,
-              songTitle: r.title || 'Unknown Song',
-              artistName: r.artist || 'Unknown Artist',
-              correct: !!r.correct,
-            }));
-            setMultiSongResults(prev => {
-              const seen = new Set(rows.map(x => x.snippetId));
-              const rest = prev.filter(x => !seen.has(x.snippetId));
-              return [...rows, ...rest];
-            });
-          }
+        if (snap.status === 'ended') {
+          const leaderboard =
+            Object.entries(snap.scores || {}).map(([uid, v]: any) => ({
+              userId: uid,
+              name: v?.name || 'Player',
+              score: Number(v?.score || 0),
+            })) || [];
+          leaderboard.sort((a, b) => b.score - a.score);
 
-          if (snap.status === 'ended') {
-            const leaderboard =
-              Object.entries(snap.scores || {}).map(([uid, v]: any) => ({
-                userId: uid,
-                name: v?.name || 'Player',
-                score: Number(v?.score || 0),
-              })) || [];
-            leaderboard.sort((a, b) => b.score - a.score);
-
-            setLeaderboard(leaderboard);
-            setConfig({ mode: 'multiplayer' as const });
-            const finalRows: SongResultRow[] = Array.isArray(snap.results)
-              ? snap.results.map((r: any) => ({
+          setLeaderboard(leaderboard);
+          setConfig({ mode: 'multiplayer' as const });
+          const finalRows: SongResultRow[] = Array.isArray(snap.results)
+            ? snap.results.map((r: any) => ({
                 snippetId: r.snippetId,
                 songTitle: r.title || 'Unknown Song',
                 artistName: r.artist || 'Unknown Artist',
                 correct: !!r.correct,
               }))
-              : [];
-            useGameStore.setState({ songResults: finalRows });
+            : [];
+          useGameStore.setState({ songResults: finalRows });
 
-            navigate('/endscreen', { state: { roomCode, leaderboard } });
-          }
-
-          if (!useGameStore.getState().roomCode && roomCode) {
-            useGameStore.getState().setRoomCode(roomCode);
-          }
+          navigate('/endscreen', { state: { roomCode, leaderboard } });
         }
-      );
+
+        if (!useGameStore.getState().roomCode && roomCode) {
+          useGameStore.getState().setRoomCode(roomCode);
+        }
+      });
 
       // diagnostics (keep)
       socket.emit('debug:whoami', {}, (x: any) => console.log('whoami', x));
-      socket.emit('debug:roomMembers', { code: roomCode }, (x: any) => console.log('roomMembers', x));
+      socket.emit('debug:roomMembers', { code: roomCode }, (x: any) =>
+        console.log('roomMembers', x)
+      );
       socket.emit('requestRoom', { code: roomCode }, (x: any) => console.log('requestRoom:', x));
     };
 
@@ -568,8 +570,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       socket.off('game:error', onErr);
     };
   }, [socket]);
-
-
 
   if (!current) return <div>Loading round...</div>;
 
@@ -656,9 +656,10 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             <div
               className="h-full rounded-full"
               style={{
-                width: `${((currentRound + (lastResult?.concluded ? 1 : 0)) / multiplayerQuestions.length) *
+                width: `${
+                  ((currentRound + (lastResult?.concluded ? 1 : 0)) / multiplayerQuestions.length) *
                   100
-                  }%`,
+                }%`,
                 background: 'linear-gradient(90deg, #0FC1E9 0%, #3B82F6 100%)',
                 transition: 'width 0.5s ease-in-out',
               }}
@@ -782,12 +783,13 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    lastResult?.concluded ||
                     !guess.trim() ||
                     (attemptsLeft !== undefined && attemptsLeft <= 0)
-                    ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
+                      ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
+                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
+                  }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||
