@@ -78,9 +78,7 @@ const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({ onClose, onSwitchToLogi
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-white/75">
-            Username
-          </label>
+          <label className="block text-sm font-medium text-white/75">Username</label>
           <input
             className={inputCls}
             placeholder="yourname"

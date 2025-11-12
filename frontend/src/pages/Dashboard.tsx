@@ -254,7 +254,9 @@ const Dashboard = () => {
     },
   ];
 
-  {/* Data for Testing */}
+  {
+    /* Data for Testing */
+  }
   const recentActivity = [
     { id: 1, action: 'Completed Classic Mode', score: 850, time: '2 hours ago' },
     { id: 2, action: 'Won Multiplayer Match', score: 920, time: '4 hours ago' },
