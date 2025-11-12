@@ -127,10 +127,11 @@ const EndScreen = () => {
             {effectiveLeaderboard.map((player, index) => (
               <div
                 key={index + 1}
-                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${player.name === user?.username
-                  ? 'bg-teal/20 border border-teal'
-                  : 'bg-darkestblue'
-                  }`}
+                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
+                  player.name === user?.username
+                    ? 'bg-teal/20 border border-teal'
+                    : 'bg-darkestblue'
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{index + 1}</span>
@@ -147,7 +148,6 @@ const EndScreen = () => {
       case 'songresults':
         return (
           <div className="flex flex-col items-center w-full space-y-3">
-
             {songResults.length === 0 ? (
               <p className="text-sm text-gray-400">No songs played yet</p>
             ) : (
@@ -162,8 +162,9 @@ const EndScreen = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${song.correct ? 'bg-green-500' : 'bg-red-500'
-                        }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                        song.correct ? 'bg-green-500' : 'bg-red-500'
+                      }`}
                     >
                       {song.correct ? '✓' : '✗'}
                     </span>
@@ -177,7 +178,6 @@ const EndScreen = () => {
       case 'inferenceresults':
         return (
           <div className="flex flex-col items-center w-full space-y-3">
-
             {songResults.length === 0 ? (
               <p className="text-sm text-gray-400">No questions answered yet</p>
             ) : (
@@ -190,10 +190,11 @@ const EndScreen = () => {
                   <div className="flex justify-between items-start mb-2">
                     <span className="font-bold text-base text-teal">Question {index + 1}</span>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${result.correct
+                      className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        result.correct
                           ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                           : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        }`}
+                      }`}
                     >
                       {result.correct ? '✓ Correct' : '✗ Incorrect'}
                     </span>
@@ -277,8 +278,9 @@ const EndScreen = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${activeTab === tab.id ? '' : 'hover:text-white/60'
-                    } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
+                  className={`${
+                    activeTab === tab.id ? '' : 'hover:text-white/60'
+                  } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   {activeTab === tab.id && (

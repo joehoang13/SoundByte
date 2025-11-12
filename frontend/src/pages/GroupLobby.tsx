@@ -27,7 +27,7 @@ export interface LobbySummary {
   playerCount: number;
   maxPlayers: number;
   players: LobbyPlayer[];
-  settings?: { 
+  settings?: {
     snippetLength?: number;
     maxPlayers?: number;
     isPrivate?: boolean;
@@ -176,10 +176,12 @@ const GroupLobby: React.FC = () => {
   const createRoom = () => {
     if (!user?.id || !socket?.id) return;
 
-    socket?.emit('createRoom', { hostId: user?.id, hostSocketId: socket.id, 
+    socket?.emit('createRoom', {
+      hostId: user?.id,
+      hostSocketId: socket.id,
       settings: {
-        snippetLength: snippetLength || 5
-      } 
+        snippetLength: snippetLength || 5,
+      },
     });
   };
 
@@ -260,7 +262,8 @@ const GroupLobby: React.FC = () => {
             </p>
             {gameMode && roomId && (
               <div className="mt-2 inline-block px-3 py-1 rounded-full border border-teal bg-darkestblue/40 text-sm text-grayblue">
-                  Classic Mode{roomSettings.snippetLength && ` • ${roomSettings.snippetLength}s clips`}
+                Classic Mode
+                {roomSettings.snippetLength && ` • ${roomSettings.snippetLength}s clips`}
               </div>
             )}
 
@@ -268,7 +271,6 @@ const GroupLobby: React.FC = () => {
             <div className="text-xs text-gray-400 mt-4">
               Status: {socketStatus}, Role: {role}, Room: {roomId || '—'}
             </div> */}
-
           </header>
 
           <button

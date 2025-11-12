@@ -44,8 +44,10 @@ const InferenceScreen: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [guess, setGuess] = useState('');
   const [guessHistory, setGuessHistory] = useState<GuessRow[]>([]);
-  const [questionResults, setquestionResults] = useState<Array<{ questionId: string; correct: boolean }>>([]);
-  
+  const [questionResults, setquestionResults] = useState<
+    Array<{ questionId: string; correct: boolean }>
+  >([]);
+
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -106,7 +108,7 @@ const InferenceScreen: React.FC = () => {
         mode: 'inference',
         timeBonus: 0,
         fastestTime: Infinity,
-        songResults: questions.map((q) => {
+        songResults: questions.map(q => {
           const guess = questionResults.find(g => g.questionId === q._id);
           return {
             snippetId: q._id,
@@ -116,7 +118,7 @@ const InferenceScreen: React.FC = () => {
           };
         }),
       });
-      
+
       navigate('/endscreen');
     }
   };
@@ -185,10 +187,7 @@ const InferenceScreen: React.FC = () => {
       setStreak(s => s + 1);
       setShowAnswer(true);
 
-      setquestionResults(prev => [
-        ...prev,
-        { questionId: current._id, correct: true }
-      ]);
+      setquestionResults(prev => [...prev, { questionId: current._id, correct: true }]);
     } else {
       setStreak(0);
       setAttemptsLeft(a => a - 1);
@@ -249,7 +248,7 @@ const InferenceScreen: React.FC = () => {
         earlyQuit: true,
       },
     });
-  }
+  };
 
   /* ---------------- UI ---------------- */
   return (
@@ -406,10 +405,11 @@ const InferenceScreen: React.FC = () => {
                   <motion.button
                     type="submit"
                     disabled={attemptsLeft <= 0 || showAnswer}
-                    className={`px-8 font-bold py-5 text-base ${attemptsLeft <= 0
+                    className={`px-8 font-bold py-5 text-base ${
+                      attemptsLeft <= 0
                         ? 'bg-gray-700/50 cursor-not-allowed text-gray-400'
                         : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white'
-                      }`}
+                    }`}
                     whileHover={attemptsLeft > 0 ? { scale: 1.02 } : {}}
                     whileTap={attemptsLeft > 0 ? { scale: 0.98 } : {}}
                   >
