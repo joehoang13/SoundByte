@@ -482,7 +482,8 @@ function multiplayerRoomHandler(io, socket, socketState) {
         streak: newStreak,
         breakdown: { base, timeBonus, total: delta },
       });
-      io.to(roomCode).emit('game:leaderboardUpdate',
+      io.to(roomCode).emit(
+        'game:leaderboardUpdate',
         Object.entries(scoreMap).map(([id, player]) => ({
           id,
           score: player.score,

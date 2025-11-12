@@ -319,11 +319,11 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
         return [...prev, row];
       });
     };
-    
+
     const onLeaderboardUpdate = (r: any) => {
-      console.log(r)
-      console.log('pie')
-    }
+      console.log(r);
+      console.log('pie');
+    };
 
     socket.on('game:end', onEnd);
     socket.on('game:scoreUpdate', onScoreUpdate);

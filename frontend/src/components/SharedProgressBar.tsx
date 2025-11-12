@@ -9,7 +9,7 @@ export type MultiProgress = {
       username: string;
       score: number;
       correctCount: number;
-      currentRound: number;    // 0-based
+      currentRound: number; // 0-based
       answeredThisRound: boolean;
     }
   >;
@@ -18,8 +18,8 @@ export type MultiProgress = {
 type Props = {
   progress: MultiProgress | null | undefined;
   myUserId?: string;
-  height?: number;       // progress bar height (px)
-  avatarSize?: number;   // icon diameter (px)
+  height?: number; // progress bar height (px)
+  avatarSize?: number; // icon diameter (px)
   className?: string;
 };
 
