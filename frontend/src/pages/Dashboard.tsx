@@ -477,7 +477,7 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
-              <h3 className="text-lg font-bold text-white mb-4 tracking-wide">LAST GAME'S SONGS</h3>
+              <h3 className="text-lg font-bold text-white mb-4 tracking-wide">LAST GAME'S RESULTS</h3>
               <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-teal">
                 {songResults.length > 0 ? (
                   songResults.map(song => (
@@ -501,7 +501,7 @@ const Dashboard = () => {
                 ) : (
                   <div className="text-center text-white/50 py-8">
                     <p className="text-sm">No recent games played</p>
-                    <p className="text-xs mt-1">Play a game to see your song history!</p>
+                    <p className="text-xs mt-1">Play a game to see your history!</p>
                   </div>
                 )}
               </div>

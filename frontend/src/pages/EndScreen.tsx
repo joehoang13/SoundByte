@@ -7,11 +7,8 @@ import { useAuth } from '../stores/auth';
 const allTabs = [
   { id: 'overview', label: 'Overview', showInModes: ['classic', 'inference', 'multiplayer'] },
   { id: 'leaderboard', label: 'Leaderboard', showInModes: ['multiplayer'] },
-  {
-    id: 'songresults',
-    label: 'Song Results',
-    showInModes: ['classic', 'inference', 'multiplayer'],
-  },
+  { id: 'songresults', label: 'Song Results', showInModes: ['classic', 'multiplayer'] },
+  { id: 'inferenceresults', label: 'Inference Results', showInModes: ['inference'] },
 ];
 
 const EndScreen = () => {
@@ -130,11 +127,10 @@ const EndScreen = () => {
             {effectiveLeaderboard.map((player, index) => (
               <div
                 key={index + 1}
-                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${
-                  player.name === user?.username
-                    ? 'bg-teal/20 border border-teal'
-                    : 'bg-darkestblue'
-                }`}
+                className={`flex justify-between items-center w-full px-4 py-3 rounded-xl ${player.name === user?.username
+                  ? 'bg-teal/20 border border-teal'
+                  : 'bg-darkestblue'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6">{index + 1}</span>
@@ -151,7 +147,6 @@ const EndScreen = () => {
       case 'songresults':
         return (
           <div className="flex flex-col items-center w-full space-y-3">
-            <h3 className="text-lg font-semibold mb-2">Your Song Results</h3>
 
             {songResults.length === 0 ? (
               <p className="text-sm text-gray-400">No songs played yet</p>
@@ -167,12 +162,52 @@ const EndScreen = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                        song.correct ? 'bg-green-500' : 'bg-red-500'
-                      }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${song.correct ? 'bg-green-500' : 'bg-red-500'
+                        }`}
                     >
                       {song.correct ? '✓' : '✗'}
                     </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        );
+
+      case 'inferenceresults':
+        return (
+          <div className="flex flex-col items-center w-full space-y-3">
+
+            {songResults.length === 0 ? (
+              <p className="text-sm text-gray-400">No questions answered yet</p>
+            ) : (
+              songResults.map((result, index) => (
+                <div
+                  key={result.snippetId || index}
+                  className="w-full px-4 py-4 rounded-xl bg-darkestblue"
+                >
+                  {/* Question Header with Result Badge */}
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-bold text-base text-teal">Question {index + 1}</span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-bold ${result.correct
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        }`}
+                    >
+                      {result.correct ? '✓ Correct' : '✗ Incorrect'}
+                    </span>
+                  </div>
+
+                  {/* Question Text */}
+                  <div className="mb-3 text-sm text-white/90 leading-relaxed">
+                    {result.songTitle}
+                  </div>
+
+                  {/* Answer */}
+                  <div className="flex items-start gap-2 text-xs">
+                    <span className="text-gray-400 font-semibold">Answer:</span>
+                    <span className="text-gray-300">{result.artistName}</span>
                   </div>
                 </div>
               ))
@@ -242,9 +277,8 @@ const EndScreen = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${
-                    activeTab === tab.id ? '' : 'hover:text-white/60'
-                  } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
+                  className={`${activeTab === tab.id ? '' : 'hover:text-white/60'
+                    } relative rounded-full px-3 py-1.5 text-sm font-medium text-white outline-sky-400 transition focus-visible:outline-2 whitespace-nowrap`}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   {activeTab === tab.id && (

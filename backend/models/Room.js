@@ -35,6 +35,7 @@ const RoomSchema = new mongoose.Schema(
       maxPlayers: { type: Number, default: 8, min: 1, max: 32 },
       isPrivate: { type: Boolean, default: false },
       passcode: { type: String, trim: true },
+      snippetLength: { type: Number, default: 5 },
     },
 
     currentRound: { type: Number, default: 0 },
@@ -113,6 +114,11 @@ RoomSchema.methods.toLobbySummary = async function () {
       profilePicture: p.user.profilePicture,
       socketId: p.socketId,
     })),
+    settings: {
+      snippetLength: this.settings?.snippetLength ?? 5,
+      maxPlayers: this.settings?.maxPlayers ?? 8,
+      isPrivate: this.settings?.isPrivate ?? false,
+    },
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
   };

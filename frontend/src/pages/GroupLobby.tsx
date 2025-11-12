@@ -27,6 +27,11 @@ export interface LobbySummary {
   playerCount: number;
   maxPlayers: number;
   players: LobbyPlayer[];
+  settings?: { 
+    snippetLength?: number;
+    maxPlayers?: number;
+    isPrivate?: boolean;
+  };
   createdAt: string; // ISO date string from MongoDB
   updatedAt: string; // ISO date string from MongoDB
 }
@@ -61,6 +66,7 @@ const GroupLobby: React.FC = () => {
   // const role = 'create'; // for testing
   const gameMode = 'classic';
   const snippetLength = modalState?.snippetLength;
+  const [roomSettings, setRoomSettings] = useState<{ snippetLength?: number }>({});
 
   // ───────────────────── Socket.IO / Group Lobby ─────────────────────
   const { socket, connect, disconnect } = useSocketStore();
@@ -108,12 +114,14 @@ const GroupLobby: React.FC = () => {
       setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
       setRoomStatus(summary.status);
+      setRoomSettings(summary.settings || {});
     });
 
     socket.on('room:joined', (summary: LobbySummary) => {
       setRoomId(summary.code);
       setLobbyPlayers(summary.players || []);
       setRoomStatus(summary.status);
+      setRoomSettings(summary.settings || {});
     });
 
     socket.on('room:left', () => {
@@ -127,6 +135,7 @@ const GroupLobby: React.FC = () => {
       useGameStore.getState().setRoomCode(summary.code);
       setLobbyPlayers(summary.players || []);
       setRoomStatus(summary.status);
+      setRoomSettings(summary.settings || {});
     });
 
     // GroupLobby.tsx — inside your socket registrations
@@ -162,10 +171,16 @@ const GroupLobby: React.FC = () => {
     return () => {
       handleLeave();
     };
-  }, [socket, username]);
+  }, [socket, username, role]);
 
   const createRoom = () => {
-    socket?.emit('createRoom', { hostId: user?.id, hostSocketId: socket.id });
+    if (!user?.id || !socket?.id) return;
+
+    socket?.emit('createRoom', { hostId: user?.id, hostSocketId: socket.id, 
+      settings: {
+        snippetLength: snippetLength || 5
+      } 
+    });
   };
 
   const joinRoom = (code: string) => {
@@ -245,14 +260,15 @@ const GroupLobby: React.FC = () => {
             </p>
             {gameMode && roomId && (
               <div className="mt-2 inline-block px-3 py-1 rounded-full border border-teal bg-darkestblue/40 text-sm text-grayblue">
-                {gameMode === 'classic' ? 'Classic Mode' : 'Inference Mode'}
-                {snippetLength && gameMode === 'classic' && ` • ${snippetLength}s clips`}
+                  Classic Mode{roomSettings.snippetLength && ` • ${roomSettings.snippetLength}s clips`}
               </div>
             )}
 
+            {/* Take out status bar for production 
             <div className="text-xs text-gray-400 mt-4">
               Status: {socketStatus}, Role: {role}, Room: {roomId || '—'}
-            </div>
+            </div> */}
+
           </header>
 
           <button
