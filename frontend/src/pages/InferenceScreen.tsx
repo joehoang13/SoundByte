@@ -256,7 +256,7 @@ const InferenceScreen: React.FC = () => {
       {/* Username Badge */}
       {user && (
         <div
-          className="fixed top-6 left-6 z-[60] flex items-center gap-4 rounded-2xl px-5 py-4"
+          className="fixed top-6 left-6 z-[60] flex items-center gap-2.5 rounded-2xl px-4 py-3"
           style={{
             backgroundColor: 'rgba(20, 61, 77, 0.7)',
             border: '1px solid rgba(255,255,255,0.10)',
@@ -264,7 +264,7 @@ const InferenceScreen: React.FC = () => {
             backdropFilter: 'blur(6px)',
           }}
         >
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
             {avatarUrl ? (
               <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
             ) : (
@@ -274,8 +274,8 @@ const InferenceScreen: React.FC = () => {
             )}
           </div>
           <div className="leading-tight">
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <div className="text-xl font-extrabold" style={{ color: '#E6F6FA' }}>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <div className="text-base font-extrabold" style={{ color: '#E6F6FA' }}>
                 {username}
               </div>
             </div>
@@ -287,7 +287,7 @@ const InferenceScreen: React.FC = () => {
           {/* Settings button */}
           <motion.button
             type="button"
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors ml-2"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors ml-2"
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setSettingsOpen(true)}
@@ -298,6 +298,7 @@ const InferenceScreen: React.FC = () => {
           </motion.button>
         </div>
       )}
+
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <motion.div
           className="flex flex-col bg-darkblue/80 backdrop-blur-sm rounded-2xl w-full max-w-[900px] min-h-[90dvh] h-auto shadow-lg relative text-white p-4 sm:p-10"
@@ -405,11 +406,10 @@ const InferenceScreen: React.FC = () => {
                   <motion.button
                     type="submit"
                     disabled={attemptsLeft <= 0 || showAnswer}
-                    className={`px-8 font-bold py-5 text-base ${
-                      attemptsLeft <= 0
+                    className={`px-8 font-bold py-5 text-base ${attemptsLeft <= 0
                         ? 'bg-gray-700/50 cursor-not-allowed text-gray-400'
                         : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white'
-                    }`}
+                      }`}
                     whileHover={attemptsLeft > 0 ? { scale: 1.02 } : {}}
                     whileTap={attemptsLeft > 0 ? { scale: 0.98 } : {}}
                   >

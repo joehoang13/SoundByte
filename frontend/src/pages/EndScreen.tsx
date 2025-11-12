@@ -120,7 +120,7 @@ const EndScreen = () => {
 
       case 'leaderboard':
         return effectiveLeaderboard.length < 1 ? (
-          <h3>Nothing to see here!</h3>
+           <h3 className="text-center">Unable to view leaderboard.</h3>
         ) : (
           <div className="flex flex-col items-center w-full space-y-3">
             <h3 className="text-lg font-semibold mb-2">Top Players</h3>

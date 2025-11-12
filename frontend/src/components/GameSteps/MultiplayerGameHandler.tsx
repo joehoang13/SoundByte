@@ -8,6 +8,7 @@ import type { AuthUser } from '../../stores/auth';
 import discdb from '../../assets/disc.svg';
 import needledb from '../../assets/needle.svg';
 import type { Placing, RoundMeta } from '../../stores/GameSessionStore';
+import LiveLeaderboard from '../LiveLeaderboard';
 
 interface Props {
   user: AuthUser | undefined;
@@ -57,9 +58,18 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const userId = user?.id;
   const { disconnect } = useSocketStore();
 
-  const [multiSongResults, setMultiSongResults] = useState<
-    Array<{ snippetId: string; songTitle: string; artistName: string; correct: boolean }>
-  >([]);
+  const [multiSongResults, setMultiSongResults] = useState<Array<{ 
+    snippetId: string; 
+    songTitle: string; 
+    artistName: string; 
+    correct: boolean 
+  }>>([]);
+
+  const [leaderboardData, setLeaderboardData] = useState<Array<{
+    id: string;
+    name: string;
+    score: number;
+  }>>([]);
 
   const [hintsUnlocked, setHintsUnlocked] = useState(0);
   const [current, setCurrent] = useState<RoundMeta>();
@@ -320,9 +330,14 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       });
     };
 
-    const onLeaderboardUpdate = (r: any) => {
-      console.log(r);
-      console.log('pie');
+    const onLeaderboardUpdate = (data: any) => {
+      console.log('📊 Leaderboard update:', data);
+
+      // update local leaderboard display
+      setLeaderboardData(data);
+
+      // update global store leaderboard
+      setLeaderboard(data);
     };
 
     socket.on('game:end', onEnd);
@@ -333,6 +348,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       socket.off('game:end', onEnd);
       socket.off('game:scoreUpdate', onScoreUpdate);
       socket.off('game:roundResult', onRoundResult);
+      socket.off('game:leaderboardUpdate', onLeaderboardUpdate);
     };
   }, [socket, userId, roomCode, setScore, setStreak, setLeaderboard, navigate, multiSongResults]);
 
@@ -433,7 +449,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       {/* Username Badge */}
       {user && (
         <div
-          className="fixed top-6 left-6 z-[60] flex items-center gap-4 rounded-2xl px-5 py-4"
+          className="fixed top-6 left-6 z-[60] flex items-center gap-2.5 rounded-2xl px-4 py-3"
           style={{
             backgroundColor: 'rgba(20, 61, 77, 0.7)',
             border: '1px solid rgba(255,255,255,0.10)',
@@ -441,7 +457,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             backdropFilter: 'blur(6px)',
           }}
         >
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
             {avatarUrl ? (
               <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
             ) : (
@@ -451,8 +467,8 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
             )}
           </div>
           <div className="leading-tight">
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <div className="text-xl font-extrabold" style={{ color: '#E6F6FA' }}>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <div className="text-base font-extrabold" style={{ color: '#E6F6FA' }}>
                 {username}
               </div>
             </div>
@@ -464,7 +480,7 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
           {/* Settings button */}
           <motion.button
             type="button"
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors ml-2"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors ml-2"
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setSettingsOpen(true)}
@@ -475,6 +491,20 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
           </motion.button>
         </div>
       )}
+
+      {leaderboardData.length > 0 && (
+      <motion.div
+        className="fixed top-6 right-4 z-[60] w-64 max-h-[calc(100vh-3rem)]"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <LiveLeaderboard 
+          players={leaderboardData}
+          myUserId={userId}
+        />
+      </motion.div>
+    )}
 
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <motion.div

@@ -174,8 +174,6 @@ const GroupLobby: React.FC = () => {
   }, [socket, username, role]);
 
   const createRoom = () => {
-    if (!user?.id || !socket?.id) return;
-
     socket?.emit('createRoom', {
       hostId: user?.id,
       hostSocketId: socket.id,
