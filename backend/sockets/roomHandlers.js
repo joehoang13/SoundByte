@@ -486,6 +486,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
         'game:leaderboardUpdate',
         Object.entries(scoreMap).map(([id, player]) => ({
           id,
+          name: player.name,
           score: player.score,
         }))
       );
