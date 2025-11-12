@@ -246,9 +246,9 @@ const Dashboard = () => {
         'https://res.cloudinary.com/dqyszqny2/video/upload/v1762496511/8382686-uhd_2160_4096_25fps_vuoghm.mp4',
     },
     {
-      id: 'other',
-      title: 'OTHER',
-      description: 'Other game modes',
+      id: 'comingsoon',
+      title: 'COMING SOON',
+      description: 'Other game modes coming soon!',
       videoUrl:
         'https://res.cloudinary.com/dqyszqny2/video/upload/v1762837946/7606358-hd_1080_1920_30fps_kojo86.mp4',
     },
