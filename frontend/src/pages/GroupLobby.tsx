@@ -47,6 +47,7 @@ const GroupLobby: React.FC = () => {
   // local players list (store may or may not have one)
   // @ts-ignore optional players in store
   const storePlayers: Player[] = useGameStore.getState?.().players ?? [];
+  const [errorMessage, setErrorMessage] = useState('');
   const [roomStatus, setRoomStatus] = useState<'lobby' | 'in-game' | 'ended'>('lobby');
   const [showGamePrefs, setShowGamePrefs] = useState(false);
   const roomStatusRef = useRef(roomStatus);
@@ -189,6 +190,10 @@ const GroupLobby: React.FC = () => {
       code: code.trim(),
       userId: user?.id,
       userSocketId: socket.id,
+    }, (res: any) => {
+      if (!res.ok) {
+        setErrorMessage(res.error);
+      }
     });
   };
   const leaveRoom = () => {
@@ -407,13 +412,18 @@ const GroupLobby: React.FC = () => {
           </div>
           {/* Game Controls */}
           <div className="flex flex-col gap-4 justify-center items-center mt-2">
-            <div className="text-sm text-grayblue text-center">
+            <div
+              className={`text-sm text-center ${
+              lobbyPlayers.length + 1 >= 2 ? 'text-grayblue' : 'text-red-500'
+              }`}
+            >
               {lobbyPlayers.length + 1 >= 2
                 ? role === 'create'
                   ? 'Ready to start! Click Start Game when everyone is ready.'
                   : 'Waiting for host to start the game...'
-                : 'Need at least 2 players to start'}
+                : errorMessage}
             </div>
+
 
             <div className="flex gap-3">
               {role === 'create' && roomId && (
