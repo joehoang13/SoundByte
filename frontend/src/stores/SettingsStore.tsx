@@ -23,20 +23,8 @@ export const useSettingsStore = create<SettingsState>()(
       soundEffectsVolume: 50,
       movingBackground: true,
 
-      setMasterVolume: volume => {
-        set({ masterVolume: volume });
-        const state = get();
-        const finalVolume = (volume / 100) * (state.musicVolume / 100);
-        Howler.volume(finalVolume);
-      },
-
-      setMusicVolume: volume => {
-        set({ musicVolume: volume });
-        const state = get();
-        const finalVolume = (state.masterVolume / 100) * (volume / 100);
-        Howler.volume(finalVolume);
-      },
-
+      setMasterVolume: volume => set({ masterVolume: volume }),
+      setMusicVolume: volume => set({ musicVolume: volume }),
       setSoundEffectsVolume: volume => set({ soundEffectsVolume: volume }),
       setMovingBackground: enabled => set({ movingBackground: enabled }),
 
@@ -47,9 +35,6 @@ export const useSettingsStore = create<SettingsState>()(
           soundEffectsVolume: 50,
           movingBackground: true,
         });
-
-        const finalVolume = (70 / 100) * (50 / 100);
-        Howler.volume(finalVolume);
       },
     }),
     {

@@ -249,12 +249,12 @@ const Dashboard = () => {
       id: 'other',
       title: 'OTHER',
       description: 'Other game modes',
+      videoUrl:
+        'https://res.cloudinary.com/dqyszqny2/video/upload/v1762837946/7606358-hd_1080_1920_30fps_kojo86.mp4',
     },
   ];
 
-  {
-    /* Data for Testing */
-  }
+  {/* Data for Testing */}
   const recentActivity = [
     { id: 1, action: 'Completed Classic Mode', score: 850, time: '2 hours ago' },
     { id: 2, action: 'Won Multiplayer Match', score: 920, time: '4 hours ago' },
