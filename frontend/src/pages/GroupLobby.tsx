@@ -186,15 +186,19 @@ const GroupLobby: React.FC = () => {
 
   const joinRoom = (code: string) => {
     if (!code.trim()) return;
-    socket?.emit('joinRoom', {
-      code: code.trim(),
-      userId: user?.id,
-      userSocketId: socket.id,
-    }, (res: any) => {
-      if (!res.ok) {
-        setErrorMessage(res.error);
+    socket?.emit(
+      'joinRoom',
+      {
+        code: code.trim(),
+        userId: user?.id,
+        userSocketId: socket.id,
+      },
+      (res: any) => {
+        if (!res.ok) {
+          setErrorMessage(res.error);
+        }
       }
-    });
+    );
   };
   const leaveRoom = () => {
     socket?.emit('leaveRoom', { roomId: roomId, userId: user?.id });
@@ -414,7 +418,7 @@ const GroupLobby: React.FC = () => {
           <div className="flex flex-col gap-4 justify-center items-center mt-2">
             <div
               className={`text-sm text-center ${
-              lobbyPlayers.length + 1 >= 2 ? 'text-grayblue' : 'text-red-500'
+                lobbyPlayers.length + 1 >= 2 ? 'text-grayblue' : 'text-red-500'
               }`}
             >
               {lobbyPlayers.length + 1 >= 2
@@ -423,7 +427,6 @@ const GroupLobby: React.FC = () => {
                   : 'Waiting for host to start the game...'
                 : errorMessage}
             </div>
-
 
             <div className="flex gap-3">
               {role === 'create' && roomId && (
