@@ -25,7 +25,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
     // try redis first (only if enabled)
     if (redis.enabled) {
       try {
-        const raw = await redis.get(`room:${roomCode}:scores`);
+        const raw = await redis.client.get(`room:${roomCode}:scores`);
         if (raw) return JSON.parse(raw);
       } catch {}
     }
@@ -39,7 +39,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
     // also write to redis when available
     if (redis.enabled) {
       try {
-        await redis.set(`room:${roomCode}:scores`, JSON.stringify(map), 'EX', 3600);
+        await redis.client.set(`room:${roomCode}:scores`, JSON.stringify(map), 'EX', 3600);
       } catch {}
     }
   }
@@ -230,7 +230,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       const payloadStr = JSON.stringify(gameData);
 
       try {
-        await redis.set(questionsKey, payloadStr, 'EX', 3600);
+        await redis.client.set(questionsKey, payloadStr, 'EX', 3600);
       } catch {}
       memQuestions.set(room.code, gameData);
 
@@ -260,7 +260,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       }
 
       try {
-        await redis.set(scoresKey, JSON.stringify(initialScores), 'EX', 3600);
+        await redis.client.set(scoresKey, JSON.stringify(initialScores), 'EX', 3600);
       } catch {}
       memScores.set(room.code, initialScores); // ← in-memory fallback
 
@@ -269,7 +269,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       let cached = null;
       try {
-        cached = await redis.get(questionsKey);
+        cached = await redis.client.get(questionsKey);
       } catch {}
       io.to(room.code).emit('game:start', cached ?? payloadStr);
 
@@ -296,7 +296,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       // Get scores (prefer Redis; fall back to memory)
       let scores = {};
       try {
-        const scoreRaw = await redis.get(`room:${roomCode}:scores`);
+        const scoreRaw = await redis.client.get(`room:${roomCode}:scores`);
         scores = scoreRaw ? JSON.parse(scoreRaw) : memScores.get(roomCode) || {};
       } catch {
         scores = memScores.get(roomCode) || {};
@@ -350,8 +350,8 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       // Cleanup
       try {
-        await redis.del(`room:${roomCode}:questions`);
-        await redis.del(`room:${roomCode}:scores`);
+        await redis.client.del(`room:${roomCode}:questions`);
+        await redis.client.del(`room:${roomCode}:scores`);
       } catch {}
       memQuestions.delete(roomCode);
       for (const k of memAttempts.keys()) if (k.startsWith(`${roomCode}|`)) memAttempts.delete(k);
@@ -378,7 +378,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       const roomCode = code.toUpperCase();
 
       // Load questions (Redis → memory fallback)
-      const questionsRaw = await redis.get(`room:${roomCode}:questions`);
+      const questionsRaw = await redis.client.get(`room:${roomCode}:questions`);
       const questions = questionsRaw
         ? JSON.parse(questionsRaw)
         : memQuestions.get(roomCode) || null;
@@ -418,7 +418,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       // Scores map (Redis + memory fallback)
       const scoreKey = `room:${roomCode}:scores`;
-      const scoreRaw = await redis.get(scoreKey);
+      const scoreRaw = await redis.client.get(scoreKey);
       const scoreMap = scoreRaw ? JSON.parse(scoreRaw) : memScores.get(roomCode) || {};
 
       // Ensure entry + name
@@ -469,7 +469,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
       };
 
       try {
-        await redis.set(scoreKey, JSON.stringify(scoreMap), 'EX', 3600);
+        await redis.client.set(scoreKey, JSON.stringify(scoreMap), 'EX', 3600);
       } catch {}
       memScores.set(roomCode, scoreMap); // keep memory in sync
 
@@ -482,7 +482,14 @@ function multiplayerRoomHandler(io, socket, socketState) {
         streak: newStreak,
         breakdown: { base, timeBonus, total: delta },
       });
-
+      io.to(roomCode).emit(
+        'game:leaderboardUpdate',
+        Object.entries(scoreMap).map(([id, player]) => ({
+          id,
+          name: player.name,
+          score: player.score,
+        }))
+      );
       // Per-round result (so clients can build song results)
       io.to(roomCode).emit('game:roundResult', {
         userId,
@@ -537,8 +544,8 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
           // cleanup
           try {
-            await redis.del(`room:${roomCode}:questions`);
-            await redis.del(`room:${roomCode}:scores`);
+            await redis.client.del(`room:${roomCode}:questions`);
+            await redis.client.del(`room:${roomCode}:scores`);
           } catch {}
           clearRoomMem(roomCode);
 

@@ -320,10 +320,15 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       });
     };
 
+    const onLeaderboardUpdate = (r: any) => {
+      console.log(r);
+      console.log('pie');
+    };
+
     socket.on('game:end', onEnd);
     socket.on('game:scoreUpdate', onScoreUpdate);
     socket.on('game:roundResult', onRoundResult);
-
+    socket.on('game:leaderboardUpdate', onLeaderboardUpdate);
     return () => {
       socket.off('game:end', onEnd);
       socket.off('game:scoreUpdate', onScoreUpdate);
