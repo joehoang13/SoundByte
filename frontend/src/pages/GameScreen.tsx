@@ -85,7 +85,7 @@ const GameScreen: React.FC = () => {
     })();
     // Resume on reconnect
     const onOnline = () => {
-      if (sessionId) resume().catch(() => { });
+      if (sessionId) resume().catch(() => {});
     };
     window.addEventListener('online', onOnline);
     return () => window.removeEventListener('online', onOnline);
@@ -398,12 +398,13 @@ const GameScreen: React.FC = () => {
                     !guess.trim() ||
                     (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
                   }
-                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${lastResult?.concluded ||
-                      !guess.trim() ||
-                      (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
+                  className={`px-8 font-bold py-5 text-base transition-all duration-300 whitespace-nowrap relative overflow-hidden ${
+                    lastResult?.concluded ||
+                    !guess.trim() ||
+                    (typeof attemptsLeft === 'number' && attemptsLeft <= 0)
                       ? 'bg-gray-700/50 cursor-not-allowed text-gray-500'
                       : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-cyan-500/25'
-                    }`}
+                  }`}
                   whileHover={
                     !(
                       lastResult?.concluded ||

@@ -58,18 +58,22 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   const userId = user?.id;
   const { disconnect } = useSocketStore();
 
-  const [multiSongResults, setMultiSongResults] = useState<Array<{ 
-    snippetId: string; 
-    songTitle: string; 
-    artistName: string; 
-    correct: boolean 
-  }>>([]);
+  const [multiSongResults, setMultiSongResults] = useState<
+    Array<{
+      snippetId: string;
+      songTitle: string;
+      artistName: string;
+      correct: boolean;
+    }>
+  >([]);
 
-  const [leaderboardData, setLeaderboardData] = useState<Array<{
-    id: string;
-    name: string;
-    score: number;
-  }>>([]);
+  const [leaderboardData, setLeaderboardData] = useState<
+    Array<{
+      id: string;
+      name: string;
+      score: number;
+    }>
+  >([]);
 
   const [hintsUnlocked, setHintsUnlocked] = useState(0);
   const [current, setCurrent] = useState<RoundMeta>();
@@ -493,18 +497,15 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       )}
 
       {leaderboardData.length > 0 && (
-      <motion.div
-        className="fixed top-6 right-4 z-[60] w-64 max-h-[calc(100vh-3rem)]"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <LiveLeaderboard 
-          players={leaderboardData}
-          myUserId={userId}
-        />
-      </motion.div>
-    )}
+        <motion.div
+          className="fixed top-6 right-4 z-[60] w-64 max-h-[calc(100vh-3rem)]"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <LiveLeaderboard players={leaderboardData} myUserId={userId} />
+        </motion.div>
+      )}
 
       <div className="min-h-screen flex flex-col items-center justify-center font-montserrat p-4">
         <motion.div

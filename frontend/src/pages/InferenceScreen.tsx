@@ -406,10 +406,11 @@ const InferenceScreen: React.FC = () => {
                   <motion.button
                     type="submit"
                     disabled={attemptsLeft <= 0 || showAnswer}
-                    className={`px-8 font-bold py-5 text-base ${attemptsLeft <= 0
+                    className={`px-8 font-bold py-5 text-base ${
+                      attemptsLeft <= 0
                         ? 'bg-gray-700/50 cursor-not-allowed text-gray-400'
                         : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white'
-                      }`}
+                    }`}
                     whileHover={attemptsLeft > 0 ? { scale: 1.02 } : {}}
                     whileTap={attemptsLeft > 0 ? { scale: 0.98 } : {}}
                   >
