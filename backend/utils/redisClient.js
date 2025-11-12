@@ -111,17 +111,12 @@ const noopClient = {
   },
 };
 
-const defaultExport = client || noopClient;
-
-// Default export behaves like a Redis client (get/set/del).
-module.exports = defaultExport;
-
-// And also expose helpers/flags on the same object.
-Object.assign(module.exports, {
-  client: defaultExport, // always something callable
+module.exports = {
+  client: client || noopClient, // always an object, never a function/class instance
   enabled,
   TTL_SECONDS,
   cacheSetSession,
   cacheGetSession,
   cacheDelSession,
-});
+};
+
