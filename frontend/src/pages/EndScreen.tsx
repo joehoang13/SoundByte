@@ -5,7 +5,6 @@ import useGameStore from '../stores/GameSessionStore';
 import { useSocketStore } from '../stores/SocketStore';
 import { useAuth } from '../stores/auth';
 
-
 const allTabs = [
   { id: 'overview', label: 'Overview', showInModes: ['classic', 'inference', 'multiplayer'] },
   { id: 'leaderboard', label: 'Leaderboard', showInModes: ['multiplayer'] },
@@ -18,7 +17,7 @@ const EndScreen = () => {
   const location = useLocation();
   const { user } = useAuth();
 
-  const { disconnect } = useSocketStore()
+  const { disconnect } = useSocketStore();
 
   // Store-derived stats (kept as-is)
   const score = useGameStore(s => s.score);

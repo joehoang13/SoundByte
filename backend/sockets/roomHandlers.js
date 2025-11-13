@@ -343,12 +343,12 @@ function multiplayerRoomHandler(io, socket, socketState) {
         });
       }
       leaderboard.sort((a, b) => b.score - a.score);
-      
+
       const totalPlayers = Object.keys(scores).length;
 
       const finishedCount = Object.values(scores).filter(s => s.finished).length;
 
-      const shouldEndGame = (finishedCount === totalPlayers - 1);
+      const shouldEndGame = finishedCount === totalPlayers - 1;
       if (shouldEndGame) {
         console.log('npt noce)');
         // Emit once to the whole room
@@ -363,11 +363,10 @@ function multiplayerRoomHandler(io, socket, socketState) {
         for (const k of memAttempts.keys()) if (k.startsWith(`${roomCode}|`)) memAttempts.delete(k);
         // keep memScores until next game or clear if you prefer:
         memScores.delete(roomCode);
-      }
-      else {
-        console.log('nice')
-        scores[userId].finished = true
-        await redis.client.set(`room:${roomCode}:scores`, JSON.stringify(scores), 'EX', 3600)
+      } else {
+        console.log('nice');
+        scores[userId].finished = true;
+        await redis.client.set(`room:${roomCode}:scores`, JSON.stringify(scores), 'EX', 3600);
       }
       // Lobby refresh
       const summary = await room.toLobbySummary();

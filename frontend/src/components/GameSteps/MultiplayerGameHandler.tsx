@@ -274,13 +274,13 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
 
     if (socket && roomCode && userId) {
       // Wrap each emit in a Promise
-      const leaveRoomPromise = new Promise<void>((resolve) => {
+      const leaveRoomPromise = new Promise<void>(resolve => {
         socket.emit('leaveRoom', { roomId: roomCode, userId }, () => {
           resolve();
         });
       });
 
-      const endGamePromise = new Promise<void>((resolve) => {
+      const endGamePromise = new Promise<void>(resolve => {
         socket.emit('endGame', { roomCode, userId }, () => {
           resolve();
         });
