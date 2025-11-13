@@ -268,13 +268,28 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
   // Host/non-host use the same Quit. Host's quit will broadcast game:end.
   // IMPORTANT: don't navigate/disconnect here; wait for `game:end` so
   // everyone (including host) gets the leaderboard payload.
-  const handleQuitGame = () => {
+  const handleQuitGame = async () => {
     // persist local results for EndScreen
     useGameStore.setState({ songResults: multiSongResults });
 
     if (socket && roomCode && userId) {
-      socket.emit('leaveRoom', { roomId: roomCode, userId }); // non-host: just leave
-      socket.emit('endGame', { roomCode, userId }, () => {}); // host: ends for all; non-host: ignored
+      // Wrap each emit in a Promise
+      const leaveRoomPromise = new Promise<void>((resolve) => {
+        socket.emit('leaveRoom', { roomId: roomCode, userId }, () => {
+          resolve();
+        });
+      });
+
+      const endGamePromise = new Promise<void>((resolve) => {
+        socket.emit('endGame', { roomCode, userId }, () => {
+          resolve();
+        });
+      });
+
+      // Wait for both to complete
+      await Promise.all([leaveRoomPromise, endGamePromise]);
+
+      console.log('Both leaveRoom and endGame have completed.');
     }
 
     disconnect();

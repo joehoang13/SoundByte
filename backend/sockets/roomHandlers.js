@@ -224,7 +224,7 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       memEnded.delete(room.code);
 
-      const gameData = await generateGameQuestions(10);
+      const gameData = await generateGameQuestions(3);
       const questionsKey = `room:${room.code}:questions`;
       const scoresKey = `room:${room.code}:scores`;
       const payloadStr = JSON.stringify(gameData);
@@ -288,7 +288,6 @@ function multiplayerRoomHandler(io, socket, socketState) {
 
       const room = await Room.findOne({ code: roomCode.toUpperCase() });
       if (!room) throw new Error('Room not found');
-      ensureHost(room, userId); // host-only
 
       room.status = 'ended';
       await room.save();
@@ -344,20 +343,32 @@ function multiplayerRoomHandler(io, socket, socketState) {
         });
       }
       leaderboard.sort((a, b) => b.score - a.score);
+      
+      const totalPlayers = Object.keys(scores).length;
 
-      // Emit once to the whole room
-      io.to(roomCode).emit('game:end', { roomCode, leaderboard });
+      const finishedCount = Object.values(scores).filter(s => s.finished).length;
 
-      // Cleanup
-      try {
-        await redis.client.del(`room:${roomCode}:questions`);
-        await redis.client.del(`room:${roomCode}:scores`);
-      } catch {}
-      memQuestions.delete(roomCode);
-      for (const k of memAttempts.keys()) if (k.startsWith(`${roomCode}|`)) memAttempts.delete(k);
-      // keep memScores until next game or clear if you prefer:
-      memScores.delete(roomCode);
+      const shouldEndGame = (finishedCount === totalPlayers - 1);
+      if (shouldEndGame) {
+        console.log('npt noce)');
+        // Emit once to the whole room
+        io.to(roomCode).emit('game:end', { roomCode, leaderboard });
 
+        // Cleanup
+        try {
+          await redis.client.del(`room:${roomCode}:questions`);
+          await redis.client.del(`room:${roomCode}:scores`);
+        } catch {}
+        memQuestions.delete(roomCode);
+        for (const k of memAttempts.keys()) if (k.startsWith(`${roomCode}|`)) memAttempts.delete(k);
+        // keep memScores until next game or clear if you prefer:
+        memScores.delete(roomCode);
+      }
+      else {
+        console.log('nice')
+        scores[userId].finished = true
+        await redis.client.set(`room:${roomCode}:scores`, JSON.stringify(scores), 'EX', 3600)
+      }
       // Lobby refresh
       const summary = await room.toLobbySummary();
       io.to(roomCode).emit('room:update', summary);
