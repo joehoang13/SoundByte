@@ -37,6 +37,7 @@ function computeBase() {
 export const API_BASE = computeBase();
 export const AUTH_BASE = `${API_BASE}/auth`;
 export const GS_BASE = `${API_BASE}/gs`;
+export const QUESTIONS_BASE = `${API_BASE}/questions`
 
 export async function json<T>(res: Response): Promise<T> {
   const data = await res.json().catch(() => ({}));

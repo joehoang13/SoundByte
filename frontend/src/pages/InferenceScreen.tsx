@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Howler } from 'howler';
 import { useAuth } from '../stores/auth';
+import { QUESTIONS_BASE } from '../api/base';
 import discdb from '../assets/disc.svg';
 import needledb from '../assets/needle.svg';
 
@@ -67,7 +68,7 @@ const InferenceScreen: React.FC = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/questions/random?limit=5');
+        const res = await fetch(`${QUESTIONS_BASE}/random?limit=5`);
         const data = await res.json();
         if (data.ok && data.items) setQuestions(data.items);
       } catch (err) {
