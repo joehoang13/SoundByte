@@ -178,7 +178,6 @@ const GameScreen: React.FC = () => {
   }, [currentRound]);
 
   if (!sessionId || !current) {
-    console.log(sessionId, current);
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white">
         <span>Loading game…</span>

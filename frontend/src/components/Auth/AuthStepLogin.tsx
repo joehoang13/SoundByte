@@ -97,6 +97,36 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({ onLoginSuccess }) => {
             {error}
           </p>
         )}
+        <button
+          className="w-full py-2 text-sm bg-white-600 text-white rounded-xl hover:bg-white-500 transition-colors"
+          onClick={async () => {
+            const email = window.prompt('Enter your registered email address:');
+            if (!email) return; // user cancelled or left blank
+
+            const confirm = window.confirm(
+              `We’ll send a reset password link to "${email}". Continue?`
+            );
+            if (!confirm) return;
+
+            try {
+              const apiBase = import.meta.env.VITE_API_URL.replace(/\/$/, '');
+              const res = await fetch(`${apiBase}/api/auth/request-password-reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+              });
+
+              const data = await res.json();
+              alert(data.message || 'Check your email for reset instructions.');
+            } catch (err) {
+              console.error(err);
+              alert('Something went wrong while requesting a reset email.');
+            }
+          }}
+        >
+          Reset Password
+        </button>
+
       </form>
     </div>
   );

@@ -286,10 +286,8 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
         });
       });
 
-      // Wait for both to complete
       await Promise.all([leaveRoomPromise, endGamePromise]);
 
-      console.log('Both leaveRoom and endGame have completed.');
     }
 
     disconnect();
@@ -350,7 +348,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     };
 
     const onLeaderboardUpdate = (data: any) => {
-      console.log('📊 Leaderboard update:', data);
 
       // update local leaderboard display
       setLeaderboardData(data);
