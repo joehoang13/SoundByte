@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Howler } from 'howler';
 
 interface SettingsState {
   masterVolume: number;
@@ -17,7 +16,7 @@ interface SettingsState {
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       masterVolume: 70,
       musicVolume: 50,
       soundEffectsVolume: 50,

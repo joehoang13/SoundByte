@@ -161,9 +161,8 @@ const InferenceScreen: React.FC = () => {
     const elapsedMs = Date.now() - (startTime ?? Date.now());
 
     // Split "Artist - Title" so player only needs Title
-    const [artistPart, titlePart] = current.answer.split(' - ');
+    const [_artistPart, titlePart] = current.answer.split(' - ');
     const normGuess = normalize(guess);
-    const normArtist = normalize(artistPart || '');
     const normTitle = normalize(titlePart || current.answer);
     const normAnswer = normalize(current.answer);
 
@@ -232,7 +231,7 @@ const InferenceScreen: React.FC = () => {
       mode: 'inference',
       timeBonus: 0, // no time bonus in inference mode
       fastestTime: Infinity,
-      songResults: questions.slice(0, currentIndex + 1).map((q, i) => {
+      songResults: questions.slice(0, currentIndex + 1).map((q, _i) => {
         const guess = questionResults.find(g => g.questionId === q._id);
         return {
           snippetId: q._id,

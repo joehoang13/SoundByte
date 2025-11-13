@@ -23,8 +23,8 @@ interface LastResult {
 export interface RoundMeta {
   snippetId: string;
   audioUrl: string;
-  title: string;
-  artist: string;
+  title?: string;
+  artist?: string;
 }
 
 interface SongResult {

@@ -169,7 +169,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess }) => {
                 >
                   <AuthStepSignUp
                     hideClose
-                    onClose={onClose}
                     onSignUpSuccess={onAuthSuccess}
                     onSwitchToLogin={handleSwitchToLogin}
                   />

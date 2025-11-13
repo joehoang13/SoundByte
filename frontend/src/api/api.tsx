@@ -51,7 +51,7 @@ function safeJson(s: string) {
   }
 }
 
-export type AuthUser = { id: string; email: string; username?: string };
+export type AuthUser = { id: string; email: string; username?: string; profilePicture: string };
 export type AuthResponse = { token: string; user: AuthUser };
 
 export async function registerUser(payload: {

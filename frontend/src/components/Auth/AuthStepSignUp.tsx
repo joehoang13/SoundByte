@@ -2,17 +2,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { registerUser } from '../../api/api';
-import { useAuth } from '../../stores/auth';
 
 interface AuthStepSignUpProps {
-  onClose: () => void;
   onSwitchToLogin: () => void;
   onSignUpSuccess?: () => void; // optional now, since verification defers login
   align?: 'start' | 'end';
   hideClose?: boolean;
 }
 
-const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({ onClose, onSwitchToLogin }) => {
+const AuthStepSignUp: React.FC<AuthStepSignUpProps> = ({ onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
