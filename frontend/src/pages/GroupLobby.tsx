@@ -337,7 +337,7 @@ const GroupLobby: React.FC = () => {
                         setTimeout(() => setCopied(false), 2000);
                       }}
                       className={`px-4 py-2 rounded-xl border text-sm font-semibold transition-colors ${
-                        copied 
+                        copied
                           ? 'bg-teal/20 border-teal text-teal hover:bg-teal/30'
                           : 'border-white/10 hover:bg-white/10'
                       }`}
@@ -364,8 +364,7 @@ const GroupLobby: React.FC = () => {
                         backgroundColor: 'rgba(20, 61, 77, 0.35)',
                       }}
                     >
-                      {lobbyPlayers.length}{' '}
-                      {lobbyPlayers.length === 1 ? 'player' : 'players'}
+                      {lobbyPlayers.length} {lobbyPlayers.length === 1 ? 'player' : 'players'}
                     </span>
                   </header>
 
@@ -428,8 +427,9 @@ const GroupLobby: React.FC = () => {
           {/* Game Controls */}
           <div className="flex flex-col gap-4 justify-center items-center mt-2">
             <div
-              className={`text-sm text-center ${lobbyPlayers.length >= 2 ? 'text-grayblue' : 'text-red-500'
-                }`}
+              className={`text-sm text-center ${
+                lobbyPlayers.length >= 2 ? 'text-grayblue' : 'text-red-500'
+              }`}
             >
               {lobbyPlayers.length >= 2
                 ? role === 'create'
@@ -443,10 +443,11 @@ const GroupLobby: React.FC = () => {
                 <motion.button
                   onClick={handleStartGame}
                   disabled={lobbyPlayers.length < 2}
-                  className={`px-8 py-3 rounded-xl font-semibold ${lobbyPlayers.length >= 2
+                  className={`px-8 py-3 rounded-xl font-semibold ${
+                    lobbyPlayers.length >= 2
                       ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
                       : 'bg-gray-600/50 cursor-not-allowed text-gray-400'
-                    }`}
+                  }`}
                   whileHover={lobbyPlayers.length >= 2 ? { scale: 1.02 } : {}}
                   whileTap={lobbyPlayers.length >= 2 ? { scale: 0.98 } : {}}
                 >
