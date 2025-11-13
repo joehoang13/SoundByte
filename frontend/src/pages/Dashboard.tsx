@@ -8,13 +8,10 @@ import {
   useMotionValueEvent,
   useScroll,
 } from 'framer-motion';
-import disc from '../assets/disc.svg';
-import needle from '../assets/needle.svg';
 import Background from '../components/Background';
 import useGameStore from '../stores/GameSessionStore';
 import GamePrefModal from '../components/GameSteps/GamePrefModal';
 import NavBar from '../components/NavBar';
-import { audio } from 'framer-motion/client';
 
 interface GameMode {
   id: string;
@@ -254,15 +251,13 @@ const Dashboard = () => {
     },
   ];
 
-  {
-    /* Data for Testing */
-  }
+  {/* Data for Testing 
   const recentActivity = [
     { id: 1, action: 'Completed Classic Mode', score: 850, time: '2 hours ago' },
     { id: 2, action: 'Won Multiplayer Match', score: 920, time: '4 hours ago' },
     { id: 3, action: 'Lost Multiplayer Match', score: 650, time: '1 day ago' },
     { id: 4, action: 'Completed Inference Mode', score: 780, time: '2 days ago' },
-  ];
+  ]; */}
 
   const handleCardClick = (mode: { id: string; title: string; description: string }) => {
     setExpandedCard(mode.id);
@@ -448,7 +443,7 @@ const Dashboard = () => {
           </div>
 
           <div className="w-1/3 p-10 space-y-3">
-            {/* Recent Activity */}
+            {/* Recent Activity 
             <motion.div
               className="bg-darkblue/80 backdrop-blur-sm rounded-2xl p-4"
               style={{ border: '1px solid rgba(255,255,255,0.10)' }}
@@ -467,7 +462,7 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </motion.div> */}
 
             {/* Last Game's Songs */}
             <motion.div

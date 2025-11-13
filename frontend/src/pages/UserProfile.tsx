@@ -1,17 +1,15 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../stores/auth';
-import { logout } from '../api/auth';
 import { getUserStats } from '../api/users';
-import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import NavBar from '../components/NavBar';
 import type { UserStats } from '../types/users';
+import useGameStore from '../stores/GameSessionStore';
 
 const UserProfile = () => {
-  const { user, token } = useAuth();
-  const isLoggedIn = !!(user && token);
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { songResults } = useGameStore(); 
   const [stats, setStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,20 +34,20 @@ const UserProfile = () => {
     );
   }
 
-  // Mock data for game history
+  {/*  Mock data for game history
   const recentGames = [
     { id: 1, mode: 'Classic Mode', score: 850, date: '2 hours ago', result: 'win' },
     { id: 2, mode: 'Multiplayer', score: 920, date: '1 day ago', result: 'win' },
     { id: 3, mode: 'Inference Mode', score: 650, date: '2 days ago', result: 'loss' },
     { id: 4, mode: 'Classic Mode', score: 780, date: '3 days ago', result: 'win' },
-  ];
+  ]; */}
 
   return (
     <div className="min-h-screen font-montserrat p-4">
       <Background />
       <NavBar />
 
-      <div className="max-w-7xl mx-auto mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto mt-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT SIDE - User Info Card */}
         <motion.div
           className="lg:col-span-1"
@@ -77,11 +75,6 @@ const UserProfile = () => {
               <div className="border-b border-white/10 pb-3">
                 <p className="text-xs text-gray-400 tracking-wide mb-1">PASSWORD</p>
                 <p className="text-sm text-white">******</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-400 tracking-wide mb-1">LOCATION</p>
-                <p className="text-sm text-white">United States</p>
               </div>
             </div>
             <div className="space-y-3">
@@ -179,7 +172,7 @@ const UserProfile = () => {
             )}
           </motion.div>
 
-          {/* Recent Game History */}
+          {/* Recent Game History 
           <motion.div
             className="bg-darkblue/80 backdrop-blur-sm rounded-xl p-6 border border-white/10"
             initial={{ opacity: 0, y: 20 }}
@@ -209,7 +202,44 @@ const UserProfile = () => {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </motion.div> */}
+
+          {/* Last Game's Songs */}
+          <motion.div
+              className="bg-darkblue/80 backdrop-blur-sm rounded-xl p-6 border border-white/10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <h3 className="text-xl font-bold text-white mb-4">Last Game's Results</h3>
+              <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-teal">
+                {songResults.length > 0 ? (
+                  songResults.map(song => (
+                    <div
+                      key={song.snippetId}
+                      className="flex items-start justify-between text-sm text-white p-2 rounded-lg hover:bg-white/5 transition-colors border-b border-cyan-400/40 hover:border-b-cyan-400/60 hover:shadow-md"
+                    >
+                      <div className="flex-1">
+                        <div className="text-base text-white tracking-wide">{song.songTitle}</div>
+                        <div className="text-xs text-white/50">{song.artistName}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {song.correct ? (
+                          <span className="text-green-400 text-lg">✓</span>
+                        ) : (
+                          <span className="text-red-400 text-lg">✗</span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-white/50 py-8">
+                    <p className="text-sm">No recent games played</p>
+                    <p className="text-xs mt-1">Play a game to see your history!</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
         </div>
       </div>
     </div>

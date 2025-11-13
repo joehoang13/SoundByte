@@ -44,6 +44,7 @@ const GroupLobby: React.FC = () => {
   const { user } = useAuth();
   const username = user?.username ?? 'Player';
   const avatarUrl = user?.profilePicture as string | undefined;
+  const [copied, setCopied] = useState(false);
   // local players list (store may or may not have one)
   // @ts-ignore optional players in store
   const storePlayers: Player[] = useGameStore.getState?.().players ?? [];
@@ -323,17 +324,25 @@ const GroupLobby: React.FC = () => {
                     <div className="text-lg font-semibold">{roomId}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <input
+                    {/* <input
                       readOnly
                       value={inviteUrl}
                       className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 w-[320px] text-xs"
-                    />
+                    /> */}
                     <button
                       type="button"
-                      onClick={() => inviteUrl && navigator.clipboard.writeText(inviteUrl)}
-                      className="px-3 py-2 rounded-xl border border-white/10 hover:bg-white/10 text-sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(roomId);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className={`px-4 py-2 rounded-xl border text-sm font-semibold transition-colors ${
+                        copied 
+                          ? 'bg-teal/20 border-teal text-teal hover:bg-teal/30'
+                          : 'border-white/10 hover:bg-white/10'
+                      }`}
                     >
-                      Copy
+                      {copied ? '✓ Copied!' : 'Copy Code'}
                     </button>
                     <button
                       type="button"
@@ -355,8 +364,8 @@ const GroupLobby: React.FC = () => {
                         backgroundColor: 'rgba(20, 61, 77, 0.35)',
                       }}
                     >
-                      {lobbyPlayers.length + 1}{' '}
-                      {lobbyPlayers.length + 1 === 1 ? 'player' : 'players'}
+                      {lobbyPlayers.length}{' '}
+                      {lobbyPlayers.length === 1 ? 'player' : 'players'}
                     </span>
                   </header>
 
@@ -384,31 +393,33 @@ const GroupLobby: React.FC = () => {
                       </div>
                     </li>
 
-                    {lobbyPlayers.map(p => (
-                      <li
-                        key={p.id}
-                        className="flex items-center gap-3 p-3 rounded-xl"
-                        style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
-                      >
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
-                          {p.profilePicture ? (
-                            <img
-                              src={p.profilePicture}
-                              alt={p.username}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-sm font-bold">
-                              {p.username?.[0]?.toUpperCase() ?? 'P'}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold truncate">{p.username || 'Player'}</div>
-                          <div className="text-xs text-grayblue">Ready</div>
-                        </div>
-                      </li>
-                    ))}
+                    {lobbyPlayers
+                      .filter(p => p.id !== user?.id)
+                      .map(p => (
+                        <li
+                          key={p.id}
+                          className="flex items-center gap-3 p-3 rounded-xl"
+                          style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
+                        >
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
+                            {p.profilePicture ? (
+                              <img
+                                src={p.profilePicture}
+                                alt={p.username}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-sm font-bold">
+                                {p.username?.[0]?.toUpperCase() ?? 'P'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold truncate">{p.username || 'Player'}</div>
+                            <div className="text-xs text-grayblue">Ready</div>
+                          </div>
+                        </li>
+                      ))}
                   </ul>
                 </div>
               </>
@@ -417,11 +428,10 @@ const GroupLobby: React.FC = () => {
           {/* Game Controls */}
           <div className="flex flex-col gap-4 justify-center items-center mt-2">
             <div
-              className={`text-sm text-center ${
-                lobbyPlayers.length + 1 >= 2 ? 'text-grayblue' : 'text-red-500'
-              }`}
+              className={`text-sm text-center ${lobbyPlayers.length >= 2 ? 'text-grayblue' : 'text-red-500'
+                }`}
             >
-              {lobbyPlayers.length + 1 >= 2
+              {lobbyPlayers.length >= 2
                 ? role === 'create'
                   ? 'Ready to start! Click Start Game when everyone is ready.'
                   : 'Waiting for host to start the game...'
@@ -432,14 +442,13 @@ const GroupLobby: React.FC = () => {
               {role === 'create' && roomId && (
                 <motion.button
                   onClick={handleStartGame}
-                  disabled={lobbyPlayers.length + 1 < 2}
-                  className={`px-8 py-3 rounded-xl font-semibold ${
-                    lobbyPlayers.length + 1 >= 2
+                  disabled={lobbyPlayers.length < 2}
+                  className={`px-8 py-3 rounded-xl font-semibold ${lobbyPlayers.length >= 2
                       ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
                       : 'bg-gray-600/50 cursor-not-allowed text-gray-400'
-                  }`}
-                  whileHover={lobbyPlayers.length + 1 >= 2 ? { scale: 1.02 } : {}}
-                  whileTap={lobbyPlayers.length + 1 >= 2 ? { scale: 0.98 } : {}}
+                    }`}
+                  whileHover={lobbyPlayers.length >= 2 ? { scale: 1.02 } : {}}
+                  whileTap={lobbyPlayers.length >= 2 ? { scale: 0.98 } : {}}
                 >
                   Start Game
                 </motion.button>
