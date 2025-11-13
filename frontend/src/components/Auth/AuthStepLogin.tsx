@@ -126,7 +126,6 @@ const AuthStepLogin: React.FC<AuthStepLoginProps> = ({ onLoginSuccess }) => {
         >
           Reset Password
         </button>
-
       </form>
     </div>
   );

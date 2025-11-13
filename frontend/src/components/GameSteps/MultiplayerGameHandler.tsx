@@ -287,7 +287,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
       });
 
       await Promise.all([leaveRoomPromise, endGamePromise]);
-
     }
 
     disconnect();
@@ -348,7 +347,6 @@ const MultiplayerGameHandler: React.FC<Props> = ({ user }) => {
     };
 
     const onLeaderboardUpdate = (data: any) => {
-
       // update local leaderboard display
       setLeaderboardData(data);
 
