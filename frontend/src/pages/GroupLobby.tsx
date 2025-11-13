@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useGameStore from '../stores/GameSessionStore';
@@ -204,14 +204,6 @@ const GroupLobby: React.FC = () => {
   const leaveRoom = () => {
     socket?.emit('leaveRoom', { roomId: roomId, userId: user?.id });
   };
-
-  // invite link builder
-  const inviteUrl = useMemo(() => {
-    if (!roomId) return '';
-    const url = new URL(window.location.href);
-    url.searchParams.set('room', roomId);
-    return url.toString();
-  }, [roomId]);
 
   // auto-join if ?room=ID present and in join mode
   useEffect(() => {

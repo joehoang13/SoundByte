@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import useGameStore from '../stores/GameSessionStore';
+import { useSocketStore } from '../stores/SocketStore';
 import { useAuth } from '../stores/auth';
 
 const allTabs = [
@@ -15,6 +16,8 @@ const EndScreen = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+
+  const { disconnect } = useSocketStore();
 
   // Store-derived stats (kept as-is)
   const score = useGameStore(s => s.score);
@@ -316,6 +319,7 @@ const EndScreen = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
+                disconnect();
                 reset();
                 navigate('/dashboard');
               }}
